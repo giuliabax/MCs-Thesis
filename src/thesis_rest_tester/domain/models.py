@@ -83,6 +83,8 @@ class WorkflowPlan(DomainModel):
     assumptions: list[str] = Field(default_factory=list)
     risks: list[str] = Field(default_factory=list)
     created_at: datetime
+    sut_base_url: str | None = None
+    requirement_coverage: dict[str, Any] | None = None
 
 
 class MetricSnapshot(DomainModel):

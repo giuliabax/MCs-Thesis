@@ -70,3 +70,46 @@ def test_config_rejects_unresolved_environment_variable(
 
     with pytest.raises(ValueError, match="Unresolved environment variables"):
         load_config(path)
+
+
+def test_config_accepts_multiple_projects(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GROQ_MODEL", "test-model")
+    text = _config_text().replace(
+        "  openapi_path: openapi.yaml\n  sut_base_url: http://localhost:8080/",
+        """  projects:
+    - name: team-a
+      openapi_path: team-a.yaml
+      sut_base_url: http://localhost:8080/
+    - name: team-b
+      openapi_path: team-b.yaml
+      sut_base_url: http://localhost:8081/""",
+    )
+    path = tmp_path / "config.yaml"
+    path.write_text(text, encoding="utf-8")
+
+    config = load_config(path)
+
+    projects = config.inputs.configured_projects(config.project_name)
+    assert [project.name for project in projects] == ["team-a", "team-b"]
+    assert projects[1].sut_base_url == "http://localhost:8081"
+
+
+def test_config_rejects_duplicate_project_names(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GROQ_MODEL", "test-model")
+    text = _config_text().replace(
+        "  openapi_path: openapi.yaml\n  sut_base_url: http://localhost:8080/",
+        """  projects:
+    - name: duplicate
+      openapi_path: team-a.yaml
+      sut_base_url: http://localhost:8080
+    - name: duplicate
+      openapi_path: team-b.yaml
+      sut_base_url: http://localhost:8081""",
+    )
+    path = tmp_path / "config.yaml"
+    path.write_text(text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="duplicate project names"):
+        load_config(path)

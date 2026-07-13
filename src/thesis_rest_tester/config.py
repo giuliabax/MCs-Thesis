@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 import yaml
 from dotenv import load_dotenv
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 _UNRESOLVED_ENV = re.compile(r"\$\{[A-Za-z_][A-Za-z0-9_]*\}")
 _SAFE_RUN_ID = re.compile(r"^[A-Za-z0-9_.-]+$")
@@ -43,18 +43,68 @@ class RequirementsInputConfig(StrictConfigModel):
     faq_pdf: Path
 
 
-class InputsConfig(StrictConfigModel):
-    requirements: RequirementsInputConfig
+class ProjectInputConfig(StrictConfigModel):
+    name: str
     openapi_path: Path
     sut_base_url: str
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value or not _SAFE_RUN_ID.fullmatch(value):
+            raise ValueError(
+                "project name may contain only letters, numbers, dots, dashes, and underscores"
+            )
+        return value
 
     @field_validator("sut_base_url")
     @classmethod
     def validate_base_url(cls, value: str) -> str:
         parsed = urlparse(value)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            raise ValueError("inputs.sut_base_url must be an HTTP(S) URL")
+            raise ValueError("project sut_base_url must be an HTTP(S) URL")
         return value.rstrip("/")
+
+
+class InputsConfig(StrictConfigModel):
+    requirements: RequirementsInputConfig
+    projects: list[ProjectInputConfig] = Field(default_factory=list)
+    # Legacy single-project fields remain supported for existing configurations.
+    openapi_path: Path | None = None
+    sut_base_url: str | None = None
+
+    @model_validator(mode="after")
+    def validate_project_inputs(self) -> InputsConfig:
+        uses_legacy = self.openapi_path is not None or self.sut_base_url is not None
+        if self.projects and uses_legacy:
+            raise ValueError(
+                "use either inputs.projects or the legacy openapi_path/sut_base_url fields"
+            )
+        if not self.projects and (self.openapi_path is None or self.sut_base_url is None):
+            raise ValueError(
+                "configure at least one project, or both openapi_path and sut_base_url"
+            )
+        names = [project.name for project in self.projects]
+        if len(names) != len(set(names)):
+            raise ValueError("inputs.projects contains duplicate project names")
+        if self.sut_base_url is not None:
+            parsed = urlparse(self.sut_base_url)
+            if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+                raise ValueError("inputs.sut_base_url must be an HTTP(S) URL")
+            self.sut_base_url = self.sut_base_url.rstrip("/")
+        return self
+
+    def configured_projects(self, legacy_name: str) -> list[ProjectInputConfig]:
+        if self.projects:
+            return self.projects
+        return [
+            ProjectInputConfig(
+                name=legacy_name,
+                openapi_path=self.openapi_path,
+                sut_base_url=self.sut_base_url,
+            )
+        ]
 
 
 class ExecutionConfig(StrictConfigModel):
