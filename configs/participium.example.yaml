@@ -12,8 +12,13 @@ inputs:
     description_pdf: data/requirements/participium-description.pdf
     user_stories_xlsx: data/requirements/participium-userstories.xlsx
     faq_pdf: data/requirements/participium-faq.pdf
-  openapi_path: projects/participium-team09/swagger.yaml
-  sut_base_url: http://localhost:8080
+  projects:
+    - name: participium-team09
+      openapi_path: projects/participium-team09/swagger.yaml
+      sut_base_url: http://localhost:8080
+    - name: participium-team01
+      openapi_path: projects/participium-team01/swagger.yaml
+      sut_base_url: http://localhost:8081
 
 execution:
   runner: python_requests
@@ -27,4 +32,3 @@ budget:
 
 output:
   runs_dir: data/runs
-

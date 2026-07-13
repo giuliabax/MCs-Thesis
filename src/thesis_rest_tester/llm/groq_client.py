@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 import os
+import re
+import time
 from typing import Any
 
-from groq import Groq
+from groq import Groq, RateLimitError
 
 from thesis_rest_tester.domain.models import TokenUsage
 from thesis_rest_tester.llm.base import LLMClient, LLMResponse
@@ -31,6 +34,7 @@ class GroqLLMClient(LLMClient):
         self._model = model
         self._default_temperature = default_temperature
         self._default_max_tokens = default_max_tokens
+        self._logger = logging.getLogger(__name__)
 
     def generate(
         self,
@@ -39,14 +43,11 @@ class GroqLLMClient(LLMClient):
         temperature: float | None = None,
         max_tokens: int | None = None,
     ) -> LLMResponse:
-        response = self._client.chat.completions.create(
-            model=self._model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=self._default_temperature if temperature is None else temperature,
-            max_completion_tokens=self._default_max_tokens if max_tokens is None else max_tokens,
+        response = self._create_with_rate_limit_retries(
+            system_prompt,
+            user_prompt,
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
         content = response.choices[0].message.content
         if not content:
@@ -65,3 +66,56 @@ class GroqLLMClient(LLMClient):
             token_usage=token_usage,
             model=getattr(response, "model", self._model),
         )
+
+    def _create_with_rate_limit_retries(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        *,
+        temperature: float | None,
+        max_tokens: int | None,
+    ) -> Any:
+        max_attempts = 6
+        for attempt in range(max_attempts):
+            try:
+                return self._client.chat.completions.create(
+                    model=self._model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    temperature=self._default_temperature if temperature is None else temperature,
+                    max_completion_tokens=(
+                        self._default_max_tokens if max_tokens is None else max_tokens
+                    ),
+                )
+            except RateLimitError as exc:
+                if attempt >= max_attempts - 1:
+                    raise
+                delay = self._retry_delay(exc, attempt)
+                self._logger.warning(
+                    "Groq rate limit reached; retrying in %.1f seconds "
+                    "(attempt %s/%s)",
+                    delay,
+                    attempt + 1,
+                    max_attempts,
+                )
+                time.sleep(delay)
+        raise RuntimeError("unreachable Groq retry state")
+
+    @staticmethod
+    def _retry_delay(exc: RateLimitError, attempt: int) -> float:
+        response = getattr(exc, "response", None)
+        if response is not None:
+            retry_after = response.headers.get("retry-after")
+            if retry_after is not None:
+                try:
+                    return max(1.0, float(retry_after))
+                except ValueError:
+                    pass
+
+        match = re.search(r"try again in ([0-9.]+)s", str(exc), re.I)
+        if match is not None:
+            return max(1.0, float(match.group(1)) + 1.0)
+
+        return min(60.0, 2.0**attempt)

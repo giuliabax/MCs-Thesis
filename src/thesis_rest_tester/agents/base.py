@@ -65,6 +65,7 @@ class BaseAgent[T]:
 
             try:
                 parsed = self._parse_json(response.text)
+                parsed = self._preprocess_parsed_json(parsed)
                 validated = self._response_adapter.validate_python(parsed)
             except (json.JSONDecodeError, ValidationError) as exc:
                 last_error = exc
@@ -114,6 +115,11 @@ class BaseAgent[T]:
             lines = lines[:-1]
         candidate = "\n".join(lines).strip()
         return json.loads(candidate)
+
+    def _preprocess_parsed_json(self, parsed: object) -> object:
+        """Allow subclasses to normalize common model response variants before validation."""
+
+        return parsed
 
     def _validation_attempt_name(self, attempt: int) -> str:
         suffix = ".raw.txt"
