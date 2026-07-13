@@ -1,5 +1,11 @@
 """Metric models and future evaluation functions."""
 
+from thesis_rest_tester.evaluation.coverage import (
+    CoverageEvaluationReport,
+    ProjectCoverageEvaluation,
+    RequirementCoverageEvaluationRow,
+    evaluate_requirement_coverage,
+)
 from thesis_rest_tester.evaluation.metrics import (
     MetricInputs,
     aggregate_token_usage,
@@ -16,7 +22,10 @@ from thesis_rest_tester.evaluation.metrics import (
 )
 
 __all__ = [
+    "CoverageEvaluationReport",
     "MetricInputs",
+    "ProjectCoverageEvaluation",
+    "RequirementCoverageEvaluationRow",
     "aggregate_token_usage",
     "calculate_execution_success_rate",
     "calculate_operation_coverage",
@@ -26,6 +35,7 @@ __all__ = [
     "count_server_errors",
     "estimate_cost",
     "evaluate_metrics",
+    "evaluate_requirement_coverage",
     "ingest_coverage_report",
     "measure_execution_time",
 ]

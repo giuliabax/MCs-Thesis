@@ -1,0 +1,41 @@
+projects:
+  participium-team01:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team09:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
