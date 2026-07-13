@@ -14,9 +14,11 @@ The repository currently implements the workflow-preparation stage:
 4. assemble a validated workflow plan and save reproducible run artifacts.
 
 The XLSX remains authoritative for user-story IDs, roles, business values, and core text. LLM
-analysis enriches those rows but cannot omit or renumber them. API operations are likewise
-reconciled to Swagger, deterministic dependency edges are added for common state/resource flows,
-and the strategy planner must pass semantic quality gates before a plan is accepted.
+analysis enriches those rows but cannot omit, renumber, or add requirements from the description or
+FAQ. The two PDFs provide context for constraints, domain rules, edge cases, and assumptions only.
+API operations are likewise reconciled to Swagger, deterministic dependency edges are added for
+common state/resource flows, and the strategy planner must pass semantic quality gates before a plan
+is accepted.
 
 The current planning flow is:
 
@@ -111,7 +113,7 @@ The pipeline treats deterministic documentation as authoritative and LLM output 
 
 - all XLSX requirement IDs, roles, business values, and core texts are preserved;
 - omitted or renumbered LLM requirements cannot remove or corrupt XLSX traceability;
-- description/FAQ-only requirements may be added with `DESC-*` or `FAQ-*` IDs;
+- description/FAQ-only requirements are not added as standalone requirements;
 - every normalized Swagger method/path remains present after API analysis;
 - deterministic registration, resource, assignment, messaging, and state dependencies are merged
   with model-inferred dependency edges;
@@ -165,6 +167,22 @@ ruff check .
 The test suite covers configuration loading, environment expansion, input parsing, dry-run
 orchestration, CLI behavior, fence normalization, schema repair, source-ID preservation, dependency
 inference, strategy correction, authentication setup, cleanup, and budget/coverage gates.
+
+## Offline Coverage Evaluation
+
+Manual knowledge about which user stories a team implemented is used only as a post-run oracle, not
+as an input to planning. After a run completes, compare the inferred requirement coverage with a
+ground-truth YAML file:
+
+```bash
+python -m thesis_rest_tester.cli evaluate-coverage \
+  --run-dir data/runs/<run_id> \
+  --ground-truth data/ground_truth/participium_implemented_stories.yaml
+```
+
+This writes `coverage_evaluation.json`, `coverage_evaluation.csv`, and
+`coverage_evaluation.md` inside the run directory with true positives, false positives, false
+negatives, true negatives, precision, recall, and F1 for each project.
 
 ## Current limitations
 

@@ -3,9 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from thesis_rest_tester.agents.requirement_api_matcher import RequirementAPIMatcherAgent
 from thesis_rest_tester.agents.requirements_analyst import RequirementsAnalystAgent
 from thesis_rest_tester.artifacts.writer import ArtifactWriter
-from thesis_rest_tester.domain.schemas import SourceRequirement
+from thesis_rest_tester.domain.models import OpenAPIOperation, RequirementItem
+from thesis_rest_tester.domain.schemas import RequirementsAnalysis, SourceRequirement
 from thesis_rest_tester.llm.base import MockLLMClient
 
 
@@ -144,3 +146,120 @@ def test_requirements_agent_preserves_all_authoritative_source_ids(tmp_path: Pat
     assert analysis.requirements[1].text == sources[1].text
     assert analysis.requirements[1].business_value == 940
     assert "Code expires." not in analysis.requirements[1].constraints
+
+
+def test_requirements_agent_discards_pdf_only_requirements(tmp_path: Path) -> None:
+    payload = {
+        "summary": "Analysis with contextual PDF material",
+        "requirements": [
+            {
+                "id": "PT01",
+                "source": "user story",
+                "text": "As a citizen I want to register.",
+                "role": "citizen",
+                "business_value": 950,
+                "constraints": ["Username must be unique."],
+                "expected_behaviors": ["Account is created."],
+            },
+            {
+                "id": "DESC-001",
+                "source": "description",
+                "text": "The system sends generic notification emails.",
+                "role": "system",
+                "business_value": None,
+                "constraints": [],
+                "expected_behaviors": [],
+            },
+            {
+                "id": "FAQ-001",
+                "source": "FAQ",
+                "text": "The map should explain report statuses.",
+                "role": "citizen",
+                "business_value": None,
+                "constraints": [],
+                "expected_behaviors": [],
+            },
+        ],
+        "roles": ["citizen", "system"],
+        "domain_rules": ["PDF-only information can inform planning context."],
+        "edge_cases": [],
+        "assumptions": [],
+    }
+    prompt = tmp_path / "prompt.md"
+    prompt.write_text("Return JSON.", encoding="utf-8")
+    agent = RequirementsAnalystAgent(
+        llm_client=MockLLMClient([json.dumps(payload)]),
+        prompt_path=prompt,
+        artifact_writer=ArtifactWriter(tmp_path / "run"),
+    )
+    sources = [
+        SourceRequirement(
+            id="PT01",
+            source="user_stories_xlsx",
+            text="As a citizen I want to register.",
+            role="citizen",
+            business_value=950,
+        )
+    ]
+
+    analysis, output = agent.run("requirements", sources)
+
+    assert [item.id for item in analysis.requirements] == ["PT01"]
+    assert output.parsed_json is not None
+    assert [item["id"] for item in output.parsed_json["requirements"]] == ["PT01"]
+    assert analysis.domain_rules == ["PDF-only information can inform planning context."]
+
+
+def test_matcher_agent_lifts_operation_level_evidence(tmp_path: Path) -> None:
+    payload = {
+        "matches": [
+            {
+                "requirement_id": "PT01",
+                "status": "implemented",
+                "matched_operations": [
+                    {
+                        "method": "post",
+                        "path": "/registration",
+                        "operation_id": "registerCitizen",
+                        "evidence": ["Register a new citizen"],
+                    }
+                ],
+                "evidence": ["Citizen registration endpoint"],
+                "missing_behaviors": [],
+                "rationale": "Registration is exposed.",
+            }
+        ]
+    }
+    prompt = tmp_path / "prompt.md"
+    prompt.write_text("Return JSON.", encoding="utf-8")
+    agent = RequirementAPIMatcherAgent(
+        llm_client=MockLLMClient([json.dumps(payload)]),
+        prompt_path=prompt,
+        artifact_writer=ArtifactWriter(tmp_path / "run"),
+    )
+    requirements = RequirementsAnalysis(
+        summary="Requirements",
+        requirements=[
+            RequirementItem(
+                id="PT01",
+                source="user_stories_xlsx",
+                text="As a citizen I want to register.",
+                role="citizen",
+            )
+        ],
+    )
+    operations = [
+        OpenAPIOperation(
+            method="POST",
+            path="/registration",
+            operation_id="registerCitizen",
+            response_codes=["201"],
+        )
+    ]
+
+    coverage, _ = agent.run("team-a", "swagger.yaml", requirements, operations)
+
+    match = coverage.matches[0]
+    assert match.matched_operations[0].method == "POST"
+    assert match.evidence == ["Citizen registration endpoint", "Register a new citizen"]
+    assert coverage.validation_warnings == []

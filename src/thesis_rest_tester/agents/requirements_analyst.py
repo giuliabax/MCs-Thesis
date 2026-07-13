@@ -60,7 +60,6 @@ class RequirementsAnalystAgent(BaseAgent[RequirementsAnalysis]):
             raise ValueError("Requirements Analyst returned duplicate requirement IDs")
 
         reconciled: list[RequirementItem] = []
-        source_ids = {item.id for item in source_requirements}
         for source in source_requirements:
             generated = generated_by_id.get(source.id)
             matches_source = generated is not None and cls._text_similarity(
@@ -82,15 +81,6 @@ class RequirementsAnalystAgent(BaseAgent[RequirementsAnalysis]):
                     ),
                 )
             )
-
-        for generated in analysis.requirements:
-            source_label = generated.source.lower()
-            if generated.id not in source_ids and (
-                generated.id.startswith(("DESC-", "FAQ-"))
-                or "description" in source_label
-                or "faq" in source_label
-            ):
-                reconciled.append(generated)
 
         roles = cls._unique([*(item.role for item in reconciled), *analysis.roles])
         return analysis.model_copy(update={"requirements": reconciled, "roles": roles})
