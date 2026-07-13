@@ -165,3 +165,86 @@ def test_strategy_agent_retries_when_semantic_quality_is_insufficient(tmp_path: 
     assert {item.test_type for item in strategy} == set(corrected_types)
     assert strategy[-1].setup_needed == ["Authenticate as user."]
     assert (tmp_path / "run/test_strategy.attempt1.raw.txt").is_file()
+
+
+def test_strategy_agent_does_not_fail_final_run_for_diversity_shortfall(
+    tmp_path: Path,
+) -> None:
+    requirements = RequirementsAnalysis(
+        summary="Requirements",
+        requirements=[
+            RequirementItem(id=f"R{index}", source="test", text=f"Requirement {index}", role="user")
+            for index in range(1, 9)
+        ],
+    )
+    operations = [
+        OpenAPIOperation(method="GET", path=f"/operation-{index}", response_codes=["200"])
+        for index in range(1, 9)
+    ]
+    api_analysis = APIAnalysis(
+        summary="API",
+        operations=[
+            APIOperationAnalysis(path=operation.path, method=operation.method)
+            for operation in operations
+        ],
+    )
+    test_types = [
+        "happy_path",
+        "edge_case",
+        "negative",
+        "happy_path",
+        "edge_case",
+        "negative",
+        "happy_path",
+        "edge_case",
+        "negative",
+        "happy_path",
+    ]
+    priorities = [
+        "high",
+        "high",
+        "high",
+        "medium",
+        "medium",
+        "medium",
+        "medium",
+        "low",
+        "low",
+        "low",
+    ]
+    strategy = []
+    for index, test_type in enumerate(test_types, start=1):
+        operation = operations[(index - 1) % 7]
+        requirement_id = f"R{((index - 1) % 7) + 1}"
+        strategy.append(
+            {
+                "requirement_id": requirement_id,
+                "requirement_summary": f"Requirement {requirement_id[1:]}",
+                "api_endpoint": operation.path,
+                "http_method": operation.method,
+                "prompt": f"Generate a {test_type} test.",
+                "test_type": test_type,
+                "priority": priorities[index - 1],
+                "auth_role": None,
+                "setup_needed": [],
+                "cleanup_strategy": None,
+                "expected_status_codes": operation.response_codes,
+                "rationale": "Valid strategy with slightly limited diversity.",
+            }
+        )
+    agent = StrategyPlannerAgent(
+        llm_client=MockLLMClient([json.dumps(strategy), json.dumps(strategy)]),
+        prompt_path=_prompt(tmp_path),
+        artifact_writer=ArtifactWriter(tmp_path / "run"),
+    )
+
+    result, _ = agent.run(
+        requirements,
+        api_analysis,
+        operations,
+        BudgetConfig(max_iterations=1, max_tests_per_iteration=10, max_llm_calls=4),
+    )
+
+    assert len(result) == 10
+    assert len({(item.http_method, item.api_endpoint) for item in result}) == 7
+    assert (tmp_path / "run/test_strategy.attempt1.raw.txt").is_file()

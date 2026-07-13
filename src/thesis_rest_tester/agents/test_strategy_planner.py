@@ -111,6 +111,7 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
             api_analysis,
             operations,
             budget,
+            enforce_diversity=False,
         )
         if corrected_issues:
             raise AgentResponseError(
@@ -309,6 +310,8 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
         api_analysis: APIAnalysis,
         operations: list[OpenAPIOperation],
         budget: BudgetConfig,
+        *,
+        enforce_diversity: bool = True,
     ) -> list[str]:
         issues: list[str] = []
         operation_map = {(operation.method, operation.path): operation for operation in operations}
@@ -374,29 +377,30 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
         if len(signatures) != len(set(signatures)):
             issues.append("strategy contains duplicate requirement/operation/test-type items")
 
-        distinct_operations = {(item.http_method, item.api_endpoint) for item in strategy}
         budget_coverage_target = math.ceil(budget.max_tests_per_iteration * 0.8)
-        operation_diversity_target = max(3, budget_coverage_target)
-        operation_target = min(
-            len(operations),
-            max(1, min(budget.max_tests_per_iteration, operation_diversity_target)),
-        )
-        if len(distinct_operations) < operation_target:
-            issues.append(
-                f"strategy covers {len(distinct_operations)} distinct operations; "
-                f"at least {operation_target} are required"
+        if enforce_diversity:
+            distinct_operations = {(item.http_method, item.api_endpoint) for item in strategy}
+            operation_diversity_target = max(3, budget_coverage_target)
+            operation_target = min(
+                len(operations),
+                max(1, min(budget.max_tests_per_iteration, operation_diversity_target)),
             )
+            if len(distinct_operations) < operation_target:
+                issues.append(
+                    f"strategy covers {len(distinct_operations)} distinct operations; "
+                    f"at least {operation_target} are required"
+                )
 
-        distinct_requirements = {item.requirement_id for item in strategy}
-        requirement_target = min(
-            len(requirements_analysis.requirements),
-            max(1, budget_coverage_target),
-        )
-        if len(distinct_requirements) < requirement_target:
-            issues.append(
-                f"strategy covers {len(distinct_requirements)} requirements; "
-                f"at least {requirement_target} are required"
+            distinct_requirements = {item.requirement_id for item in strategy}
+            requirement_target = min(
+                len(requirements_analysis.requirements),
+                max(1, budget_coverage_target),
             )
+            if len(distinct_requirements) < requirement_target:
+                issues.append(
+                    f"strategy covers {len(distinct_requirements)} requirements; "
+                    f"at least {requirement_target} are required"
+                )
 
         if len(strategy) >= 5 and len({item.priority for item in strategy}) < 2:
             issues.append("strategies with five or more items must use at least two priorities")
