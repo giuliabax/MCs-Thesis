@@ -88,6 +88,24 @@ The default provider (`llm.provider: lmstudio`) runs entirely locally via
 5. In `.env`, set `LMSTUDIO_MODEL` to that identifier. Only set `LMSTUDIO_BASE_URL` if your
    server does not run on the default host/port.
 
+#### LM Studio load settings (tested on 8GB VRAM / RTX 3070)
+
+These load settings run Qwen3.5 9B `Q4_K_M` fully on an 8GB GPU with a 16k context window
+and were used for the results in this repository:
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| Quantization | `Q4_K_M` | ~6.5 GB of weights — fits 8 GB VRAM with headroom |
+| Context Length | `16384` | Fits fully on GPU (see the tradeoff below) |
+| GPU Offload | max (all layers, e.g. `32/32`) | Keep every layer on the GPU; partial CPU offload cripples speed |
+| Flash Attention | on | Reduces attention memory |
+| K/V Cache Quantization Type | `Q8_0` | Halves KV-cache VRAM so a 16k context still fits |
+| Offload KV Cache to GPU Memory | on | Keeps the KV cache on the GPU |
+
+The remaining Advanced options can stay at their defaults. After loading, verify GPU Offload
+sits at its maximum — if LM Studio silently leaves layers on the CPU, lower the context length
+until the whole model fits on the GPU.
+
 Local inference on a consumer GPU is much slower than Groq's cloud API and the first call after
 loading a model can take a while. A real planning run with a non-trivial `budget.max_llm_calls`
 may take several minutes; the LM Studio client's default request timeout is 1200 seconds
@@ -121,11 +139,14 @@ headroom. Larger student projects (more OpenAPI operations) may need a larger co
 and/or `max_tokens` — check whether it still fits fully on GPU before committing to a larger value.
 `max_tokens` only acts as a ceiling — the model stops on its own (`finish_reason: "stop"`) once it
 has produced a complete answer, so setting it generously has no real downside as long as it still
-fits the context window. As a safety net, `LMStudioLLMClient` automatically retries once with a 50%
+fits the context window. As a safety net, `LMStudioLLMClient` first retries once with a 50%
 larger `max_tokens` if a call comes back with empty content and `finish_reason: "length"` (i.e. the
-model exhausted its budget on reasoning before writing any visible output) — but that retry can
-still fail if the context window itself is the real constraint, in which case the fix is a larger
-context length (accepting the GPU/CPU offload tradeoff above) rather than a larger `max_tokens`.
+model exhausted its budget on reasoning before writing any visible output); if the reasoning still
+runs away, it makes a final attempt with the reasoning phase disabled (`reasoning_effort: "none"`)
+so the model emits its answer directly instead of failing the run. The more effective fix, though,
+is to keep each agent's prompt small so reasoning has room: `llm.reasoning_agents` controls which
+agents may reason, and the matcher and strategy planner consume compact projections of the
+requirements and API analysis rather than the full objects.
 
 ### Optional: using Groq instead
 
