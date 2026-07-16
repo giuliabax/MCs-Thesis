@@ -1,0 +1,34 @@
+project_name: participium-lmstudio-quicktest
+run_id: null
+
+llm:
+  provider: lmstudio
+  model: ${LMSTUDIO_MODEL}
+  temperature: 0.1
+  max_tokens: 9000
+  base_url: ${LMSTUDIO_BASE_URL}
+  timeout_seconds: 1200
+  # Planner reasoning off: emits JSON directly (fast, reliable). Add
+  # test_strategy_planner here to A/B against a reasoned planner run.
+  reasoning_agents: [requirement_api_matcher]
+
+inputs:
+  requirements:
+    description_pdf: data/requirements/participium-description.pdf
+    user_stories_xlsx: data/requirements/participium-userstories.xlsx
+    faq_pdf: data/requirements/participium-faq.pdf
+  openapi_path: projects/participium-team01/swagger.yaml
+  sut_base_url: http://localhost:8081
+
+execution:
+  runner: python_requests
+  reset_command: null
+  timeout_seconds: 30
+
+budget:
+  max_iterations: 1
+  max_tests_per_iteration: 5
+  max_llm_calls: 10
+
+output:
+  runs_dir: data/runs

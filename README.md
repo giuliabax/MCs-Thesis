@@ -69,20 +69,79 @@ python -m pip install -e ".[dev]"
 cp .env.example .env
 ```
 
-Configure a model identifier in `.env`. Add a real key only for live Groq runs:
+Environment variables exported by the shell take precedence over `.env`. Never commit `.env`.
+
+### Local LLM setup (LM Studio, default)
+
+The default provider (`llm.provider: lmstudio`) runs entirely locally via
+[LM Studio](https://lmstudio.ai/)'s built-in OpenAI-compatible server. No API key is required.
+
+1. Install LM Studio and use its model search to download a GGUF build of the model you want to
+   run, for example Qwen3.5 9B quantized `Q4_K_M`. An 8GB-VRAM GPU (e.g. RTX 3070) can run a 9B
+   `Q4_K_M` model.
+2. When loading the model, set its context length as high as your GPU comfortably allows (e.g.
+   16384) — see "Context length and `max_tokens`" below for why this matters.
+3. Start the local server from LM Studio's Developer tab (default `http://localhost:1234`).
+4. Find the exact model identifier LM Studio expects for API calls — either from the server logs
+   or `GET http://localhost:1234/v1/models`. The model is always configuration-driven; no model
+   identifier is hardcoded in Python.
+5. In `.env`, set `LMSTUDIO_MODEL` to that identifier. Only set `LMSTUDIO_BASE_URL` if your
+   server does not run on the default host/port.
+
+Local inference on a consumer GPU is much slower than Groq's cloud API and the first call after
+loading a model can take a while. A real planning run with a non-trivial `budget.max_llm_calls`
+may take several minutes; the LM Studio client's default request timeout is 1200 seconds
+(20 minutes, `llm.timeout_seconds` in the YAML config) to accommodate reasoning-heavy models.
+
+#### Context length and `max_tokens`
+
+Qwen3.5 is a hybrid-reasoning model: LM Studio returns its chain-of-thought in a separate
+`reasoning_content` field (not mixed into the final `content`), but that reasoning still consumes
+real tokens from the same shared context window as the prompt and the final answer. In testing, a
+trivial one-line request used almost 500 reasoning tokens before producing any visible output —
+non-trivial planning prompts should be expected to use substantially more.
+
+The model's loaded context length (set in LM Studio when loading the model) is the total budget
+shared by the input prompt, the reasoning, and the output content combined. `llm.max_tokens` in
+the YAML config only caps output (reasoning + content); it does not by itself guarantee there is
+room left in the context window. Measured against this repository's sample requirement documents
+and a real student project's OpenAPI document, prompts ranged from ~5,100 tokens (Requirements
+Analyst) to ~6,850 tokens (Requirement/API Matcher, which scales with operation and requirement
+count); reasoning alone consumed most of an 8,000-token completion budget on the matcher call for
+a moderately sized project.
+
+Context length is also a VRAM tradeoff, not just a quality knob: on an 8GB card, raising context
+length past what fits alongside the model's weights and KV cache forces LM Studio to offload some
+model layers to CPU, which cratered generation speed from ~27 tokens/sec (fully on GPU at a 16384
+context length) to ~4 tokens/sec (partial CPU offload at a 24576 context length) in testing on an
+RTX 3070. A context length that keeps the whole model on GPU is almost always the better tradeoff
+even though it caps how large `max_tokens` can safely be. The example config uses a 16384 context
+length (set in LM Studio) with `max_tokens: 9000`, which fits the prompts measured so far with some
+headroom. Larger student projects (more OpenAPI operations) may need a larger context length
+and/or `max_tokens` — check whether it still fits fully on GPU before committing to a larger value.
+`max_tokens` only acts as a ceiling — the model stops on its own (`finish_reason: "stop"`) once it
+has produced a complete answer, so setting it generously has no real downside as long as it still
+fits the context window. As a safety net, `LMStudioLLMClient` automatically retries once with a 50%
+larger `max_tokens` if a call comes back with empty content and `finish_reason: "length"` (i.e. the
+model exhausted its budget on reasoning before writing any visible output) — but that retry can
+still fail if the context window itself is the real constraint, in which case the fix is a larger
+context length (accepting the GPU/CPU offload tradeoff above) rather than a larger `max_tokens`.
+
+### Optional: using Groq instead
+
+Groq remains available as a cloud fallback provider. Set `llm.provider: groq` in the YAML config,
+then configure a model identifier and API key in `.env`:
 
 ```dotenv
 GROQ_MODEL=your-configured-groq-model
 GROQ_API_KEY=your-secret-key
 ```
 
-One model currently used for development runs is:
+One model previously used for development runs is:
 
 ```dotenv
 GROQ_MODEL=meta-llama/llama-4-scout-17b-16e-instruct
 ```
-
-Environment variables exported by the shell take precedence over `.env`. Never commit `.env`.
 
 ## Prepare a workflow plan
 
@@ -95,7 +154,14 @@ python -m thesis_rest_tester.cli plan \
   --dry-run
 ```
 
-For a real Groq run:
+For a real run against the local LM Studio server (default provider), with the server started and
+`LMSTUDIO_MODEL` set in `.env`:
+
+```bash
+python -m thesis_rest_tester.cli plan --config configs/participium.example.yaml
+```
+
+For a real Groq run instead, set `llm.provider: groq` in the config, then:
 
 ```bash
 export GROQ_API_KEY="..."
@@ -103,7 +169,7 @@ export GROQ_MODEL="..."
 python -m thesis_rest_tester.cli plan --config configs/participium.example.yaml
 ```
 
-The model is always configuration-driven; no Groq model identifier is hardcoded in Python.
+The model is always configuration-driven; no model identifier is hardcoded in Python.
 The Groq SDK retries transient and rate-limit failures. On low-rate-limit tiers, a real planning
 run may pause between calls while the token-per-minute window resets.
 
@@ -152,7 +218,8 @@ retained as `<agent>.validation_attempt1.raw.txt`. Arbitrary prose and multiple 
 invalid so parsing cannot silently accept ambiguous output.
 
 Raw model output is written before JSON parsing, so malformed responses remain available for
-debugging. Resolved configuration artifacts never contain the Groq API key.
+debugging. Resolved configuration artifacts never contain the Groq API key (LM Studio does not use
+an API key at all).
 
 `workflow_plan.json` is the canonical planning output for future generation agents. It combines the
 validated requirements analysis, API analysis, strategy items, assumptions, risks, and run metadata.
@@ -193,7 +260,12 @@ negatives, true negatives, precision, recall, and F1 for each project.
 - `max_iterations` and the feedback/stop loop are not active yet;
 - `max_llm_calls` permits planner correction but is not yet tracked globally;
 - interrupted runs cannot currently resume from their validated intermediate artifacts;
-- role vocabulary and requirement/API contradictions still need explicit normalization/reporting.
+- role vocabulary and requirement/API contradictions still need explicit normalization/reporting;
+- the Requirements Analyst call sends the full description PDF, FAQ PDF, and every user story in
+  one uncapped prompt (`RequirementsLoader._compact()`); Groq's hosted context window absorbs this
+  easily, but a local model's practical context length is bounded by available VRAM. Validate this
+  empirically against your actual requirement documents when running locally, and increase LM
+  Studio's context length setting if the prompt is being truncated; no chunking is implemented yet.
 
 ## Planned next steps
 
