@@ -13,6 +13,8 @@ from groq import Groq, RateLimitError
 from thesis_rest_tester.domain.models import TokenUsage
 from thesis_rest_tester.llm.base import LLMClient, LLMResponse
 
+_THINK_BLOCK = re.compile(r"^\s*<think>.*?</think>\s*", re.DOTALL | re.IGNORECASE)
+
 
 class GroqLLMClient(LLMClient):
     def __init__(
@@ -42,16 +44,22 @@ class GroqLLMClient(LLMClient):
         user_prompt: str,
         temperature: float | None = None,
         max_tokens: int | None = None,
+        think: bool = True,
     ) -> LLMResponse:
         response = self._create_with_rate_limit_retries(
             system_prompt,
             user_prompt,
             temperature=temperature,
             max_tokens=max_tokens,
+            think=think,
         )
         content = response.choices[0].message.content
         if not content:
             raise RuntimeError("Groq returned an empty response")
+        # Reasoning models (e.g. Qwen on Groq) can emit an inline <think> block. With
+        # reasoning_format="parsed" the server separates it, but strip here too so
+        # downstream JSON parsing is robust if a model inlines it anyway.
+        content = _THINK_BLOCK.sub("", content, count=1)
 
         usage = getattr(response, "usage", None)
         token_usage = None
@@ -74,7 +82,11 @@ class GroqLLMClient(LLMClient):
         *,
         temperature: float | None,
         max_tokens: int | None,
+        think: bool,
     ) -> Any:
+        # When reasoning is requested, ask the model to return it out-of-band so
+        # ``content`` stays clean JSON (Groq ignores this for non-reasoning models).
+        extra_body = {"reasoning_format": "parsed"} if think else None
         max_attempts = 6
         for attempt in range(max_attempts):
             try:
@@ -88,6 +100,7 @@ class GroqLLMClient(LLMClient):
                     max_completion_tokens=(
                         self._default_max_tokens if max_tokens is None else max_tokens
                     ),
+                    extra_body=extra_body,
                 )
             except RateLimitError as exc:
                 if attempt >= max_attempts - 1:

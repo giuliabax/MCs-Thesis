@@ -25,8 +25,13 @@ class LLMClient(ABC):
         user_prompt: str,
         temperature: float | None = None,
         max_tokens: int | None = None,
+        think: bool = True,
     ) -> LLMResponse:
-        """Generate one model response."""
+        """Generate one model response.
+
+        ``think`` controls whether the model is allowed to use its reasoning phase;
+        providers that expose no reasoning control ignore it.
+        """
 
 
 class MockLLMClient(LLMClient):
@@ -42,8 +47,9 @@ class MockLLMClient(LLMClient):
         user_prompt: str,
         temperature: float | None = None,
         max_tokens: int | None = None,
+        think: bool = True,
     ) -> LLMResponse:
-        del system_prompt, user_prompt, temperature, max_tokens
+        del system_prompt, user_prompt, temperature, max_tokens, think
         if not self._responses:
             raise RuntimeError("MockLLMClient has no responses remaining")
         return LLMResponse(
