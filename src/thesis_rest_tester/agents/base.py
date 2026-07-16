@@ -29,6 +29,7 @@ class BaseAgent[T]:
         raw_artifact_name: str,
         temperature: float | None = None,
         max_tokens: int | None = None,
+        think: bool = True,
     ) -> None:
         self.name = name
         self._llm_client = llm_client
@@ -37,6 +38,7 @@ class BaseAgent[T]:
         self._raw_artifact_name = raw_artifact_name
         self._temperature = temperature
         self._max_tokens = max_tokens
+        self._think = think
         self._logger = logging.getLogger(f"{__name__}.{name}")
 
         path = Path(prompt_path)
@@ -60,6 +62,7 @@ class BaseAgent[T]:
                 user_prompt=current_prompt,
                 temperature=self._temperature,
                 max_tokens=self._max_tokens,
+                think=self._think,
             )
             self._artifact_writer.write_text(self._raw_artifact_name, response.text)
 

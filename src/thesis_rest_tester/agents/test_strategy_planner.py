@@ -10,6 +10,8 @@ from pydantic import TypeAdapter
 from thesis_rest_tester.agents.base import AgentResponseError, BaseAgent
 from thesis_rest_tester.artifacts.writer import ArtifactWriter
 from thesis_rest_tester.config import BudgetConfig
+from thesis_rest_tester.domain.compact import compact_api_analysis, compact_requirements
+from thesis_rest_tester.domain.coverage import ProjectRequirementCoverage
 from thesis_rest_tester.domain.models import (
     AgentOutput,
     OpenAPIOperation,
@@ -18,6 +20,8 @@ from thesis_rest_tester.domain.models import (
 )
 from thesis_rest_tester.domain.schemas import APIAnalysis, RequirementsAnalysis
 from thesis_rest_tester.llm.base import LLMClient
+
+_BATCH_SIZE = 6
 
 
 class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
@@ -28,6 +32,8 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
         artifact_writer: ArtifactWriter,
         temperature: float | None = None,
         max_tokens: int | None = None,
+        batch_by_requirement: bool = False,
+        think: bool = True,
     ) -> None:
         super().__init__(
             name="test_strategy_planner",
@@ -38,7 +44,9 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
             raw_artifact_name="test_strategy.raw.txt",
             temperature=temperature,
             max_tokens=max_tokens,
+            think=think,
         )
+        self._batch_by_requirement = batch_by_requirement
 
     def run(
         self,
@@ -46,17 +54,34 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
         api_analysis: APIAnalysis,
         operations: list[OpenAPIOperation],
         budget: BudgetConfig,
+        coverage: ProjectRequirementCoverage,
+    ) -> tuple[list[TestStrategyItem], AgentOutput]:
+        if self._batch_by_requirement:
+            return self._run_batched(
+                requirements_analysis, api_analysis, operations, budget, coverage
+            )
+        return self._run_single_call(requirements_analysis, api_analysis, operations, budget)
+
+    def _run_single_call(
+        self,
+        requirements_analysis: RequirementsAnalysis,
+        api_analysis: APIAnalysis,
+        operations: list[OpenAPIOperation],
+        budget: BudgetConfig,
     ) -> tuple[list[TestStrategyItem], AgentOutput]:
         payload = {
-            "requirements_analysis": requirements_analysis.model_dump(mode="json"),
-            "api_analysis": api_analysis.model_dump(mode="json"),
-            "openapi_operations": [operation.model_dump(mode="json") for operation in operations],
+            "requirements_analysis": {
+                "requirements": compact_requirements(requirements_analysis.requirements),
+                "domain_rules": requirements_analysis.domain_rules,
+                "edge_cases": requirements_analysis.edge_cases,
+            },
+            "api_analysis": compact_api_analysis(api_analysis),
             "budget": budget.model_dump(mode="json"),
         }
         user_prompt = (
             "Create the test strategy from this planning context. "
             "Return only a strict JSON array.\n\n"
-            + json.dumps(payload, indent=2, ensure_ascii=False)
+            + json.dumps(payload, ensure_ascii=False)
         )
         strategy, output = self.call_and_validate(user_prompt)
         strategy = self._finalize_strategy(
@@ -119,6 +144,293 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
                 "call: " + "; ".join(corrected_issues)
             )
         return corrected, corrected_output
+
+    def _run_batched(
+        self,
+        requirements_analysis: RequirementsAnalysis,
+        api_analysis: APIAnalysis,
+        operations: list[OpenAPIOperation],
+        budget: BudgetConfig,
+        coverage: ProjectRequirementCoverage,
+    ) -> tuple[list[TestStrategyItem], AgentOutput]:
+        requirement_ids = [item.id for item in requirements_analysis.requirements]
+        clusters = self._cluster_requirements(requirement_ids, coverage)
+        batches = self._pack_batches(clusters)
+        self._logger.info(
+            "Batching test strategy planning into %d batch(es) for %d requirement(s)",
+            len(batches),
+            len(requirement_ids),
+        )
+
+        original_raw_name = self._raw_artifact_name
+        collected: list[TestStrategyItem] = []
+        raw_texts: list[str] = []
+        last_output: AgentOutput | None = None
+        try:
+            for index, batch_ids in enumerate(batches, start=1):
+                batch_requirements, batch_api, _ = self._batch_scope(
+                    batch_ids, requirements_analysis, api_analysis, operations, coverage
+                )
+                payload = {
+                    "requirements_analysis": {
+                        "requirements": compact_requirements(batch_requirements.requirements),
+                        "domain_rules": batch_requirements.domain_rules,
+                        "edge_cases": batch_requirements.edge_cases,
+                    },
+                    "api_analysis": compact_api_analysis(batch_api),
+                    "budget": budget.model_dump(mode="json"),
+                }
+                user_prompt = (
+                    f"Create test strategy items for batch {index}/{len(batches)} of this "
+                    "project's requirements. Each batch is planned independently and merged "
+                    "afterward, so do not worry about the overall budget or diversity targets "
+                    "for the whole project; those are enforced once after every batch is merged. "
+                    "Cover each requirement in this batch with an appropriate mix of test types. "
+                    "Return only a strict JSON array.\n\n"
+                    + json.dumps(payload, ensure_ascii=False)
+                )
+                self._raw_artifact_name = f"test_strategy.batch{index}.raw.txt"
+                batch_items, batch_output = self.call_and_validate(user_prompt)
+                collected.extend(batch_items)
+                raw_texts.append(batch_output.raw_text)
+                last_output = batch_output
+        finally:
+            self._raw_artifact_name = original_raw_name
+
+        if last_output is None:
+            raise AgentResponseError("Test Strategy Planner produced no batches to plan from")
+
+        strategy = self._finalize_strategy(
+            collected, requirements_analysis, api_analysis, operations, budget
+        )
+        output = last_output.model_copy(
+            update={
+                "raw_text": "\n\n---\n\n".join(raw_texts),
+                "parsed_json": [item.model_dump(mode="json") for item in strategy],
+            }
+        )
+        issues = self._quality_issues(
+            strategy, requirements_analysis, api_analysis, operations, budget
+        )
+        if not issues:
+            return strategy, output
+
+        self._artifact_writer.write_text("test_strategy.attempt1.raw.txt", output.raw_text)
+        if budget.max_llm_calls <= 3:
+            raise AgentResponseError(
+                "Test Strategy Planner failed semantic quality checks and the LLM-call budget "
+                "does not permit a corrective call: " + "; ".join(issues)
+            )
+
+        try:
+            self._raw_artifact_name = "test_strategy.correction.raw.txt"
+            corrected, corrected_output = self._run_compact_correction(
+                strategy, issues, requirements_analysis, api_analysis, budget
+            )
+        except Exception as exc:
+            self._logger.warning(
+                "Test Strategy Planner corrective call failed (%s); keeping the pre-correction "
+                "batched draft",
+                exc,
+            )
+            return strategy, output
+        finally:
+            self._raw_artifact_name = original_raw_name
+
+        corrected = self._finalize_strategy(
+            corrected, requirements_analysis, api_analysis, operations, budget
+        )
+        corrected_output = corrected_output.model_copy(
+            update={"parsed_json": [item.model_dump(mode="json") for item in corrected]}
+        )
+        corrected_issues = self._quality_issues(
+            corrected,
+            requirements_analysis,
+            api_analysis,
+            operations,
+            budget,
+            enforce_diversity=False,
+        )
+        if corrected_issues:
+            self._logger.warning(
+                "Test Strategy Planner still failed quality checks after correction (%s); "
+                "keeping the pre-correction batched draft",
+                "; ".join(corrected_issues),
+            )
+            return strategy, output
+        return corrected, corrected_output
+
+    def _run_compact_correction(
+        self,
+        strategy: list[TestStrategyItem],
+        issues: list[str],
+        requirements_analysis: RequirementsAnalysis,
+        api_analysis: APIAnalysis,
+        budget: BudgetConfig,
+    ) -> tuple[list[TestStrategyItem], AgentOutput]:
+        """Ask for a replacement strategy using a compact summary instead of the full context.
+
+        The full requirements/API analyses were already sent once per batch; resending them in
+        full alongside the previous draft (as the single-call correction path does) risks
+        exceeding a context-constrained local model's window. This keeps only the fields needed
+        to reason about the reported quality issues.
+        """
+
+        compact_items = [
+            {
+                "requirement_id": item.requirement_id,
+                "http_method": item.http_method,
+                "api_endpoint": item.api_endpoint,
+                "test_type": item.test_type,
+            }
+            for item in strategy
+        ]
+        compact_requirements = [
+            {"id": item.id, "text": item.text, "role": item.role}
+            for item in requirements_analysis.requirements
+        ]
+        compact_operations = [
+            {"method": op.method, "path": op.path, "auth_required": op.auth_required}
+            for op in api_analysis.operations
+        ]
+        payload = {
+            "current_strategy_summary": compact_items,
+            "available_requirements": compact_requirements,
+            "available_operations": compact_operations,
+            "budget": budget.model_dump(mode="json"),
+            "quality_issues": issues,
+        }
+        correction_prompt = (
+            "The current test strategy (summarized below) failed these quality checks:\n- "
+            + "\n- ".join(issues)
+            + "\n\nCurrent strategy summary, plus the catalogue of available requirements and "
+            "operations to draw additional or replacement items from:\n\n"
+            + json.dumps(payload, indent=2, ensure_ascii=False)
+            + "\n\nReturn a complete replacement JSON array of test strategy items that fixes "
+            "every issue. Reuse unaffected items from the current strategy summary where "
+            "appropriate, and add or replace items as needed."
+        )
+        return self.call_and_validate(correction_prompt)
+
+    @staticmethod
+    def _cluster_requirements(
+        requirement_ids: list[str],
+        coverage: ProjectRequirementCoverage,
+    ) -> list[list[str]]:
+        """Group requirement IDs that share at least one matched OpenAPI operation."""
+
+        operations_by_requirement = {
+            match.requirement_id: {(ref.method, ref.path) for ref in match.matched_operations}
+            for match in coverage.matches
+        }
+        parent = {requirement_id: requirement_id for requirement_id in requirement_ids}
+
+        def find(requirement_id: str) -> str:
+            while parent[requirement_id] != requirement_id:
+                parent[requirement_id] = parent[parent[requirement_id]]
+                requirement_id = parent[requirement_id]
+            return requirement_id
+
+        def union(left: str, right: str) -> None:
+            root_left, root_right = find(left), find(right)
+            if root_left != root_right:
+                parent[root_left] = root_right
+
+        operation_owners: dict[tuple[str, str], str] = {}
+        for requirement_id in requirement_ids:
+            for operation_key in operations_by_requirement.get(requirement_id, set()):
+                if operation_key in operation_owners:
+                    union(requirement_id, operation_owners[operation_key])
+                else:
+                    operation_owners[operation_key] = requirement_id
+
+        clusters: dict[str, list[str]] = {}
+        for requirement_id in requirement_ids:
+            clusters.setdefault(find(requirement_id), []).append(requirement_id)
+        return list(clusters.values())
+
+    @staticmethod
+    def _pack_batches(
+        clusters: list[list[str]],
+        target_size: int = _BATCH_SIZE,
+    ) -> list[list[str]]:
+        """Pack small clusters together up to target_size; keep larger clusters intact."""
+
+        batches: list[list[str]] = []
+        current: list[str] = []
+        for cluster in clusters:
+            if len(cluster) >= target_size:
+                if current:
+                    batches.append(current)
+                    current = []
+                batches.append(cluster)
+                continue
+            if current and len(current) + len(cluster) > target_size:
+                batches.append(current)
+                current = []
+            current.extend(cluster)
+        if current:
+            batches.append(current)
+        return batches
+
+    @staticmethod
+    def _batch_scope(
+        requirement_ids: list[str],
+        requirements_analysis: RequirementsAnalysis,
+        api_analysis: APIAnalysis,
+        operations: list[OpenAPIOperation],
+        coverage: ProjectRequirementCoverage,
+    ) -> tuple[RequirementsAnalysis, APIAnalysis, list[OpenAPIOperation]]:
+        """Scope requirements/API analysis/operations down to one batch, including prerequisite
+        operations pulled in via dependency-edge closure (e.g. authentication setup)."""
+
+        id_set = set(requirement_ids)
+        operations_by_requirement = {
+            match.requirement_id: {(ref.method, ref.path) for ref in match.matched_operations}
+            for match in coverage.matches
+        }
+        operation_keys: set[tuple[str, str]] = set()
+        for requirement_id in requirement_ids:
+            operation_keys |= operations_by_requirement.get(requirement_id, set())
+
+        changed = True
+        while changed:
+            changed = False
+            for edge in api_analysis.dependency_edges:
+                dependent = (edge.dependent_method, edge.dependent_path)
+                prerequisite = (edge.prerequisite_method, edge.prerequisite_path)
+                if dependent in operation_keys and prerequisite not in operation_keys:
+                    operation_keys.add(prerequisite)
+                    changed = True
+
+        batch_requirements = requirements_analysis.model_copy(
+            update={
+                "requirements": [
+                    item for item in requirements_analysis.requirements if item.id in id_set
+                ]
+            }
+        )
+        batch_operations = [
+            operation
+            for operation in operations
+            if (operation.method, operation.path) in operation_keys
+        ]
+        batch_api = api_analysis.model_copy(
+            update={
+                "operations": [
+                    item
+                    for item in api_analysis.operations
+                    if (item.method, item.path) in operation_keys
+                ],
+                "dependency_edges": [
+                    edge
+                    for edge in api_analysis.dependency_edges
+                    if (edge.prerequisite_method, edge.prerequisite_path) in operation_keys
+                    and (edge.dependent_method, edge.dependent_path) in operation_keys
+                ],
+            }
+        )
+        return batch_requirements, batch_api, batch_operations
 
     @classmethod
     def _finalize_strategy(

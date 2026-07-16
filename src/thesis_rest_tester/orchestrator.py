@@ -19,11 +19,11 @@ from thesis_rest_tester.agents import (
     TestStrategyPlannerAgent,
 )
 from thesis_rest_tester.artifacts.writer import ArtifactWriter
-from thesis_rest_tester.config import AppConfig, ProjectInputConfig, load_config
+from thesis_rest_tester.config import AgentLLMOverride, AppConfig, ProjectInputConfig, load_config
 from thesis_rest_tester.domain.coverage import ProjectRequirementCoverage
 from thesis_rest_tester.domain.models import OpenAPIOperation, WorkflowPlan
 from thesis_rest_tester.domain.schemas import APIAnalysis, RequirementsAnalysis, SourceRequirement
-from thesis_rest_tester.llm import GroqLLMClient, LLMClient, MockLLMClient
+from thesis_rest_tester.llm import GroqLLMClient, LLMClient, LMStudioLLMClient, MockLLMClient
 from thesis_rest_tester.loaders import OpenAPILoader, RequirementsLoader
 
 
@@ -82,19 +82,21 @@ class Orchestrator:
         root_writer.write_text("requirements_compact.txt", corpus.compact_text)
 
         loaded_projects = self._load_projects(config)
-        llm_client = self._select_llm_client(
+        default_client = self._select_llm_client(
             config,
             loaded_projects,
             corpus.compact_text,
             corpus.source_requirements,
         )
+        agent_clients = self._resolve_agent_clients(config, default_client)
 
         requirements_agent = RequirementsAnalystAgent(
             prompt_path=self._prompt_root / "planning/requirements_analyst.md",
-            llm_client=llm_client,
+            llm_client=agent_clients["requirements_analyst"],
             artifact_writer=root_writer,
             temperature=config.llm.temperature,
             max_tokens=config.llm.max_tokens,
+            think="requirements_analyst" in config.llm.reasoning_agents,
         )
         requirements_analysis, _ = requirements_agent.run(
             corpus.compact_text,
@@ -110,7 +112,7 @@ class Orchestrator:
                 config,
                 project,
                 requirements_analysis,
-                llm_client,
+                agent_clients,
                 project_writer,
             )
             plans[project.config.name] = plan
@@ -157,7 +159,7 @@ class Orchestrator:
         config: AppConfig,
         project: _LoadedProject,
         shared_requirements: RequirementsAnalysis,
-        llm_client: LLMClient,
+        agent_clients: dict[str, LLMClient],
         writer: ArtifactWriter,
     ) -> tuple[WorkflowPlan, ProjectRequirementCoverage]:
         writer.write_json(
@@ -165,7 +167,6 @@ class Orchestrator:
             [operation.model_dump(mode="json") for operation in project.operations],
         )
         agent_arguments = {
-            "llm_client": llm_client,
             "artifact_writer": writer,
             "temperature": config.llm.temperature,
             "max_tokens": config.llm.max_tokens,
@@ -173,6 +174,8 @@ class Orchestrator:
 
         api_agent = APIUnderstandingAgent(
             prompt_path=self._prompt_root / "planning/api_understanding.md",
+            llm_client=agent_clients["api_understanding"],
+            think="api_understanding" in config.llm.reasoning_agents,
             **agent_arguments,
         )
         api_analysis, _ = api_agent.run(project.operations)
@@ -180,6 +183,8 @@ class Orchestrator:
 
         matcher = RequirementAPIMatcherAgent(
             prompt_path=self._prompt_root / "planning/requirement_api_matcher.md",
+            llm_client=agent_clients["requirement_api_matcher"],
+            think="requirement_api_matcher" in config.llm.reasoning_agents,
             **agent_arguments,
         )
         coverage, _ = matcher.run(
@@ -200,6 +205,14 @@ class Orchestrator:
         if scoped_requirements.requirements and scoped_operations:
             strategy_agent = TestStrategyPlannerAgent(
                 prompt_path=self._prompt_root / "planning/test_strategy_planner.md",
+                llm_client=agent_clients["test_strategy_planner"],
+                # Batching keeps each local request within the context window; the mock
+                # dry run returns a single fixture per project, so plan in one call there.
+                batch_by_requirement=(
+                    not self._dry_run
+                    and self._effective_provider(config, "test_strategy_planner") == "lmstudio"
+                ),
+                think="test_strategy_planner" in config.llm.reasoning_agents,
                 **agent_arguments,
             )
             strategy_items, _ = strategy_agent.run(
@@ -207,6 +220,7 @@ class Orchestrator:
                 scoped_api,
                 scoped_operations,
                 config.budget,
+                coverage,
             )
         else:
             writer.write_text(
@@ -317,11 +331,67 @@ class Orchestrator:
                     source_requirements,
                 )
             )
+        if config.llm.provider == "lmstudio":
+            return LMStudioLLMClient(
+                model=config.llm.model,
+                base_url=config.llm.base_url,
+                default_temperature=config.llm.temperature,
+                default_max_tokens=config.llm.max_tokens,
+                timeout=config.llm.timeout_seconds,
+            )
         return GroqLLMClient(
             model=config.llm.model,
             default_temperature=config.llm.temperature,
             default_max_tokens=config.llm.max_tokens,
         )
+
+    def _resolve_agent_clients(
+        self, config: AppConfig, default_client: LLMClient
+    ) -> dict[str, LLMClient]:
+        """Map each planning agent to its client, honoring per-agent provider overrides."""
+
+        agent_names = (
+            "requirements_analyst",
+            "api_understanding",
+            "requirement_api_matcher",
+            "test_strategy_planner",
+        )
+        # A dry run or an injected client bypasses per-agent routing entirely.
+        if self._injected_llm_client is not None or self._dry_run:
+            return {name: default_client for name in agent_names}
+        cache: dict[tuple[str, str, str | None], LLMClient] = {}
+        clients: dict[str, LLMClient] = {}
+        for name in agent_names:
+            override = config.llm.overrides.get(name)
+            if override is None:
+                clients[name] = default_client
+                continue
+            key = (override.provider, override.model, override.base_url)
+            if key not in cache:
+                cache[key] = self._build_override_client(config, override)
+            clients[name] = cache[key]
+        return clients
+
+    @staticmethod
+    def _build_override_client(config: AppConfig, override: AgentLLMOverride) -> LLMClient:
+        if override.provider == "lmstudio":
+            return LMStudioLLMClient(
+                model=override.model,
+                base_url=override.base_url or config.llm.base_url,
+                default_temperature=config.llm.temperature,
+                default_max_tokens=config.llm.max_tokens,
+                timeout=config.llm.timeout_seconds,
+            )
+        return GroqLLMClient(
+            model=override.model,
+            default_temperature=config.llm.temperature,
+            default_max_tokens=config.llm.max_tokens,
+        )
+
+    @staticmethod
+    def _effective_provider(config: AppConfig, agent_name: str) -> str:
+        override = config.llm.overrides.get(agent_name)
+        return override.provider if override is not None else config.llm.provider
 
     @classmethod
     def _mock_responses(

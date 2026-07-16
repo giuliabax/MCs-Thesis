@@ -24,6 +24,7 @@ class APIUnderstandingAgent(BaseAgent[APIAnalysis]):
         artifact_writer: ArtifactWriter,
         temperature: float | None = None,
         max_tokens: int | None = None,
+        think: bool = True,
     ) -> None:
         super().__init__(
             name="api_understanding",
@@ -34,6 +35,7 @@ class APIUnderstandingAgent(BaseAgent[APIAnalysis]):
             raw_artifact_name="api_analysis.raw.txt",
             temperature=temperature,
             max_tokens=max_tokens,
+            think=think,
         )
 
     def run(self, operations: list[OpenAPIOperation]) -> tuple[APIAnalysis, AgentOutput]:

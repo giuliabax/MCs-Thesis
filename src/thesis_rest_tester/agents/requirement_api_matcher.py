@@ -9,6 +9,10 @@ from pydantic import TypeAdapter
 
 from thesis_rest_tester.agents.base import BaseAgent
 from thesis_rest_tester.artifacts.writer import ArtifactWriter
+from thesis_rest_tester.domain.compact import (
+    compact_operations_for_matching,
+    compact_requirements,
+)
 from thesis_rest_tester.domain.coverage import (
     OperationReference,
     ProjectRequirementCoverage,
@@ -28,6 +32,7 @@ class RequirementAPIMatcherAgent(BaseAgent[RequirementCoverageDraft]):
         artifact_writer: ArtifactWriter,
         temperature: float | None = None,
         max_tokens: int | None = None,
+        think: bool = True,
     ) -> None:
         super().__init__(
             name="requirement_api_matcher",
@@ -38,6 +43,7 @@ class RequirementAPIMatcherAgent(BaseAgent[RequirementCoverageDraft]):
             raw_artifact_name="requirement_coverage.raw.txt",
             temperature=temperature,
             max_tokens=max_tokens,
+            think=think,
         )
 
     def _preprocess_parsed_json(self, parsed: object) -> object:
@@ -91,35 +97,8 @@ class RequirementAPIMatcherAgent(BaseAgent[RequirementCoverageDraft]):
     ) -> tuple[ProjectRequirementCoverage, AgentOutput]:
         payload = {
             "project_name": project_name,
-            "requirements": [
-                {
-                    "id": requirement.id,
-                    "text": requirement.text,
-                    "role": requirement.role,
-                    "expected_behaviors": requirement.expected_behaviors,
-                }
-                for requirement in requirements_analysis.requirements
-            ],
-            "openapi_operations": [
-                {
-                    "method": operation.method,
-                    "path": operation.path,
-                    "operation_id": operation.operation_id,
-                    "summary": operation.summary,
-                    "description": operation.description,
-                    "tags": operation.tags,
-                    "parameters": [
-                        str(parameter.get("name", parameter.get("$ref", "unnamed")))
-                        for parameter in operation.parameters
-                    ],
-                    "request_body_fields": list(
-                        (operation.request_body_schema or {}).get("properties", {})
-                    ),
-                    "response_codes": operation.response_codes,
-                    "auth_required": operation.auth_required,
-                }
-                for operation in operations
-            ],
+            "requirements": compact_requirements(requirements_analysis.requirements),
+            "openapi_operations": compact_operations_for_matching(operations),
         }
         draft, output = self.call_and_validate(
             "Match every shared requirement against this project's OpenAPI operations. "

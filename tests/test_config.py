@@ -94,6 +94,44 @@ def test_config_accepts_multiple_projects(tmp_path: Path, monkeypatch: pytest.Mo
     assert projects[1].sut_base_url == "http://localhost:8081"
 
 
+def test_config_defaults_to_lmstudio_provider(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("LMSTUDIO_MODEL", "qwen-test-model")
+    text = _config_text().replace(
+        "llm:\n  provider: groq\n  model: ${GROQ_MODEL}\n  temperature: 0.1\n  max_tokens: 100",
+        "llm:\n  model: ${LMSTUDIO_MODEL}\n  temperature: 0.1\n  max_tokens: 100",
+    )
+    path = tmp_path / "config.yaml"
+    path.write_text(text, encoding="utf-8")
+
+    config = load_config(path)
+
+    assert config.llm.provider == "lmstudio"
+    assert config.llm.model == "qwen-test-model"
+    assert config.llm.base_url == "http://localhost:1234/v1"
+    assert config.llm.timeout_seconds == 1200.0
+
+
+def test_config_accepts_lmstudio_provider_with_overrides(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("LMSTUDIO_MODEL", "qwen-test-model")
+    text = _config_text().replace(
+        "llm:\n  provider: groq\n  model: ${GROQ_MODEL}\n  temperature: 0.1\n  max_tokens: 100",
+        "llm:\n  provider: lmstudio\n  model: ${LMSTUDIO_MODEL}\n  temperature: 0.1\n"
+        "  max_tokens: 100\n  base_url: http://127.0.0.1:5678/v1\n  timeout_seconds: 60",
+    )
+    path = tmp_path / "config.yaml"
+    path.write_text(text, encoding="utf-8")
+
+    config = load_config(path)
+
+    assert config.llm.provider == "lmstudio"
+    assert config.llm.base_url == "http://127.0.0.1:5678/v1"
+    assert config.llm.timeout_seconds == 60.0
+
+
 def test_config_rejects_duplicate_project_names(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

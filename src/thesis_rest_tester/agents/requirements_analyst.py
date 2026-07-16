@@ -20,6 +20,7 @@ class RequirementsAnalystAgent(BaseAgent[RequirementsAnalysis]):
         artifact_writer: ArtifactWriter,
         temperature: float | None = None,
         max_tokens: int | None = None,
+        think: bool = True,
     ) -> None:
         super().__init__(
             name="requirements_analyst",
@@ -30,6 +31,7 @@ class RequirementsAnalystAgent(BaseAgent[RequirementsAnalysis]):
             raw_artifact_name="requirements_analysis.raw.txt",
             temperature=temperature,
             max_tokens=max_tokens,
+            think=think,
         )
 
     def run(

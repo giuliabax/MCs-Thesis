@@ -16,6 +16,14 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 _UNRESOLVED_ENV = re.compile(r"\$\{[A-Za-z_][A-Za-z0-9_]*\}")
 _SAFE_RUN_ID = re.compile(r"^[A-Za-z0-9_.-]+$")
 
+# Identifiers of the planning agents, used to validate per-agent reasoning settings.
+_PLANNING_AGENTS = (
+    "requirements_analyst",
+    "api_understanding",
+    "requirement_api_matcher",
+    "test_strategy_planner",
+)
+
 
 class StrictConfigModel(BaseModel):
     """Base class that rejects unknown configuration keys."""
@@ -23,11 +31,45 @@ class StrictConfigModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class AgentLLMOverride(StrictConfigModel):
+    """Route a single planning agent to a different provider/model.
+
+    Temperature, max_tokens, and timeout are inherited from the parent llm config.
+    """
+
+    provider: Literal["groq", "lmstudio"]
+    model: str
+    base_url: str | None = None
+
+    @field_validator("model")
+    @classmethod
+    def model_must_not_be_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("llm.overrides[...].model must not be blank")
+        return value.strip()
+
+
 class LLMConfig(StrictConfigModel):
-    provider: Literal["groq"] = "groq"
+    provider: Literal["groq", "lmstudio"] = "lmstudio"
     model: str
     temperature: float = Field(default=0.1, ge=0.0, le=2.0)
     max_tokens: int = Field(default=4096, gt=0)
+    base_url: str = Field(default="http://localhost:1234/v1")
+    timeout_seconds: float = Field(default=1200.0, gt=0)
+    # Planning agents allowed to use the model's reasoning phase. Reasoning is
+    # load-bearing for schema completeness on the matcher and planning depth on the
+    # strategy planner, but superfluous and slow on the extractive agents (verified
+    # with Qwen3.5-9b on 8 GB VRAM). Set to [] to disable reasoning everywhere.
+    reasoning_agents: list[str] = Field(
+        default_factory=lambda: [
+            "requirement_api_matcher",
+            "test_strategy_planner",
+        ]
+    )
+    # Per-agent provider/model overrides, keyed by planning agent identifier. Used to
+    # route heavy agents (e.g. the planner) to a remote provider while the rest stay
+    # local. Names must match the planning agent identifiers.
+    overrides: dict[str, AgentLLMOverride] = Field(default_factory=dict)
 
     @field_validator("model")
     @classmethod
@@ -35,6 +77,42 @@ class LLMConfig(StrictConfigModel):
         if not value.strip():
             raise ValueError("llm.model must not be blank")
         return value.strip()
+
+    @field_validator("base_url")
+    @classmethod
+    def validate_base_url(cls, value: str) -> str:
+        parsed = urlparse(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("llm.base_url must be an HTTP(S) URL")
+        return value.rstrip("/")
+
+    @field_validator("reasoning_agents")
+    @classmethod
+    def validate_reasoning_agents(cls, value: list[str]) -> list[str]:
+        unknown = sorted(set(value) - set(_PLANNING_AGENTS))
+        if unknown:
+            raise ValueError(
+                "llm.reasoning_agents contains unknown agent names: "
+                + ", ".join(unknown)
+                + "; valid names are: "
+                + ", ".join(_PLANNING_AGENTS)
+            )
+        return value
+
+    @field_validator("overrides")
+    @classmethod
+    def validate_overrides(
+        cls, value: dict[str, AgentLLMOverride]
+    ) -> dict[str, AgentLLMOverride]:
+        unknown = sorted(set(value) - set(_PLANNING_AGENTS))
+        if unknown:
+            raise ValueError(
+                "llm.overrides contains unknown agent names: "
+                + ", ".join(unknown)
+                + "; valid names are: "
+                + ", ".join(_PLANNING_AGENTS)
+            )
+        return value
 
 
 class RequirementsInputConfig(StrictConfigModel):
