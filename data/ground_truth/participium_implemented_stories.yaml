@@ -19,6 +19,158 @@ projects:
       - PT27
       - PT28
       - PT30
+  participium-team02:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT24
+      - PT25
+      - PT26
+      - PT28
+  participium-team03:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT11
+      - PT11
+      - PT12
+      - PT13
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team04:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT12
+      - PT13
+      - PT14
+      - PT15
+      - PT18
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team05:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT12
+      - PT13
+      - PT14
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team06:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT12
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team07:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT12
+      - PT13
+      - PT14
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team08:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT12
+      - PT13
+      - PT14
+      - PT15
+      - PT16
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
   participium-team09:
     implemented_requirement_ids:
       - PT01
@@ -32,6 +184,201 @@ projects:
       - PT09
       - PT10
       - PT11
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team10:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT12
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team11:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10 
+      - PT11
+      - PT12
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team12:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT12
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30 
+  participium-team13:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT12
+      - PT13
+      - PT14
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team14:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT11
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team15:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT12
+      - PT13
+      - PT14
+      - PT15
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team16:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
+      - PT11
+      - PT12
+      - PT13
+      - PT14
+      - PT15
+      - PT16
+      - PT17
+      - PT18
+      - PT19
+      - PT20
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team17:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09 
+      - PT10 
+      - PT11 
+      - PT15 
+      - PT24
+      - PT25
+      - PT26
+      - PT27
+      - PT28
+      - PT30
+  participium-team18:
+    implemented_requirement_ids:
+      - PT01
+      - PT02
+      - PT03
+      - PT04
+      - PT05
+      - PT06
+      - PT07
+      - PT08
+      - PT09
+      - PT10
       - PT15
       - PT24
       - PT25

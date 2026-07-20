@@ -25,12 +25,60 @@ inputs:
     user_stories_xlsx: data/requirements/participium-userstories.xlsx
     faq_pdf: data/requirements/participium-faq.pdf
   projects:
-    - name: participium-team09
-      openapi_path: projects/participium-team09/swagger.yaml
-      sut_base_url: http://localhost:8080
     - name: participium-team01
       openapi_path: projects/participium-team01/swagger.yaml
+      sut_base_url: http://localhost:8080
+    - name: participium-team02
+      openapi_path: projects/participium-team02/swagger.yaml
       sut_base_url: http://localhost:8081
+    - name: participium-team03
+      openapi_path: projects/participium-team03/swagger.yaml
+      sut_base_url: http://localhost:8082
+    - name: participium-team04
+      openapi_path: projects/participium-team04/swagger.yaml
+      sut_base_url: http://localhost:8083
+    - name: participium-team05
+      openapi_path: projects/participium-team05/swagger.yaml
+      sut_base_url: http://localhost:8084
+    - name: participium-team06
+      openapi_path: projects/participium-team06/swagger.yaml
+      sut_base_url: http://localhost:8085
+    - name: participium-team07
+      openapi_path: projects/participium-team07/swagger.yaml
+      sut_base_url: http://localhost:8086
+    - name: participium-team08
+      openapi_path: projects/participium-team08/swagger.yaml
+      sut_base_url: http://localhost:8087
+    - name: participium-team09
+      openapi_path: projects/participium-team09/swagger.yaml
+      sut_base_url: http://localhost:8088
+    - name: participium-team10
+      openapi_path: projects/participium-team10/swagger.yaml
+      sut_base_url: http://localhost:8089
+    - name: participium-team11
+      openapi_path: projects/participium-team11/swagger.yaml
+      sut_base_url: http://localhost:8090
+    - name: participium-team12
+      openapi_path: projects/participium-team12/swagger.yaml
+      sut_base_url: http://localhost:8091
+    - name: participium-team13
+      openapi_path: projects/participium-team13/swagger.yaml
+      sut_base_url: http://localhost:8092
+    - name: participium-team14
+      openapi_path: projects/participium-team14/swagger.yaml
+      sut_base_url: http://localhost:8093
+    - name: participium-team15
+      openapi_path: projects/participium-team15/swagger.yaml
+      sut_base_url: http://localhost:8094
+    - name: participium-team16
+      openapi_path: projects/participium-team16/swagger.yaml
+      sut_base_url: http://localhost:8095
+    - name: participium-team17
+      openapi_path: projects/participium-team17/swagger.yaml
+      sut_base_url: http://localhost:8096
+    - name: participium-team18
+      openapi_path: projects/participium-team18/swagger.yaml
+      sut_base_url: http://localhost:8097
 
 execution:
   runner: python_requests
