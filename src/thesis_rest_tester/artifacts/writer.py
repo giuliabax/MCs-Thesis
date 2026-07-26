@@ -23,6 +23,10 @@ class ArtifactWriter:
         with tempfile.NamedTemporaryFile(
             mode="w",
             encoding="utf-8",
+            # No newline translation: csv.writer already emits \r\n, and on Windows
+            # the default would turn that into \r\r\n, which parsers read as a blank
+            # row between every record.
+            newline="",
             dir=destination.parent,
             delete=False,
         ) as temporary:
