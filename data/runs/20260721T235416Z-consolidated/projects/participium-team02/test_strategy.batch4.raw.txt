@@ -1,0 +1,99 @@
+[
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/search-reports. Include query parameters for filtering by category (e.g., 'traffic') and status (e.g., 'Resolved'). Verify that the response body contains a list of report summaries matching the filters, including fields like title, location, and current status.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality of browsing and filtering reports as defined in PT22."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Search for reports in a specific area by typing in an address",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/search-reports. Include a query parameter 'address' with a specific street name or partial address (e.g., 'Via Roma'). Verify that the response returns reports located near or containing that address string.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the address-based search functionality for citizens/unregistered users as defined in PT30."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/search-reports. Include query parameters that filter for 'Pending Approval' status and a specific category. Verify that the response hides any reports not yet approved (per domain rules) and only returns those matching the strict filter criteria.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the edge case where a user filters for pending reports; domain rules state these must be hidden from public view."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Search for reports in a specific area by typing in an address",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/search-reports. Include a query parameter 'address' with a non-existent or completely invalid string (e.g., 'NonExistentStreet999'). Verify that the system handles this gracefully, either returning an empty list or an appropriate error message indicating no results found.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200",
+      "404"
+    ],
+    "rationale": "Tests negative behavior where the search query yields no results or invalid input handling."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Search for reports in a specific area by typing in an address",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/search-reports. Include a query parameter 'address' with a very long string exceeding typical input limits (e.g., 5000 characters). Verify that the system rejects the request or truncates the input safely without crashing.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests negative behavior regarding input size limits and potential DoS vectors on the search parameter."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/search-reports. Include query parameters that filter by a category that has no existing reports in the system. Verify that the response returns an empty list or a specific 'no results' message rather than a server error.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the edge case where filters match no data in the database."
+  }
+]

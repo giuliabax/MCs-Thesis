@@ -1,0 +1,153 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user views approved reports on an interactive map.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Verify that the response includes a list of reports where status is 'Approved' or equivalent (e.g., 'In Progress', 'Resolved'). Ensure the response format supports rendering on an interactive map (e.g., includes latitude, longitude, title). Do not require authentication headers.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core functionality for unregistered users to view public data as per PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/officers/assign-report",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /officers/assign-report. Include headers for an authenticated 'technical_office_staff' role. In the body, provide a report ID and an external maintainer ID. Verify the response indicates successful assignment.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure at least one report exists in 'Assigned' state.",
+      "Ensure an external maintainer account exists in the system."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., check for new assignment logs or notifications).",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the specific workflow for technical staff assigning to external parties per PT24."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Citizen searches for reports in a specific area by typing an address.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Include query parameters with 'address' set to a valid street name (e.g., 'Via Roma, 1'). Verify the response filters results to reports located near or within that address.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure at least one report exists with a geolocation matching the query address."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the search/filtering capability for citizens per PT30 using an address parameter."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen browses a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Include query parameters for 'status' (e.g., 'Pending Approval') and 'category'. Verify the response returns a paginated list or table data matching these filters.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure reports exist in various states (e.g., 'Pending Approval', 'Resolved') to test filtering."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the browsing and filtering functionality for citizens per PT22."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user views approved reports on an interactive map.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Verify that the response includes reports with status 'Resolved' or 'Rejected'. Ensure these are visible if they meet the 'approved' criteria defined in domain rules (e.g., resolved issues). Check that no sensitive internal data is exposed.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests boundary conditions of 'approved' status visibility for unregistered users per PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/officers/assign-report",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /officers/assign-report. Include headers for an authenticated 'technical_office_staff' role. In the body, provide a report ID that is currently in 'Pending Approval' state (not yet assigned). Verify the response returns a 400 Bad Request or similar error indicating that assignment is only allowed for reports in 'Assigned' state.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure at least one report exists in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests negative behavior where staff attempts to assign a report before it reaches the correct lifecycle stage per PT24 and domain rules."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Citizen searches for reports in a specific area by typing an address.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Include query parameters with 'address' set to an empty string or null. Verify the response handles this gracefully (e.g., returns all reports or a specific error message) without crashing.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200", "400"],
+    "rationale": "Tests edge case handling for invalid or missing search parameters per PT30."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen browses a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Include query parameters for 'status' set to an invalid value (e.g., 'InvalidStatus'). Verify the response returns a 400 Bad Request or 422 Unprocessable Entity.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests negative behavior for invalid filter values per PT22."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user views approved reports on an interactive map.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Verify that the response does NOT include reports in 'Pending Approval' state, ensuring unregistered users cannot see internal verification data per domain rules and PT28.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Ensures strict adherence to domain rules regarding visibility of pending reports for unregistered users per PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/officers/assign-report",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /officers/assign-report. Include headers for an authenticated 'technical_office_staff' role. In the body, provide a report ID and an external maintainer ID that does not exist in the system. Verify the response returns a 404 Not Found or similar error.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure at least one report exists in 'Assigned' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["404"],
+    "rationale": "Tests negative behavior for referencing non-existent external maintainers per PT24."
+  }
+]

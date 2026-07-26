@@ -1,0 +1,507 @@
+{
+  "summary": "API for managing users, officers, maintainers, reports, and internal communications. Includes authentication flows (login, OTP), role-based access control (Admin, Officer, Maintainer, User), report lifecycle management (upload, assign, review, status update), notifications, and Telegram integration.",
+  "operations": [
+    {
+      "path": "/auth/users",
+      "method": "POST",
+      "operation_id": "loginUser",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Authenticates users via username/password"]
+    },
+    {
+      "path": "/maintainers",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Admin creates maintainer; requires name, email, password, categories"]
+    },
+    {
+      "path": "/maintainers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Lists all maintainers"]
+    },
+    {
+      "path": "/maintainers/by-category/{officeType}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Filters maintainers by office type"]
+    },
+    {
+      "path": "/maintainers/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/maintainers"],
+      "notes": ["Admin updates maintainer; requires ID"]
+    },
+    {
+      "path": "/maintainers/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/maintainers"],
+      "notes": ["Admin deletes maintainer; requires ID"]
+    },
+    {
+      "path": "/officers/assign-report",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["Assigns report to maintainer; requires reportId and maintainerId"]
+    },
+    {
+      "path": "/auth/officers",
+      "method": "POST",
+      "operation_id": "loginOfficer",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Authenticates officers via username/password"]
+    },
+    {
+      "path": "/auth/maintainers",
+      "method": "POST",
+      "operation_id": "loginMaintainer",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Authenticates maintainers via email/password"]
+    },
+    {
+      "path": "/maintainers/assigned",
+      "method": "GET",
+      "operation_id": "getAssignedReportsMaintainer",
+      "auth_required": null,
+      "dependencies": ["/officers/assign-report"],
+      "notes": ["Retrieves reports assigned to authenticated maintainer"]
+    },
+    {
+      "path": "/maintainers/reports/{id}/status",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/officers/assign-report"],
+      "notes": ["Updates status of assigned report; requires ID and state"]
+    },
+    {
+      "path": "/info-types",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Returns information about Office types"]
+    },
+    {
+      "path": "/users",
+      "method": "POST",
+      "operation_id": "createUser",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Creates user; requires authentication context per description"]
+    },
+    {
+      "path": "/users/generateotp",
+      "method": "POST",
+      "operation_id": "generateOtp",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Generates OTP for user; requires email"]
+    },
+    {
+      "path": "/users/verifyotp",
+      "method": "POST",
+      "operation_id": "verifyOtp",
+      "auth_required": null,
+      "dependencies": ["/users/generateotp"],
+      "notes": ["Verifies OTP; requires email and otp"]
+    },
+    {
+      "path": "/users/me",
+      "method": "GET",
+      "operation_id": "getMyProfile",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Retrieves authenticated user profile; optional followedReports"]
+    },
+    {
+      "path": "/users/me",
+      "method": "PATCH",
+      "operation_id": "updateMyProfile",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Updates authenticated user profile; supports avatar upload"]
+    },
+    {
+      "path": "/users/logout",
+      "method": "GET",
+      "operation_id": "logoutUser",
+      "auth_required": null,
+      "dependencies": ["/auth/users", "/auth/officers", "/auth/maintainers"],
+      "notes": ["Logs out current session"]
+    },
+    {
+      "path": "/officers",
+      "method": "POST",
+      "operation_id": "createOfficer",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Admin creates officer; requires Officer schema"]
+    },
+    {
+      "path": "/officers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Lists all officers"]
+    },
+    {
+      "path": "/officers/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/officers"],
+      "notes": ["Admin updates officer info; requires ID"]
+    },
+    {
+      "path": "/officers/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/officers"],
+      "notes": ["Admin deletes officer; requires ID"]
+    },
+    {
+      "path": "/publics/retrievedocs",
+      "method": "GET",
+      "operation_id": "retrieveDocs",
+      "auth_required": null,
+      "dependencies": ["/publics/assign-report"],
+      "notes": ["Retrieves pending reports assigned to officer"]
+    },
+    {
+      "path": "/officers/assigned",
+      "method": "GET",
+      "operation_id": "getAssignedReports",
+      "auth_required": null,
+      "dependencies": ["/publics/assign-report"],
+      "notes": ["Retrieves reports assigned to authenticated officer"]
+    },
+    {
+      "path": "/officers/OfficerByOfficeType/{officeType}",
+      "method": "GET",
+      "operation_id": "getOfficerByOfficeType",
+      "auth_required": null,
+      "dependencies": ["/officers"],
+      "notes": ["Retrieves officers by office type; admin or public officer only"]
+    },
+    {
+      "path": "/officers/reviewdocs/{id_doc}",
+      "method": "PATCH",
+      "operation_id": "reviewDoc",
+      "auth_required": null,
+      "dependencies": ["/publics/assign-report"],
+      "notes": ["Updates report status; requires id_doc and state"]
+    },
+    {
+      "path": "/publics/assign-report",
+      "method": "POST",
+      "operation_id": "assignReport",
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["Public Relation Officer assigns document to officer; requires reportId and officerId"]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": "uploadReport",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["User uploads new report; requires Report schema"]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": "getReports",
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["Retrieves all approved reports for map visualization"]
+    },
+    {
+      "path": "/reports/stats",
+      "method": "GET",
+      "operation_id": "getReportStats",
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["Retrieves report statistics; supports date range and category filters"]
+    },
+    {
+      "path": "/auth/telegram",
+      "method": "POST",
+      "operation_id": "retrieveTelegramAccount",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Retrieves user account by Telegram username; requires username"]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Lists notifications for authenticated user; supports unreadOnly filter"]
+    },
+    {
+      "path": "/notifications/{id}/read",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/notifications"],
+      "notes": ["Marks notification as read; requires ID"]
+    },
+    {
+      "path": "/reports/{id}/message",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["Officer sends message to report author; requires ID and message"]
+    },
+    {
+      "path": "/admin/role/add",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/officers"],
+      "notes": ["Admin adds roles to officer; requires officerId and roles"]
+    },
+    {
+      "path": "/admin/role/remove",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/officers"],
+      "notes": ["Admin removes roles from officer; requires officerId and roles"]
+    },
+    {
+      "path": "/internal-messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["Sends internal message; requires reportId, receiverType, receiverId, message"]
+    },
+    {
+      "path": "/internal-messages/report/{reportId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/internal-messages"],
+      "notes": ["Lists internal messages for a report; requires reportId"]
+    },
+    {
+      "path": "/reports/{id}/followers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["Lists users following a report; requires ID"]
+    },
+    {
+      "path": "/reports/{id}/follow",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["User follows a report; requires ID"]
+    },
+    {
+      "path": "/reports/{id}/follow",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["User unfollows a report; requires ID"]
+    },
+    {
+      "path": "/telegram/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Gets reports for Telegram notifications"]
+    },
+    {
+      "path": "/telegram/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["Updates reports for Telegram notifications; requires reportIds array"]
+    },
+    {
+      "path": "/telegram/reports/{reportID}",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["Adds report to Telegram notifications; requires reportID"]
+    },
+    {
+      "path": "/telegram/reports/{reportID}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/reports"],
+      "notes": ["Removes report from Telegram notifications; requires reportID"]
+    },
+    {
+      "path": "/faqs",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Gets FAQ entries"]
+    },
+    {
+      "path": "/faqs",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Adds new FAQ entry; requires question and answer"]
+    },
+    {
+      "path": "/faqs/{idFaq}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/faqs"],
+      "notes": ["Updates FAQ entry; requires idFaq, question, answer"]
+    },
+    {
+      "path": "/faqs/{idFaq}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/faqs"],
+      "notes": ["Deletes FAQ entry; requires idFaq"]
+    },
+    {
+      "path": "/users/me/followed-reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": ["/reports/{id}/follow"],
+      "notes": ["Gets reports followed by current user"]
+    }
+  ],
+  "authentication_notes": [
+    "Auth endpoints (/auth/users, /auth/officers, /auth/maintainers) require credentials but auth_required is null; likely session-based or token returned in response.",
+    "User profile operations (/users/me) imply authentication context despite auth_required=null.",
+    "OTP flow (generateOtp -> verifyOtp) suggests multi-step authentication for sensitive actions."
+  ],
+  "dependencies": [
+    "POST /auth/users must precede authenticated user actions like GET /users/me",
+    "POST /maintainers creates resources needed for PATCH/DELETE /maintainers/{id}",
+    "POST /officers/assign-report is prerequisite for GET /maintainers/assigned and PATCH /maintainers/reports/{id}/status",
+    "POST /reports creates resources needed for GET /reports, POST /reports/{id}/message, etc.",
+    "POST /publics/assign-report enables GET /publics/retrievedocs and GET /officers/assigned",
+    "POST /internal-messages enables GET /internal-messages/report/{reportId}",
+    "POST /reports/{id}/follow enables GET /users/me/followed-reports"
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/users",
+      "dependent_method": "GET",
+      "dependent_path": "/users/me",
+      "dependency_type": "state",
+      "reason": "User must be authenticated to retrieve their profile"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/maintainers",
+      "dependent_method": "PATCH",
+      "dependent_path": "/maintainers/{id}",
+      "dependency_type": "resource",
+      "reason": "Maintainer must exist before updating"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/maintainers",
+      "dependent_method": "DELETE",
+      "dependent_path": "/maintainers/{id}",
+      "dependency_type": "resource",
+      "reason": "Maintainer must exist before deletion"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports",
+      "dependency_type": "resource",
+      "reason": "Reports must exist to be retrieved or filtered"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/publics/assign-report",
+      "dependent_method": "GET",
+      "dependent_path": "/maintainers/assigned",
+      "dependency_type": "state",
+      "reason": "Reports must be assigned to maintainer before retrieval"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/publics/assign-report",
+      "dependent_method": "PATCH",
+      "dependent_path": "/maintainers/reports/{id}/status",
+      "dependency_type": "state",
+      "reason": "Report must be assigned before status update"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/officers/assign-report",
+      "dependent_method": "GET",
+      "dependent_path": "/publics/retrievedocs",
+      "dependency_type": "state",
+      "reason": "Reports must be assigned to officer before retrieval"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/officers/assign-report",
+      "dependent_method": "GET",
+      "dependent_path": "/officers/assigned",
+      "dependency_type": "state",
+      "reason": "Reports must be assigned to officer before retrieval"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/internal-messages",
+      "dependent_method": "GET",
+      "dependent_path": "/internal-messages/report/{reportId}",
+      "dependency_type": "state",
+      "reason": "Messages must be sent before listing for a report"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports/{id}/follow",
+      "dependent_method": "GET",
+      "dependent_path": "/users/me/followed-reports",
+      "dependency_type": "state",
+      "reason": "User must follow report before it appears in followed list"
+    }
+  ],
+  "risks": [
+    "auth_required is null for all operations despite clear authentication context in descriptions; may lead to incorrect client implementation.",
+    "No explicit session/token handling documented; reliance on implicit state from auth endpoints.",
+    "Admin operations (e.g., /admin/role/add) lack clear prerequisite checks for officer existence.",
+    "Telegram notification endpoints do not specify which user or role can trigger updates."
+  ]
+}

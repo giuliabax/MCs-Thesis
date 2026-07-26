@@ -1,0 +1,33 @@
+project_name: participium-team13
+run_id: 20260721T232340Z
+llm:
+  provider: lmstudio
+  model: qwen/qwen3.5-9b
+  temperature: 0.1
+  max_tokens: 9000
+  base_url: http://127.0.0.1:1234/v1
+  timeout_seconds: 1200.0
+  reasoning_agents:
+  - requirement_api_matcher
+  overrides: {}
+inputs:
+  requirements:
+    description_pdf: data\requirements\participium-description.pdf
+    user_stories_xlsx: data\requirements\participium-userstories.xlsx
+    faq_pdf: data\requirements\participium-faq.pdf
+  projects:
+  - name: participium-team13
+    openapi_path: projects\participium-team13\swagger.yaml
+    sut_base_url: http://localhost:8092
+  openapi_path: null
+  sut_base_url: null
+execution:
+  runner: python_requests
+  reset_command: null
+  timeout_seconds: 30
+budget:
+  max_iterations: 3
+  max_tests_per_iteration: 10
+  max_llm_calls: 50
+output:
+  runs_dir: data\runs

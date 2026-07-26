@@ -1,0 +1,186 @@
+[
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures account settings (notifications/virtual presence).",
+    "api_endpoint": "/users/{userId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the current user's notification preferences and virtual presence settings. Ensure the payload includes valid boolean flags for 'email_alerts' and 'virtual_presence'. Verify the response confirms the update with status 200.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user to obtain a valid session token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality of Requirement PT09 for authenticated citizens."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/users/{userId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request specifically enabling the 'email_alerts' flag while keeping other settings unchanged. Verify that the system acknowledges the new preference for receiving emails alongside standard notifications.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the specific edge case of enabling optional email alerts mentioned in PT19."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures account settings (notifications/virtual presence).",
+    "api_endpoint": "/users/{userId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request with an invalid JSON payload or missing required fields for the 'virtual_presence' configuration. Expect the system to reject the update due to validation errors.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the API correctly handles malformed input for account configuration (PT09)."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/tech_officer/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of an existing report (e.g., from 'Open' to 'In Progress'). Ensure the request includes valid status values and that the operation succeeds for authorized technical office staff.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member.",
+      "Create a test report via POST /reports to obtain a valid reportId."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., if the update failed and left data in an inconsistent state, though typically PATCH is idempotent or atomic).",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow of Requirement PT11 for status updates."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/tech_officer/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request attempting to update a report status that is already 'Resolved' or 'Rejected'. According to domain rules, these statuses should not be modifiable by staff without admin intervention. Expect the system to reject this change.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member.",
+      "Create a test report and manually set its status to 'Resolved' or 'Rejected' (or use an existing one)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the constraint that resolved/rejected reports cannot be modified by staff (PT11 context)."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/tech_officer/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a non-existent report ID. Verify that the system returns an appropriate error indicating the resource was not found.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Tests error handling for invalid resource references in Requirement PT11 operations."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/tech_officer/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a report that was created by an unauthenticated user (if allowed) or verify that the system correctly handles the transition from 'Open' to 'In Progress' for a valid report.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member.",
+      "Create a test report via POST /reports to obtain a valid reportId."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{reportId} if it exists, or verify no resource was created if the update failed.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the stateful dependency where a report must exist before its status can be updated (PT11)."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures account settings (notifications/virtual presence).",
+    "api_endpoint": "/users/{userId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to disable virtual presence and email alerts simultaneously. Verify that the system accepts this configuration change and updates the user profile accordingly.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the edge case of disabling multiple features simultaneously under Requirement PT09."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/users/{userId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request attempting to set 'email_alerts' to true for an unauthenticated user (if the endpoint allows it) or verify that the system correctly enforces authentication for this specific preference update.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no valid session token is provided."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Tests the negative case where an unauthenticated user attempts to modify notification preferences (PT19 context)."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/tech_officer/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a report that has been marked as 'Resolved' by an external maintainer. Verify that the system allows the technical office staff member to update the status back to 'Open' or another valid state.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member.",
+      "Create a test report via POST /reports to obtain a valid reportId."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{reportId} if it exists, or verify no resource was created if the update failed.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the stateful dependency where a report must exist before its status can be updated (PT11)."
+  }
+]

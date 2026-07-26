@@ -1,0 +1,71 @@
+{
+  "matches": [
+    {
+      "requirement_id": "PT28",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["Interactive map view for unregistered users"],
+      "rationale": "No map or public report listing endpoints are exposed in the OpenAPI contract."
+    },
+    {
+      "requirement_id": "PT24",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["Assign reports to external maintainers"],
+      "rationale": "No endpoint for updating report assignment or maintainer roles is exposed."
+    },
+    {
+      "requirement_id": "PT25",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["Update status of assigned report"],
+      "rationale": "No update endpoint for report status is exposed in the contract."
+    },
+    {
+      "requirement_id": "PT26",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["Internal exchange of information and comments"],
+      "rationale": "No dedicated endpoint for internal coordination notes is exposed."
+    },
+    {
+      "requirement_id": "PT01",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/api/auth/{nextauth}",
+          "operation_id": null
+        }
+      ],
+      "evidence": ["NextAuth POST routes"],
+      "missing_behaviors": [],
+      "rationale": "Registration action is covered by the authentication POST route."
+    },
+    {
+      "requirement_id": "PT27",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["Confirm registration with a code"],
+      "rationale": "No specific endpoint for verifying registration codes is exposed."
+    },
+    {
+      "requirement_id": "PT02",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["Set up municipality users"],
+      "rationale": "No user management endpoints are exposed in the contract."
+    },
+    {
+      "requirement_id": "PT03",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["Assign roles to municipality users"],
+      "rationale": "No role assignment endpoints are exposed

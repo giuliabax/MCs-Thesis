@@ -1,0 +1,163 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports without authentication. Verify that the response returns a list of reports where status is 'approved' or equivalent public-visible state. Ensure that fields containing reporter names are anonymized (e.g., null or generic string) as per domain rules for unregistered users.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Validates the core public-facing functionality for unregistered users to view approved reports without needing login credentials."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/report/{id}/assign-maintainer",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'technical_office_staff_member'. Perform a PATCH request to /reports/report/{id}/assign-maintainer with a payload containing the external maintainer's ID. Verify that the report status updates to 'assigned' and the assigned_maintainer_id field is populated correctly.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a test report with status 'submitted' via POST /reports (using an authenticated admin or staff token).",
+      "Ensure an external maintainer user exists in the system."
+    ],
+    "cleanup_strategy": "Delete the created test report using DELETE /reports/report/{id} if it was not already deleted by a subsequent workflow step; otherwise, verify no resource remains.",
+    "expected_status_codes": [200],
+    "rationale": "Tests the specific role-based permission and state transition required for technical office staff to delegate maintenance tasks."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as an 'external_maintainer'. Perform a PATCH request to /reports/report/{id}/status with a payload setting status to 'in_progress' or 'resolved'. Verify that the update is successful and the status reflects the change.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a test report with status 'submitted' via POST /reports.",
+      "Execute PT24 (assign-maintainer) to assign this specific report to the current external maintainer role."
+    ],
+    "cleanup_strategy": "Delete the created test report using DELETE /reports/report/{id} after verifying the status update or if the workflow ends without further processing.",
+    "expected_status_codes": [200],
+    "rationale": "Validates that external maintainers have the correct permissions to modify the lifecycle of reports assigned to them."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and rejects a report.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'municipal_public_relations_officer'. Perform a PATCH request to /reports/report/{id}/status with a payload setting status to 'rejected' and including an explanation field. Verify that the response includes the rejection reason and the report is no longer visible in public lists.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal_public_relations_officer",
+    "setup_needed": [
+      "Create a test report with status 'submitted' via POST /reports."
+    ],
+    "cleanup_strategy": "Delete the created test report using DELETE /reports/report/{id} after verifying the rejection logic.",
+    "expected_status_codes": [200],
+    "rationale": "Tests the approval/rejection workflow and ensures that rejected reports are handled correctly with explanations."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'technical_office_staff_member'. Perform a PATCH request to /reports/report/{id}/status with a payload setting status to 'closed' or 'resolved'. Verify that the update is successful and the report transitions out of the active queue.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a test report with status 'submitted' via POST /reports."
+    ],
+    "cleanup_strategy": "Delete the created test report using DELETE /reports/report/{id} after verifying the closure logic.",
+    "expected_status_codes": [200],
+    "rationale": "Validates that technical office staff can manage the final stages of the report lifecycle regardless of assignment status."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user views approved reports on an interactive map.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports without authentication. Verify that the response returns a list of reports where status is 'approved' or equivalent public-visible state. Ensure that fields containing reporter names are anonymized (e.g., null or generic string) as per domain rules for unregistered users.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a test report with status 'submitted' via POST /reports.",
+      "Authenticate as a municipal_public_relations_officer and update the report status to 'approved'."
+    ],
+    "cleanup_strategy": "Delete the created test report using DELETE /reports/report/{id} if it was not already deleted by a subsequent workflow step; otherwise, verify no resource remains.",
+    "expected_status_codes": [200],
+    "rationale": "Tests the edge case where an unregistered user accesses data that has been approved but might contain sensitive metadata if not properly filtered."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/report/{id}/assign-maintainer",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'technical_office_staff_member'. Perform a PATCH request to /reports/report/{id}/assign-maintainer with a payload containing an invalid external maintainer ID (e.g., non-existent user). Verify that the API returns a 404 or 400 error indicating the maintainer does not exist.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a test report with status 'submitted' via POST /reports."
+    ],
+    "cleanup_strategy": "Delete the created test report using DELETE /reports/report/{id} after verifying the error response.",
+    "expected_status_codes": [400, 404],
+    "rationale": "Tests negative behavior where an invalid target for assignment is provided, ensuring data integrity."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as an 'external_maintainer'. Perform a PATCH request to /reports/report/{id}/status on a report that was NOT assigned to this maintainer (or is in 'rejected' status). Verify that the API returns a 403 Forbidden error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a test report with status 'submitted' via POST /reports."
+    ],
+    "cleanup_strategy": "Delete the created test report using DELETE /reports/report/{id} after verifying the error response.",
+    "expected_status_codes": [403],
+    "rationale": "Tests negative behavior where an external maintainer attempts to modify a report outside their scope or on a rejected item."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and rejects a report.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'municipal_public_relations_officer'. Perform a PATCH request to /reports/report/{id}/status with a payload setting status to 'rejected' but omitting the required 'explanation' field. Verify that the API returns a 400 Bad Request error.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "municipal_public_relations_officer",
+    "setup_needed": [
+      "Create a test report with status 'submitted' via POST /reports."
+    ],
+    "cleanup_strategy": "Delete the created test report using DELETE /reports/report/{id} after verifying the error response.",
+    "expected_status_codes": [400],
+    "rationale": "Tests negative behavior where a required field (explanation) for rejection is missing, enforcing domain rules."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user views approved reports on an interactive map.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports without authentication. Verify that the response returns a list of reports where status is 'submitted' (not approved). Ensure that these reports are NOT included in the response, confirming that only approved reports are visible to unregistered users.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a test report with status 'submitted' via POST /reports."
+    ],
+    "cleanup_strategy": "Delete the created test report using DELETE /reports/report/{id} after verifying the filtering logic.",
+    "expected_status_codes": [200],
+    "rationale": "Tests the edge case of data visibility filtering, ensuring unregistered users cannot see non-approved reports."
+  }
+]

@@ -1,0 +1,91 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without any authentication headers. Verify that the response returns a list of approved reports suitable for display on a map, ensuring anonymous user names are hidden and public statistics are visible.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core public-facing functionality for unregistered users as per domain rules regarding public map view."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "First, create a new report via POST /reports using an authenticated technical office staff session. Then, execute PUT /reports/{id}/mainteiner to assign an external maintainer ID to the created report. Verify the assignment is successful and the report state updates correctly.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports to obtain a valid report ID for assignment."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if it was successfully created; otherwise, verify no resource exists.",
+    "expected_status_codes": [
+      "200",
+      "201"
+    ],
+    "rationale": "Tests the specific workflow of assigning external maintainers to reports, a critical step in the intervention process."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of an assigned report.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an external maintainer. Execute PUT /reports/{id}/status to update a specific report's status (e.g., from 'Assigned' to 'In Progress'). Verify that the status change is recorded and notifications are triggered.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Ensure a report exists in 'Assigned' state by creating one via POST /reports or assigning one to the external maintainer."
+    ],
+    "cleanup_strategy": "Delete the report using DELETE /reports/{id} after verification.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability of external maintainers to update report status as required by their role."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a technical office staff member. Execute PUT /reports/{id}/status to transition a report from 'Pending Approval' to 'Assigned'. Verify the state change and that the correct technical office is assigned based on the problem category.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports to obtain a valid report ID for status update."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if it was successfully created; otherwise, verify no resource exists.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the transition from pending to assigned state, ensuring the system correctly routes reports to technical offices."
+  },
+  {
+    "requirement_id": "PT29",
+    "requirement_summary": "Municipal administrator configures automatic assignment of all reports in a certain category.",
+    "api_endpoint": "/reports/{id}/auto-assign-maintainer",
+    "http_method": "POST",
+    "prompt": "Authenticate as a municipal administrator. Execute POST /reports/{id}/auto-assign-maintainer to configure automatic assignment for a specific report category. Verify that the configuration is saved and applies to future reports of that category.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "municipal administrator",
+    "setup_needed": [
+      "Ensure no existing auto-assignment rules conflict with the new configuration for the target category."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the administrative capability to configure automatic assignment rules, ensuring faster interventions as per requirements."
+  }
+]

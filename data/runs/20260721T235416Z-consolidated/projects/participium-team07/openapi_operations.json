@@ -1,0 +1,971 @@
+[
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/temporary",
+    "summary": "Create a new temporary user",
+    "description": "This endpoint allows the creation of a temporary user in the system. After the creation an endpoint is sent via email",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/user"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "409",
+      "503"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/otp/resend",
+    "summary": "Resend OTP email",
+    "description": "This endpoint allows to resend the OTP to the user email.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "201",
+      "400",
+      "500"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/temporary/verify",
+    "summary": "Verify OTP and create user",
+    "description": "This endpoint allows to verify the OTP sent via email and create the user in the system.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "otp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "otp"
+      ]
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "503"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/session",
+    "summary": "Perform login",
+    "description": "This endpoint allows a user to log in to the system.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "response_codes": [
+      "201",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/session/current",
+    "summary": "Get current logged-in user information",
+    "description": "This endpoint retrieves the currently logged-in user's information. This operation requires authentication.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/session/current",
+    "summary": "Perform logout",
+    "description": "This endpoint logs out the currently logged-in user by invalidating its session.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "204",
+      "500"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/reports",
+    "summary": "Create a new report",
+    "description": "This endpoint allows a logged-in user to create a new report. This operation requires authentication",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/report"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/myreports",
+    "summary": "Retrieve user's reports",
+    "description": "Retrieve all reports created by the logged-in user. This operation requires authentication.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/unassigned",
+    "summary": "Retrieve unassigned reports",
+    "description": "Retrieve all reports that are not assigned to any office. This operation requires authentication and can only be performed by Municipal Public Relations Officers.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/external-office-assigned",
+    "summary": "Retrieve reports assigned to external offices and that has not been accepeted yet",
+    "description": "Retrieve all reports assigned to external offices. This operation requires authentication and can only be performed by external maintainers.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/external-maintainer-my",
+    "summary": "Retrieve reports assigned to the logged-in external maintainer and that has been accepted",
+    "description": "Retrieve all reports assigned to the logged-in external maintainer. This operation requires authentication and can only be performed by external maintainers.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/reports/external-maintainer/:id",
+    "summary": "Update the status of the report assigned to the logged-in external maintainer",
+    "description": "This operation allows the logged-in external maintainer to accept or reject a report assigned to them. This operation requires authentication and can only be performed by external maintainers.",
+    "parameters": [
+      {
+        "name": "id",
+        "description": "The ID of the report",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/assigned",
+    "summary": "Retrieve assigned reports",
+    "description": "Retrieve all reports that are assigned to an office and to an employee. This operation requires authentication and can only be performed by technical office staff members.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/statuses",
+    "summary": "Retrieve report statuses",
+    "description": "Retrieve all possible report statuses. This operation requires authentication.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/assign",
+    "summary": "Assign a report to an office and an employee",
+    "description": "This endpoint allows to assign a report to an office and to an employee. This operation requires authentication and can only be performed by Municipal Public Relations Officers.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "reportId": {
+          "type": "integer"
+        },
+        "userId": {
+          "type": "integer"
+        },
+        "categoryId": {
+          "type": "integer"
+        },
+        "officeId": {
+          "type": "integer"
+        },
+        "employeeId": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "reportId",
+        "officeId",
+        "employeeId",
+        "categoryId",
+        "userId"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/reassign",
+    "summary": "Reassign a report to a different employee",
+    "description": "This endpoint allows to reassign a report to a different employee. This operation requires authentication and can only be performed by admin",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "reportId": {
+          "type": "integer"
+        },
+        "newOfficerId": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "reportId",
+        "newOfficerId"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/assignExternal",
+    "summary": "Assign a report to an external office",
+    "description": "This endpoint allows to assign a report to an external office. This operation requires authentication and can only be performed by a technical office staff member.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "reportId": {
+          "type": "integer"
+        },
+        "externalOfficeId": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "reportId",
+        "externalOfficeId"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/reject",
+    "summary": "Reject a report",
+    "description": "This endpoint allows to reject a report. This operation requires authentication and can only be performed by Municipal Public Relations Officers.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "integer"
+        },
+        "reportId": {
+          "type": "integer"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 255
+        }
+      },
+      "required": [
+        "reportId",
+        "reason",
+        "userId"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/approved",
+    "summary": "Retrieve approved reports",
+    "description": "Retrieve all reports with 'approved' status.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/reports/{reportID}",
+    "summary": "Update the status of the report",
+    "description": "This operation allows to change the report status. Only officer can make this change. This operation requires authentication.",
+    "parameters": [
+      {
+        "name": "reportID",
+        "description": "The ID of the report",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "statusId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "comment": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "rejectReason": {
+          "type": "string",
+          "maxLength": 255
+        }
+      },
+      "required": [
+        "statusId"
+      ]
+    },
+    "response_codes": [
+      "204",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/officers/{officerId}/office/{officeId}",
+    "summary": "Retrieve reports assigned to a specific officer and office",
+    "description": "This endpoint retrieves all reports assigned to a specific officer and office. This operation requires authentication and can only be performed by admin and municipal officers.",
+    "parameters": [
+      {
+        "name": "officerId",
+        "description": "The ID of the officer",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "officeId",
+        "description": "The ID of the office",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/employees",
+    "summary": "Create a new employee",
+    "description": "This endpoint allows to create a new employee in the system. This operation requires authentication and can only be performed by admin",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/user"
+    },
+    "response_codes": [
+      "201",
+      "401",
+      "403",
+      "409",
+      "503"
+    ],
+    "tags": [
+      "Employees"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/employees/{id}",
+    "summary": "Delete an employee",
+    "description": "This endpoint allows to delete an employee from the system. This operation requires authentication and can only be performed by admin",
+    "parameters": [
+      {
+        "name": "id",
+        "description": "The ID of the employee to delete",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "503"
+    ],
+    "tags": [
+      "Employees"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/employees/unassigned",
+    "summary": "Retrieve unassigned employees",
+    "description": "This endpoint retrieves all employees that are not assigned to any office. This operation requires authentication and can only be performed by admin",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "tags": [
+      "Employees"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/employees/assign",
+    "summary": "Assign an employee to an office",
+    "description": "This endpoint allows to assign an employee to an office. This operation requires authentication and can only be performed by admin",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "employeeId": {
+          "type": "integer"
+        },
+        "officeId": {
+          "type": "integer"
+        },
+        "roleId": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "employeeId",
+        "officeId",
+        "roleId"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "tags": [
+      "Employees"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/employees/techincal-officers",
+    "summary": "Retrieve technical office employees",
+    "description": "This endpoint retrieves all employees assigned to the technical office. This operation requires authentication and can only be performed by admin.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "403",
+      "503"
+    ],
+    "tags": [
+      "Employees"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/employees/technical-officers/assign",
+    "summary": "Assign a technical office employee to an office",
+    "description": "This endpoint allows to assign a technical office employee to an office. This operation requires authentication and can only be performed by admin",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "officerId": {
+          "type": "integer"
+        },
+        "officeId": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "officerId",
+        "officeId"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "tags": [
+      "Employees"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/employees/tecnhnical-officers/remove",
+    "summary": "Remove a technical office employee from an office",
+    "description": "This endpoint allows to remove a technical office employee from an office. This operation requires authentication and can only be performed by admin",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "officerId": {
+          "type": "integer"
+        },
+        "officeId": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "officerId",
+        "officeId"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "tags": [
+      "Employees"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/offices",
+    "summary": "Retrieve all offices",
+    "description": "This endpoint retrieves all offices in the system. This operation requires authentication and can only be performed by admin",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "tags": [
+      "Offices"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/externalOffices",
+    "summary": "Retrieve all external offices",
+    "description": "This endpoint retrieves all external offices in the system. This operation requires authentication.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Offices"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/roles",
+    "summary": "Retrieve all roles",
+    "description": "This endpoint retrieves all roles in the system. This operation requires authentication and can only be performed by admin users.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "tags": [
+      "Roles"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/categories",
+    "summary": "Retrieve all categories",
+    "description": "This endpoint retrieves all categories in the system. This operation requires authentication.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Categories"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/api/user/profile",
+    "summary": "Update user profile",
+    "description": "This endpoint allows a user to update their profile information. This operation requires authentication and can only be performed by citizens.",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/user"
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/api/user/profile/photo",
+    "summary": "Delete user profile photo",
+    "description": "This endpoint allows a user to delete their profile photo. This operation requires authentication and can only be performed by citizens.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/notifications",
+    "summary": "Create a new notification",
+    "description": "This endpoint allows to create a new notification in the system",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/notification"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "503"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/notifications/read",
+    "summary": "Mark notifications of a report as read",
+    "description": "This endpoint allows to mark multiple notifications as read. This endpoint requires authentication.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "reportId": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "reportId"
+      ]
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/bot/verify/username",
+    "summary": "Verify if a Telegram username is associated with a user",
+    "description": "This endpoint verifies if a given Telegram username is associated with a user in the system.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "telegramUsername": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "telegramUsername"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "404",
+      "503"
+    ],
+    "tags": [
+      "Telegram Bot"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/bot/verify/password",
+    "summary": "Verify user's password",
+    "description": "This endpoint verifies if the provided password matches the user's password in the system.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Telegram Bot"
+    ],
+    "auth_required": null
+  }
+]

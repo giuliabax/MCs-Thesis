@@ -1,0 +1,295 @@
+# Participium description
+The Municipality of Turin is developing Participium, a web application for citizen participation
+in the management of urban environments. It allows citizens to interact with the public
+administration by reporting inconveniences and malfunctions present in the area (e.g.,
+potholes in the asphalt, sidewalks with architectural barriers, trash on the streets, non-
+functioning streetlights, etc.). A real example of such an application is the Iris platform in
+Venice.
+Citizens can submit reports only if they have registered in the system with email, username,
+ﬁrst name, and last name. Once a registration is completed, the user gets an email with a
+conﬁrmation code. The person can use the application only after conﬁrming by entering the
+code valid for 30 minutes.
+Once registered, the citizen can make reports by selecting a point on the Turin map (based
+on OpenStreetMap, standard layer) and ﬁlling out a form with the following required ﬁelds:
+title, textual description, and category (chosen from a list). It is also mandatory to attach one
+or more photos (up to 3 per report).
+The possible problem categories, at the moment of system design, are:
+Water Supply – Drinking Water
+Architectural Barriers
+Sewer System
+Public Lighting
+Waste
+Road Signs and Trafﬁc Lights
+Roads and Urban Furnishings
+Public Green Areas and Playgrounds
+Other
+After entering all the required information and any pictures, the system asks the citizen if
+he/she wants the report to be anonymous (name not visible in the public list of reports).
+Participium
+System general goal
+Reports
+
+Once submitted, the report is in the Pending Approval state until the Organization Ofﬁce of
+the Municipality of Turin performs a preliminary veriﬁcation, marking the report as either
+accepted or rejected.
+The possible report statuses are: Pending Approval, Assigned, In Progress, Suspended,
+Rejected, Resolved
+After approval, accepted reports move to the Assigned state, and they are sent to the
+competent technical ofﬁce depending on the problem category.
+Once the intervention is scheduled, the status changes to In Progress, indicating
+resolution has started.
+In some cases, for organizational or technical reasons, the report may be set to
+Suspended, awaiting further evaluation or resources.
+When the problem is resolved, the speciﬁc technical ofﬁce updates the status to
+Resolved and closes the report. The technicall ofﬁce staff member can add comments.
+In case of rejection, an explanation from the Municipality Organization Ofﬁce is
+mandatory (see next section).
+If the intervention has been done by maintainers of an external company (e.g. Enel X for
+category Public Lighting, or speciﬁc reports based on their content), two cases are possible:
+Case 1: the company has access to Participium. In that case, the speciﬁc technical
+ofﬁce assigns the report to the corresponding company users. External maintainers can
+move the report from Assigned to In Progress. Technical ofﬁce staff members and
+external maintainers can exchange information and comment through the report, but
+this will not be visibile to the reporter (and neither to citizens). Once the work is ﬁnished,
+the external maintainer can resolve the report.
+N.B. Automatic assignment of all issues of a certain category (thus, without the initial review
+of the municipal public relations ofﬁcer) is possible only if previosuly set by the municipal
+administrator .
+Case 2: the company has NOT access to Participium. In this case, the external
+company updates the technical ofﬁce out of Participium, and when the issues is solved
+the technical ofﬁce staff member will move the report to status Resolved.
+To strengthen trust between citizens and institutions, citizens can be updated about their
+reports through various channels:
+Report Lifecycle
+Citizen Updates
+
+At each status change, the citizen receives notiﬁcation in the platform with the
+corresponding update.
+Municipal operators working on reports can also send messages to the citizens in the
+platform, to which the citizen can reply.
+Each time a citizen receives a platform notiﬁcation, he/she also receives an email
+(unless disabled in their conﬁguration panel, where citizens can also upload a personal
+photo and their Telegram username).
+After approval, accepted reports immediately become visible on the Participium portal. They
+appear both:
+On an interactive map of Turin, geolocated at the point indicated by the citizen.
+In a summary table, which allows ﬁltering and sorting by category, status, or period of
+time. The data from the table (in case, ﬁltered) can be downloaded as a csv ﬁle.
+In both views, the reporter’s name is shown (“anonymous” if that option was chosen), along
+with the report title. Clicking the title opens the full description (with pictures).
+Unregistered users can also view reports on maps. Both registered and unregistered users
+can type an address into the search bar to zoom in on that area of the map and see all
+reports in that area.
+When logged into Participium, citizen can follow reports of other citizens and receive
+notiﬁcations (following the same rules as for owned reports).
+The system allows the display of both public and private statistics.
+Public statistics (visible on the site) include the number of reports by category and
+trends by day, week, or month. They are visible also to unregistered users.
+Private statistics (for administrators only), in addition to public ones, also include charts
+and tables about:
+number of reports by status
+number of reports by type
+number of reports by type and status
+number of reports by reporter
+number of reports by reporter and type
+number of reports by reporter, type and status
+number of reports by the top 1% of reporters, by type
+number of reports by the top 5% of reporters, by type
+Statistics
+
+Finally, any citizen who has provided their Telegram username can communicate with a
+Telegram bot to: - Create a new report, following a guided process - Check the status of their
+own reports, receiving an updated list with any changes.
+- Receive real-time push notiﬁcations when their report changes status.
+- Get quick assistance through commands that provide system usage info and useful
+contacts.
+Last update: Tue 9 December
+Interaction with Telegram Bot
+
+# Participium user stories
+1. Issue-id: PT28 | Type: User Story | Business Value: 990 | Description: As an unregistered user
+I want to see approved reports on an interactive map 
+So that I can know about issues in my area and beyond. | Comments (check also system textual description): See similar story for citizen
+2. Issue-id: PT24 | Type: User Story | Business Value: 980 | Description: As a technical office staff member
+I want to assign reports to external maintainers
+So that specialized maintainers can handle and update the intervention. | Comments (check also system textual description): It can be possible for specific reports of certain categories (e.g., Enel X for category Public Lighting) based on their content reviewed by the technical office staff member. 
+3. Issue-id: PT25 | Type: User Story | Business Value: 975 | Description: As an external maintainer 
+I want to update the status of a report assigned to me
+So that I can updated citizens about  the intervention.
+4. Issue-id: PT26 | Type: User Story | Business Value: 970 | Description: As a technical office staff member/external maintainer
+I want to exchange information and comments on the report internally
+So that coordination happens without exposing internal notes to citizens
+5. Issue-id: PT01 | Type: User Story | Business Value: 950 | Description: As a citizen
+I want to register with my name and username 
+So that I can access the Participium system and submit reports. | Comments (check also system textual description): Registration is required before submitting reports.
+6. Issue-id: PT27 | Type: User Story | Business Value: 945 | Description: As a citizen 
+I want to confirm my registration with a code
+So that my account becomes valid and I can start using the system. | Comments (check also system textual description): Once a registration is completed, the user gets an email with a confirmation code. The person can use the application only after confirming by entering the code valid for 30 minutes.
+7. Issue-id: PT02 | Type: User Story | Business Value: 940 | Description: As a system administrator
+I want to set up municipality users 
+ | Comments (check also system textual description): These are the internal accounts of the municipality
+8. Issue-id: PT03 | Type: User Story | Business Value: 935 | Description: As a system administrator
+I want to assign roles to municipality users 
+ | Comments (check also system textual description): Possible roles: municipal public relations officer, municipal administrator, technical office staff member, external maintainer. You can be more specific on technical offices to run realisti scenarios following the official organizational structure of the municipality of Turin (https://trasparenza.comune.torino.it/media/2212/download) 
+9. Issue-id: PT04 | Type: User Story | Business Value: 930 | Description: As a citizen 
+I want to select a location on the city map
+So that my report is geolocated with latitude and longitude. | Comments (check also system textual description): Reports must be tied to a specific location. Use OpenStreet Map (or any other derivative map based on it), standard layer
+10. Issue-id: PT05 | Type: User Story | Business Value: 920 | Description: As a citizen 
+I want to provide details for my report 
+So that the the problem is classified correctly. | Comments (check also system textual description): Mandatory fields: title, description,  category , photos (min 1 max 3).
+11. Issue-id: PT06 | Type: User Story | Business Value: 915 | Description: As a municipal public relations officer
+I want to review and approve or reject reports 
+So that only valid reports are processed further. | Comments (check also system textual description): Rejected reports must include an explanation. If accepted, the report is assigned to the technical office bound to the report category.
+12. Issue-id: PT07 | Type: User Story | Business Value: 910 | Description: As a citizen 
+I want to see approved reports on an interactive map 
+So that I can know about issues in my area and beyond. | Comments (check also system textual description): Map should be zoomable. When zooming out, reports can be grouped into a cumulative report for a better visualization (total number should be reported on the cumulative report). When zooming in,  reports can be seen separated, with their title and reporter name (or "anonymous" if this is flagged on that report).
+13. Issue-id: PT15 | Type: User Story | Business Value: 905 | Description: As a citizen 
+I want to choose whether to make my report anonymous 
+So that my name is not shown in the public list of reports. | Comments (check also system textual description): Anonymous option protects privacy. Choice made at issue description time.
+14. Issue-id: PT08 | Type: User Story | Business Value: 900 | Description: As a technical office staff member
+I want to see the list of reports assigned to me
+So that I can get an overview of the maintenance to be done
+15. Issue-id: PT09 | Type: User Story | Business Value: 895 | Description: As a citizen 
+I want to configure my account
+So that I can better manage notifications and my virtual presence. | Comments (check also system textual description): Citizens can  upload a personal photo, add their Telegram username and switch off/on email notifications in the configuration panel.
+16. Issue-id: PT30 | Type: User Story | Business Value: 890 | Description: As a citizen/unregistered user 
+I want to search for reports in a specific area by typing in an address
+So that I can easily explore and analyze existing reports in that specific area. | Comments (check also system textual description): You can choose how much to zoom in. The product owner will then provide feedback on the implementation.
+17. Issue-id: PT10 | Type: User Story | Business Value: 885 | Description: As a system administrator
+I want to modify roles to municipality users
+So that the staff can be more flexible.  | Comments (check also system textual description): This story overwrites a previous answer given by PO on the Telegram chat. NB: 1) A municipality user can now have multiple roles, i.e. serving on more than one technical office. 2) Modification includes cancellation.
+18. Issue-id: PT11 | Type: User Story | Business Value: 880 | Description: As a technical office staff member 
+I want to update report statuses 
+So that citizens are informed of the problem resolution process. | Comments (check also system textual description): At each status change, the citizen receives notification in the platform with the corresponding update. Municipal operators working on reports can also send messages to the citizens in the platform, to which the citizen can reply.
+19. Issue-id: PT12 | Type: User Story | Business Value: 875 | Description: As a citizen
+I want to create a new report through a Telegram bot
+So that I can quickly notify the public administration about an issue in my area. | Comments (check also system textual description): Allows the citizen to open a new report by selecting a location on the Turin map, entering a title, description, choosing a category, and attaching up to three photos. The bot also asks if the report should be anonymous.
+
+Example command:
+
+/newreport → Starts the guided process to create a new issue report with location, title, description, category, photos, and anonymity preference.
+20. Issue-id: PT13 | Type: User Story | Business Value: 865 | Description: As a citizen 
+I want to check my report status through a Telegram bot 
+So that I can quickly get updates. | Comments (check also system textual description): Check the status of their own reports, receiving an updated list with any changes.
+Example commands:
+
+/myreports → Lists all your submitted reports with their current status.
+
+/reportstatus 12345 → Shows details and current status of report ID 12345. 
+21. Issue-id: PT14 | Type: User Story | Business Value: 840 | Description: As a citizen 
+I want to access quick assistance and help commands from the Telegram bot 
+So that I can understand how to use the system and find useful contacts. | Comments (check also system textual description): Example commands:
+
+/help → Lists available commands and how to use them.
+
+/contact → Provides contact info for the Municipality support team.
+
+/faq → Shows frequently asked questions
+22. Issue-id: PT18 | Type: User Story | Business Value: 830 | Description: As a citizen 
+I want to reply to messages from municipal operators in the platform 
+So that I can communicate directly about my report. | Comments (check also system textual description): Two-way communication is possible within the platform.
+23. Issue-id: PT16 | Type: User Story | Business Value: 820 | Description: As a citizen 
+I want to follow reports done by other citizens 
+So that I can be updated | Comments (check also system textual description): Only not closed reports can be followed. Notifications follow the  the same rules as for owned reports.
+24. Issue-id: PT17 | Type: User Story | Business Value: 810 | Description: As a citizen 
+I want to receive real-time push notifications via the Telegram bot 
+So that I know instantly when my report status changes. | Comments (check also system textual description): Example commands:
+
+/subscribe → Enable real-time notifications for all your reports.
+
+/unsubscribe → Disable notifications.
+
+/subscribe report 12345 → Subscribe only to updates for report ID 12345.
+25. Issue-id: PT19 | Type: User Story | Business Value: 790 | Description: As a citizen 
+I want to receive optional email alerts in addition to platform notifications 
+So that I can choose the best way to stay updated. | Comments (check also system textual description): Unless disabled in their configuration panel.
+26. Issue-id: PT20 | Type: User Story | Business Value: 770 | Description: As a citizen /unregistered user
+I want to see public statistics about reports 
+So that I understand trends in city issues. | Comments (check also system textual description): Public statistics  (visible on the site) include the number of reports by category and trends by day, week, or month.  
+27. Issue-id: PT21 | Type: User Story | Business Value: 755 | Description: As a municipal administrator 
+I want to see detailed private statistics 
+So that I can monitor usage and performance of the system. | Comments (check also system textual description): Private statistics (for administrators only), in addition to public ones, also include charts and tables about:  
+  - number of reports by status  
+  - number of reports by type  
+  - number of reports by type and status  
+  - number of reports by reporter  
+  - number of reports by reporter and type  
+  - number of reports by reporter, type and status  
+  - number of reports by the top 1% of reporters, by type  
+  - number of reports by the top 5% of reporters, by type
+28. Issue-id: PT29 | Type: User Story | Business Value: 750 | Description: As a municipal administrator
+I want to configure automatic assignment of all reports in a certain category
+So that interventions will be faster.
+29. Issue-id: PT22 | Type: User Story | Business Value: 740 | Description: As a citizen/unregistered user
+I want to browse a summary table of reports with filters 
+So that I can easily explore and analyze existing reports. | Comments (check also system textual description): Filters: by category, status, period of time
+30. Issue-id: PT23 | Type: User Story | Business Value: 730 | Description: As a citizen 
+I want to download the summary table of reports 
+So that I can easily explore and analyze existing reports. | Comments (check also system textual description): If a filter is active on the table view, only filtered data should be downloaded
+
+# Participium FAQ
+Email is a mandatory ﬁeld
+Email can also be used for login.
+You are expected to set up speciﬁc technical ofﬁces. You can take inspiration from, or
+even directly adopt, some of the City of Turin's ofﬁces. N.B. The Turin Municipality's
+organisation chart was updated a few days ago. The new links are:
+https://trasparenza.comune.torino.it/organizzazione/articolazione-ufﬁci and
+https://trasparenza.comune.torino.it/media/2212/download.
+The roles of 'municipal public relations ofﬁcer' and 'municipal administrator' are
+automatically associated with the Organization Ofﬁce.
+Once a report has been inserted, it cannot be modiﬁed or deleted by the citizen.
+Public Relation ofﬁcer can assign a report either to a speciﬁc technical ofﬁce or directly
+to a staff member of the speciﬁc technical ofﬁce
+PARTICIPIUM - FAQ
+ Last update: 9 Dec. 2025
+PT-01
+PT-02
+PT-03
+PT-04
+PT-05
+PT-06
+
+NO LONGER VALID: Only authenticated users (i.e. citizens) can view reports. --> From
+sprint 4 also visitors (unregistered users) can view reports
+An anonymous user's name still visible to the staff and only hidden in the Turin map of
+reports for citizens
+Specify in your project documentation (e.g. the GitHub readme or a speciﬁc PDF ﬁle)
+which technical ofﬁces you have set up and which report categories they deal with.
+Updated.
+Only technical ofﬁce staff members can have multiple roles
+Notiﬁcations/messages can be set to either be sent in real time or when the page is
+refreshed, depending on your preference.
+An anonymous user's name still visible to the staff and only hidden in the Turin map of
+reports for citizens
+PT-07
+PT-08
+PT-09
+PT-10
+PT-11
+PT-12
+PT-13
+PT-14
+PT-15
+PT-16
+
+Updated.
+See PT#11
+External maintainers are added by the system administrator (see notes to story PT-03 in
+the product backlog).
+Each maintainer should have their own individual account.
+Assignment logic is left to the teams, as done for municipality technical ofﬁces.
+Case1 : Comments/information exchanged between a technical ofﬁce and an external
+maintainer are 1. report-speciﬁc and 2. reserved.
+Case2: any communication between a technical ofﬁce and external maintainers without
+access to Participium is out of sscope.
+PT-17
+PT-18
+PT-19
+PT-20
+PT-21
+PT-22
+PT-23
+PT-24
+PT-25
+PT-26
+PT-27

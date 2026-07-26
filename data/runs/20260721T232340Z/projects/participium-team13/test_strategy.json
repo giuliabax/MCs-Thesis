@@ -1,0 +1,183 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports without any authentication headers or cookies. Verify that the response contains a list of reports where the 'status' is 'Approved'. Ensure that the response includes map-compatible data (e.g., coordinates) and that no sensitive fields (like full user names for anonymous users) are exposed in a way that violates domain rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for unregistered users to view public data as per requirement PT28."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{reportId}/status",
+    "http_method": "PATCH",
+    "prompt": "Ensure a valid session exists for an 'external_maintainer' role. Perform a PATCH request to /reports/{reportId}/status with a new status value (e.g., 'In Progress'). Verify that the status is updated successfully and that the response reflects the change.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a valid session for role 'external_maintainer'."
+    ],
+    "cleanup_strategy": "No cleanup required for status updates; the state change is the intended outcome.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability of external maintainers to update report statuses per PT25."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{reportId}/assign-external",
+    "http_method": "POST",
+    "prompt": "Ensure a valid session exists for a 'technical_office_staff_member' role. Perform a POST request to /reports/{reportId}/assign-external with an invalid external maintainer ID (e.g., non-existent or null). Verify that the API returns an appropriate error status code (e.g., 400 Bad Request) indicating that the assignment failed due to the invalid target.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a valid session for role 'technical_office_staff_member'."
+    ],
+    "cleanup_strategy": "Verify that no unintended side effects occurred; ensure the report was not assigned to anyone.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the system handles invalid external maintainer IDs gracefully and does not allow assignment to non-existent users."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports without authentication. Verify that the response filters out reports that are not in 'Approved' status (e.g., 'Pending Approval', 'Assigned'). Ensure that the response does not include sensitive information such as full user names for anonymous users, adhering to domain rules.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the filtering logic to ensure only approved reports are visible and sensitive data is hidden for unregistered users."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{reportId}/assign-external",
+    "http_method": "POST",
+    "prompt": "Ensure a valid session exists for a 'technical_office_staff_member' role. First, create a new report via POST /reports. Then, perform a POST request to /reports/{reportId}/assign-external with a valid external maintainer ID. Verify that the assignment is successful and that the report's state transitions correctly (e.g., from 'Pending Approval' to 'Assigned').",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a valid session for role 'technical_office_staff_member'.",
+      "POST /reports to create a new report."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{reportId} if it was not successfully assigned, or verify that the assignment operation did not leave the system in an inconsistent state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the dependency between creating a report and assigning it to an external maintainer, ensuring proper state transitions."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/citizen/signup",
+    "http_method": "POST",
+    "prompt": "Execute a happy path registration. Send a POST request to /citizen/signup with valid JSON containing 'name' and 'username'. Ensure the response indicates successful creation or returns a session token/confirmation ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200",
+      "201"
+    ],
+    "rationale": "Validates the core entry point for new users as defined in PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/citizen/verify",
+    "http_method": "POST",
+    "prompt": "Execute a happy path verification. First, ensure a user exists (via PT01 setup). Send a POST request to /citizen/verify with the correct 'code' and 'username'. Verify the account status changes to active.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute PT01 (signup) to create a user record."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the state transition from unverified to verified as per PT27 and domain rules."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal notes on a report.",
+    "api_endpoint": "/reports/{reportId}/internal-notes",
+    "http_method": "POST",
+    "prompt": "Execute a happy path for internal note exchange. First, create a report (via PT01 signup + PT27 verify + POST /reports). Then, send a POST request to /reports/{reportId}/internal-notes with valid JSON content as a technical office staff member.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Authenticate as technical_office_staff_member.",
+      "Execute PT01 (signup) to create a user.",
+      "Execute PT27 (verify) to activate the user.",
+      "POST /reports with valid data to create a report resource."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was created; otherwise verify no resource exists.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the internal communication workflow for staff as per PT26 and domain rules regarding report-specific notes."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators.",
+    "api_endpoint": "/reports/{reportId}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a stateful workflow test. First, create a report (via PT01 signup + PT27 verify + POST /reports). Then, simulate an operator sending a message (POST /reports/{reportId}/messages). Finally, execute this item to have the citizen reply to that specific message.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen.",
+      "Execute PT01 (signup) to create a user.",
+      "Execute PT27 (verify) to activate the user.",
+      "POST /reports with valid data to create a report resource.",
+      "POST /reports/{reportId}/messages with valid operator message content."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was created; otherwise verify no resource exists.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the multi-step communication flow where a citizen replies to an existing operator message, covering PT18."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/geocode",
+    "http_method": "GET",
+    "prompt": "Execute a happy path test for geocoding. Send a GET request to /geocode with a valid address string (e.g., 'Piazza Castello, Turin') in the query parameter or body as per API spec. Verify that the response contains valid latitude and longitude coordinates.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality of geolocation required for report creation (PT04). No auth needed per API analysis."
+  }
+]

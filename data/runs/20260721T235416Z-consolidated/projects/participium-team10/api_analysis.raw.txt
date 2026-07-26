@@ -1,0 +1,460 @@
+{
+  "summary": "API for managing citizen reports, user authentication (citizens and municipality staff), external maintenance companies, department roles, and internal communication flows.",
+  "operations": [
+    {
+      "path": "/api/sessions",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Login endpoint creates session; requires LoginRequest body"]
+    },
+    {
+      "path": "/api/sessions/current",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/sessions"],
+      "notes": ["Returns authenticated user data; requires active session"]
+    },
+    {
+      "path": "/api/sessions/current",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/sessions"],
+      "notes": ["Logout endpoint destroys session; requires active session"]
+    },
+    {
+      "path": "/api/sessions/verify",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/api/users"],
+      "notes": ["Verifies email with 6-digit code; requires prior registration via POST /api/users"]
+    },
+    {
+      "path": "/api/sessions/resend-code",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/api/users"],
+      "notes": ["Resends OTP code; requires registered but unverified account"]
+    },
+    {
+      "path": "/api/companies",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Creates external maintenance company; requires admin role"]
+    },
+    {
+      "path": "/api/companies",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/companies"],
+      "notes": ["Lists all companies; requires admin role"]
+    },
+    {
+      "path": "/api/departments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Returns municipality departments; requires admin role"]
+    },
+    {
+      "path": "/api/departments/roles/mapping",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/departments"],
+      "notes": ["Returns department-role mappings; requires admin role"]
+    },
+    {
+      "path": "/api/departments/{id}/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/departments"],
+      "notes": ["Returns roles for specific department; requires admin role"]
+    },
+    {
+      "path": "/api/proxy/address",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Geocoding proxy: converts lat/lng to address; no auth required"]
+    },
+    {
+      "path": "/api/proxy/coordinates",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Geocoding proxy: converts address to lat/lng; no auth required"]
+    },
+    {
+      "path": "/api/municipality/users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/departments/roles/mapping"],
+      "notes": ["Creates municipality user with roles; requires admin role and valid department_role_ids"]
+    },
+    {
+      "path": "/api/municipality/users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/municipality/users"],
+      "notes": ["Lists all municipality users; requires admin role"]
+    },
+    {
+      "path": "/api/municipality/users/department-roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/departments/roles/mapping"],
+      "notes": ["Returns all department-role combinations; requires admin role"]
+    },
+    {
+      "path": "/api/municipality/users/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/municipality/users"],
+      "notes": ["Gets user by ID; requires admin role"]
+    },
+    {
+      "path": "/api/municipality/users/{id}",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/municipality/users"],
+      "notes": ["Updates user info/roles; replaces all roles if department_role_ids provided"]
+    },
+    {
+      "path": "/api/municipality/users/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/municipality/users"],
+      "notes": ["Deletes user; requires admin role"]
+    },
+    {
+      "path": "/api/municipality/users/{id}/role",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/municipality/users"],
+      "notes": ["Adds single role without removing existing ones"]
+    },
+    {
+      "path": "/api/municipality/users/{id}/roles",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/municipality/users"],
+      "notes": ["Replaces all roles with new list"]
+    },
+    {
+      "path": "/api/municipality/users/{id}/roles/{roleId}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/municipality/users"],
+      "notes": ["Removes single role; requires at least one role remaining"]
+    },
+    {
+      "path": "/api/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Creates geolocated report; requires Citizen role"]
+    },
+    {
+      "path": "/api/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/api/reports"],
+      "notes": ["Lists all reports; public access without auth"]
+    },
+    {
+      "path": "/api/reports/search",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/api/proxy/coordinates"],
+      "notes": ["Searches reports by address; geocodes address internally"]
+    },
+    {
+      "path": "/api/reports/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Lists valid report categories; public access"]
+    },
+    {
+      "path": "/api/reports/statuses",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Lists valid report statuses; public access"]
+    },
+    {
+      "path": "/api/reports/assigned/me",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/reports"],
+      "notes": ["Gets reports assigned to current user; requires staff role"]
+    },
+    {
+      "path": "/api/reports/{id}/status",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/reports"],
+      "notes": ["Updates report status; role-based transitions required"]
+    },
+    {
+      "path": "/api/reports/{id}/assign-external",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/companies", "/api/users/external-maintainers"],
+      "notes": ["Assigns report to external maintainer; requires Assigned status and valid company match"]
+    },
+    {
+      "path": "/api/reports/assigned/external/{externalMaintainerId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/users/external-maintainers"],
+      "notes": ["Gets reports assigned to specific external maintainer"]
+    },
+    {
+      "path": "/api/reports/map",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/api/proxy/coordinates"],
+      "notes": ["Returns approved reports for map; public access"]
+    },
+    {
+      "path": "/api/reports/{id}/internal-comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/reports"],
+      "notes": ["Gets internal comments; staff/external maintainer access only"]
+    },
+    {
+      "path": "/api/reports/{id}/internal-comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/reports"],
+      "notes": ["Adds internal comment; staff/external maintainer access only"]
+    },
+    {
+      "path": "/api/reports/{reportId}/internal-comments/{commentId}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/reports"],
+      "notes": ["Deletes internal comment; only author can delete"]
+    },
+    {
+      "path": "/api/reports/{id}/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/reports"],
+      "notes": ["Gets messages for report; staff and reporter access only"]
+    },
+    {
+      "path": "/api/reports/{id}/messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/reports"],
+      "notes": ["Sends message to reporter; staff access only"]
+    },
+    {
+      "path": "/api/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/reports"],
+      "notes": ["Gets specific report by ID; requires auth"]
+    },
+    {
+      "path": "/api/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists municipality roles; requires admin role"]
+    },
+    {
+      "path": "/api/users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Registers new citizen; requires RegisterRequest body"]
+    },
+    {
+      "path": "/api/users/me",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/sessions"],
+      "notes": ["Updates citizen profile; requires active session"]
+    },
+    {
+      "path": "/api/users/me/password",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/sessions"],
+      "notes": ["Updates password; requires active session"]
+    },
+    {
+      "path": "/api/users/external-maintainers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/companies"],
+      "notes": ["Gets external maintainers by category; requires staff role"]
+    },
+    {
+      "path": "/api/users/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/reports"],
+      "notes": ["Gets notifications; triggered by status changes or messages"]
+    },
+    {
+      "path": "/api/users/notifications/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/users/notifications"],
+      "notes": ["Marks notification as read/unread; only owner can update"]
+    },
+    {
+      "path": "/api/users/username/{username}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Finds user by username; public access"]
+    },
+    {
+      "path": "/api/users/telegram-link-code",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/users/me"],
+      "notes": ["Generates Telegram link code; requires active session"]
+    },
+    {
+      "path": "/api/users/telegram-status",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/users/me"],
+      "notes": ["Checks Telegram link status; requires active session"]
+    },
+    {
+      "path": "/api/users/telegram-confirm",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/users/telegram-link-code"],
+      "notes": ["Confirms Telegram link after user acknowledgment"]
+    },
+    {
+      "path": "/api/users/telegram-unlink",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/users/me"],
+      "notes": ["Removes Telegram link; requires active session"]
+    }
+  ],
+  "authentication_notes": [
+    "POST /api/sessions initiates login and creates session.",
+    "GET /api/sessions/current and DELETE /api/sessions/current manage session lifecycle.",
+    "POST /api/users registers citizen without auth; POST /api/sessions/verify activates account after email verification.",
+    "Most endpoints require authentication via active session created by POST /api/sessions.",
+    "Admin-only endpoints include POST /api/companies, GET /api/departments, and user management operations.",
+    "Citizen endpoints (e.g., PATCH /api/users/me) require authenticated citizen session."
+  ],
+  "dependencies": [
+    "POST /api/users must precede POST /api/sessions/verify for account activation.",
+    "POST /api/companies must precede PATCH /api/reports/{id}/assign-external to ensure valid external maintainer assignment.",
+    "GET /api/departments/roles/mapping is prerequisite for POST /api/municipality/users to assign roles.",
+    "POST /api/sessions must precede all authenticated endpoints requiring session state.",
+    "PATCH /api/reports/{id}/status depends on prior report creation via POST /api/reports."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/users",
+      "dependent_method": "POST",
+      "dependent_path": "/api/sessions/verify",
+      "dependency_type": "state",
+      "reason": "Verification requires a registered but unverified account."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/api/departments/roles/mapping",
+      "dependent_method": "POST",
+      "dependent_path": "/api/municipality/users",
+      "dependency_type": "resource",
+      "reason": "User creation requires valid department_role_ids from mapping endpoint."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/companies",
+      "dependent_method": "PATCH",
+      "dependent_path": "/api/reports/{id}/assign-external",
+      "dependency_type": "authorization",
+      "reason": "External maintainer assignment requires existing company with matching category."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/sessions",
+      "dependent_method": "GET",
+      "dependent_path": "/api/sessions/current",
+      "dependency_type": "state",
+      "reason": "Current user endpoint requires active session from login."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/api/reports/{id}/status",
+      "dependency_type": "resource",
+      "reason": "Status update requires existing report resource."
+    }
+  ],
+  "risks": [
+    "Ambiguity in role-based access control for report status transitions.",
+    "Potential race conditions during email verification code expiration.",
+    "Lack of explicit error handling for concurrent session management.",
+    "Unclear behavior when multiple roles are assigned via PUT /api/municipality/users/{id}."
+  ]
+}

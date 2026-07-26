@@ -1,0 +1,310 @@
+{
+  "matches": [
+    {
+      "requirement_id": "PT28",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/reports", "operation_id": "getReports"}
+      ],
+      "evidence": ["Retrieve all public Reports for map visualization"],
+      "missing_behaviors": [],
+      "rationale": "GET /reports exposes approved reports for map visualization as required"
+    },
+    {
+      "requirement_id": "PT24",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/officers/assign-report", "operation_id": null}
+      ],
+      "evidence": ["Assign a report to a maintainer"],
+      "missing_behaviors": [],
+      "rationale": "POST /officers/assign-report documents assigning reports to maintainers"
+    },
+    {
+      "requirement_id": "PT25",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "PATCH", "path": "/maintainers/reports/{id}/status", "operation_id": null}
+      ],
+      "evidence": ["Maintainer updates the status of an assigned report"],
+      "missing_behaviors": [],
+      "rationale": "PATCH /maintainers/reports/{id}/status documents status updates for maintainers"
+    },
+    {
+      "requirement_id": "PT26",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/internal-messages", "operation_id": null},
+        {"method": "GET", "path": "/internal-messages/report/{reportId}", "operation_id": null}
+      ],
+      "evidence": ["Send an internal message", "List internal messages for a report"],
+      "missing_behaviors": [],
+      "rationale": "Internal messaging endpoints support exchanging information on reports"
+    },
+    {
+      "requirement_id": "PT01",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/users", "operation_id": "createUser"}
+      ],
+      "evidence": ["Create user."],
+      "missing_behaviors": [],
+      "rationale": "POST /users documents user registration/creation functionality"
+    },
+    {
+      "requirement_id": "PT27",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/users/generateotp", "operation_id": "generateOtp"},
+        {"method": "POST", "path": "/users/verifyotp", "operation_id": "verifyOtp"}
+      ],
+      "evidence": ["Generate OTP for user", "Verify OTP for user"],
+      "missing_behaviors": [],
+      "rationale": "OTP generation and verification endpoints support account confirmation"
+    },
+    {
+      "requirement_id": "PT02",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/users", "operation_id": "createUser"},
+        {"method": "POST", "path": "/officers", "operation_id": "createOfficer"}
+      ],
+      "evidence": ["Create user.", "Admins create new Officer"],
+      "missing_behaviors": [],
+      "rationale": "User and officer creation endpoints support setting up municipality users"
+    },
+    {
+      "requirement_id": "PT03",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "PATCH", "path": "/admin/role/add", "operation_id": null},
+        {"method": "PATCH", "path": "/admin/role/remove", "operation_id": null}
+      ],
+      "evidence": ["Admin updates officer roles"],
+      "missing_behaviors": [],
+      "rationale": "Admin role add/remove endpoints support assigning roles to users"
+    },
+    {
+      "requirement_id": "PT04",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports", "operation_id": "uploadReport"}
+      ],
+      "evidence": ["User upload a new Report"],
+      "missing_behaviors": [],
+      "rationale": "Report creation endpoint accepts location data for geolocation"
+    },
+    {
+      "requirement_id": "PT05",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports", "operation_id": "uploadReport"}
+      ],
+      "evidence": ["User upload a new Report"],
+      "missing_behaviors": [],
+      "rationale": "Report creation endpoint accepts report details for classification"
+    },
+    {
+      "requirement_id": "PT06",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "PATCH", "path": "/officers/reviewdocs/{id_doc}", "operation_id": "reviewDoc"}
+      ],
+      "evidence": ["Update Report assigned to him"],
+      "missing_behaviors": [],
+      "rationale": "Review docs endpoint supports approve/reject report functionality"
+    },
+    {
+      "requirement_id": "PT07",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/reports", "operation_id": "getReports"}
+      ],
+      "evidence": ["Retrieve all public Reports for map visualization"],
+      "missing_behaviors": [],
+      "rationale": "Same as PT28 - GET /reports exposes approved reports for map visualization"
+    },
+    {
+      "requirement_id": "PT15",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports", "operation_id": "uploadReport"}
+      ],
+      "evidence": ["User upload a new Report"],
+      "missing_behaviors": [],
+      "rationale": "Report creation endpoint can accept anonymity flag in request body"
+    },
+    {
+      "requirement_id": "PT08",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/officers/assigned", "operation_id": "getAssignedReports"}
+      ],
+      "evidence": ["Retrieve reports assigned to the authenticated officer"],
+      "missing_behaviors": [],
+      "rationale": "GET /officers/assigned exposes list of assigned reports for officers"
+    },
+    {
+      "requirement_id": "PT09",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "PATCH", "path": "/users/me", "operation_id": "updateMyProfile"},
+        {"method": "GET", "path": "/notifications", "operation_id": null}
+      ],
+      "evidence": ["Update authenticated user's profile", "List user notifications"],
+      "missing_behaviors": [],
+      "rationale": "Profile update and notification endpoints support account configuration"
+    },
+    {
+      "requirement_id": "PT30",
+      "status": "partially_implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/reports", "operation_id": "getReports"}
+      ],
+      "evidence": ["Retrieve all public Reports for map visualization"],
+      "missing_behaviors": ["Address-based search/filtering not documented in operation parameters"],
+      "rationale": "Report retrieval exists but address-specific filtering is not visible in OpenAPI"
+    },
+    {
+      "requirement_id": "PT10",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "PATCH", "path": "/admin/role/add", "operation_id": null},
+        {"method": "PATCH", "path": "/admin/role/remove", "operation_id": null}
+      ],
+      "evidence": ["Admin updates officer roles"],
+      "missing_behaviors": [],
+      "rationale": "Admin role endpoints support modifying user roles"
+    },
+    {
+      "requirement_id": "PT11",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "PATCH", "path": "/maintainers/reports/{id}/status", "operation_id": null}
+      ],
+      "evidence": ["Maintainer updates the status of an assigned report"],
+      "missing_behaviors": [],
+      "rationale": "Status update endpoint supports updating report statuses"
+    },
+    {
+      "requirement_id": "PT12",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports", "operation_id": "uploadReport"},
+        {"method": "POST", "path": "/auth/telegram", "operation_id": "retrieveTelegramAccount"}
+      ],
+      "evidence": ["User upload a new Report", "Retrieve user account associated with Telegram username"],
+      "missing_behaviors": [],
+      "rationale": "Report creation and Telegram integration endpoints support bot-based report submission"
+    },
+    {
+      "requirement_id": "PT13",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/telegram/reports", "operation_id": null}
+      ],
+      "evidence": ["Get reports for Telegram notifications"],
+      "missing_behaviors": [],
+      "rationale": "Telegram reports endpoint supports checking report status via bot"
+    },
+    {
+      "requirement_id": "PT14",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/faqs", "operation_id": null}
+      ],
+      "evidence": ["Get FAQ entries"],
+      "missing_behaviors": [],
+      "rationale": "FAQ endpoint provides help commands and assistance information"
+    },
+    {
+      "requirement_id": "PT18",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports/{id}/message", "operation_id": null}
+      ],
+      "evidence": ["Officer sends a message to report author"],
+      "missing_behaviors": [],
+      "rationale": "Message endpoint supports replying to municipal operators"
+    },
+    {
+      "requirement_id": "PT16",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports/{id}/follow", "operation_id": null},
+        {"method": "GET", "path": "/users/me/followed-reports", "operation_id": null}
+      ],
+      "evidence": ["Follow a report", "Get reports followed by current user"],
+      "missing_behaviors": [],
+      "rationale": "Follow/unfollow endpoints support following other citizens' reports"
+    },
+    {
+      "requirement_id": "PT17",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/notifications", "operation_id": null},
+        {"method": "POST", "path": "/telegram/reports", "operation_id": null}
+      ],
+      "evidence": ["List user notifications", "Update reports for Telegram notifications"],
+      "missing_behaviors": [],
+      "rationale": "Notification and Telegram endpoints support push notification delivery"
+    },
+    {
+      "requirement_id": "PT19",
+      "status": "partially_implemented",
+      "matched_operations": [
+        {"method": "PATCH", "path": "/users/me", "operation_id": "updateMyProfile"},
+        {"method": "GET", "path": "/notifications", "operation_id": null}
+      ],
+      "evidence": ["Update authenticated user's profile", "List user notifications"],
+      "missing_behaviors": ["Email-specific alert configuration not explicitly documented"],
+      "rationale": "Notification system exists but email preferences endpoint is not clearly visible"
+    },
+    {
+      "requirement_id": "PT20",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/reports/stats", "operation_id": "getReportStats"}
+      ],
+      "evidence": ["Get reports statistics"],
+      "missing_behaviors": [],
+      "rationale": "Stats endpoint exposes public report statistics"
+    },
+    {
+      "requirement_id": "PT21",
+      "status": "partially_implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/reports/stats", "operation_id": "getReportStats"}
+      ],
+      "evidence": ["Get reports statistics"],
+      "missing_behaviors": ["Private/detailed statistics endpoint not distinguished from public stats"],
+      "rationale": "Stats endpoint exists but private vs public statistics distinction is not visible"
+    },
+    {
+      "requirement_id": "PT29",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["Automatic assignment configuration endpoint not documented"],
+      "rationale": "No endpoint visible for configuring automatic report assignment rules by category"
+    },
+    {
+      "requirement_id": "PT22",
+      "status": "partially_implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/reports", "operation_id": "getReports"}
+      ],
+      "evidence": ["Retrieve all public Reports for map visualization"],
+      "missing_behaviors": ["Filter parameters for summary table not documented in operation schema"],
+      "rationale": "Report retrieval exists but filtering capabilities are not visible in OpenAPI"
+    },
+    {
+      "requirement_id": "PT23",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["Export/download functionality for reports table not documented"],
+      "rationale": "No CSV/Excel export or download endpoint visible in OpenAPI contract"
+    }
+  ]
+}

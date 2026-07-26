@@ -1,0 +1,448 @@
+{
+  "summary": "A multi-role API supporting citizen and staff workflows. It handles user registration/login (including Telegram auth), role management, office/category data, report lifecycle (creation, review, assignment to staff/external users, start/finish/suspend/resume), and messaging notifications.",
+  "operations": [
+    {
+      "path": "/sessions/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Initial entry point for authentication; requires identifier and password"]
+    },
+    {
+      "path": "/sessions/signup",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["User registration; userType enum includes CITIZEN/STAFF/ADMIN"]
+    },
+    {
+      "path": "/sessions/me/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/sessions/login"],
+      "notes": ["Requires authentication; returns roles for current user"]
+    },
+    {
+      "path": "/sessions/{id}/role",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/roles"],
+      "notes": ["Admin-only; assigns a single role by roleId"]
+    },
+    {
+      "path": "/sessions/{id}/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/roles"],
+      "notes": ["Admin/staff; retrieves roles for a specific user"]
+    },
+    {
+      "path": "/sessions/{id}/roles",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/roles"],
+      "notes": ["Admin-only; replaces all roles for a user"]
+    },
+    {
+      "path": "/sessions/{id}/pfp",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Citizen; retrieves profile picture URL"]
+    },
+    {
+      "path": "/sessions/{id}/config",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Citizen; updates account config and profile photo"]
+    },
+    {
+      "path": "/sessions/available_staff",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Admin; lists available staff members"]
+    },
+    {
+      "path": "/sessions/assigned_staff",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Admin; lists assigned staff members"]
+    },
+    {
+      "path": "/sessions/current",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/sessions/login"],
+      "notes": ["Returns current authenticated user info"]
+    },
+    {
+      "path": "/sessions/current",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Logs out the current user; terminates session"]
+    },
+    {
+      "path": "/sessions/current/verify_email",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/sessions/signup"],
+      "notes": ["Verifies email with code; prerequisite is signup"]
+    },
+    {
+      "path": "/sessions/current/email_verified",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Checks if current user's email is verified"]
+    },
+    {
+      "path": "/sessions/current/resend_verification",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Resends email verification code"]
+    },
+    {
+      "path": "/sessions/current/telegram/request_code",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Requests Telegram verification code for current user"]
+    },
+    {
+      "path": "/sessions/telegram/verify",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Alternative login via Telegram; auto-logs in user"]
+    },
+    {
+      "path": "/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists all available roles; likely required for role assignment operations"]
+    },
+    {
+      "path": "/offices",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public endpoint listing all offices"]
+    },
+    {
+      "path": "/offices/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/offices"],
+      "notes": ["Retrieves a specific office by id; depends on office list for valid ids"]
+    },
+    {
+      "path": "/offices/{id}/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/offices"],
+      "notes": ["Retrieves categories handled by a specific office"]
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public endpoint listing all categories; required for report creation categoryId"]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/categories"],
+      "notes": ["Creates a new report; requires categoryId from categories endpoint"]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists reports with optional category/external filters; staff-only"]
+    },
+    {
+      "path": "/reports/technician/{userId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists reports assigned to a specific technician; staff-only"]
+    },
+    {
+      "path": "/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Retrieves a specific report by id; depends on report creation or listing"]
+    },
+    {
+      "path": "/reports/{id}/review",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Approve/reject report; requires existing report"]
+    },
+    {
+      "path": "/reports/{id}/start",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Starts work on a report; requires existing report"]
+    },
+    {
+      "path": "/reports/{id}/finish",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Finishes a report; requires existing report"]
+    },
+    {
+      "path": "/reports/{id}/suspend",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Suspends a report; requires existing report"]
+    },
+    {
+      "path": "/reports/{id}/resume",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Resumes a suspended report; requires existing report"]
+    },
+    {
+      "path": "/reports/{id}/assign_external",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/sessions/available_staff"],
+      "notes": ["Assigns report to external maintainer; requires available staff list"]
+    },
+    {
+      "path": "/reports/{id}/external/start",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["External maintainer starts work; requires existing report"]
+    },
+    {
+      "path": "/reports/{id}/external/finish",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["External maintainer finishes work; requires existing report"]
+    },
+    {
+      "path": "/reports/{id}/external/suspend",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["External maintainer suspends report; requires existing report"]
+    },
+    {
+      "path": "/reports/{id}/external/resume",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["External maintainer resumes report; requires existing report"]
+    },
+    {
+      "path": "/reports/{id}/photos",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Retrieves photos for a report; requires existing report"]
+    },
+    {
+      "path": "/conversations",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists conversations for current user"]
+    },
+    {
+      "path": "/conversations/{conversationId}/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/conversations"],
+      "notes": ["Retrieves messages for a specific conversation; depends on conversation list"]
+    },
+    {
+      "path": "/conversations/{conversationId}/messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/conversations"],
+      "notes": ["Sends a message in an existing conversation; depends on conversation list"]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists notifications for current user"]
+    },
+    {
+      "path": "/notifications/counts",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Gets notification counts for current user"]
+    },
+    {
+      "path": "/notifications/{conversationId}/read",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/conversations"],
+      "notes": ["Marks notifications for a conversation as read; depends on conversation list"]
+    }
+  ],
+  "authentication_notes": ["/sessions/login and /sessions/telegram/verify are the only public auth endpoints. All other operations require authentication tokens obtained from these endpoints."],
+  "dependencies": [
+    "POST /sessions/signup must precede POST /sessions/current/verify_email",
+    "GET /roles is a prerequisite for role assignment operations (PATCH /sessions/{id}/role, PUT /sessions/{id}/roles)",
+    "GET /categories is required before creating reports (POST /reports)",
+    "GET /offices and GET /offices/{id} provide office data; GET /offices/{id}/categories depends on a valid office id",
+    "GET /conversations is required before accessing or posting messages to specific conversations",
+    "POST /sessions/current/verify_email requires prior user registration (signup)",
+    "PATCH /reports/{id}/assign_external depends on availability of staff via GET /sessions/available_staff"
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/sessions/signup",
+      "dependent_method": "POST",
+      "dependent_path": "/sessions/current/verify_email",
+      "dependency_type": "state",
+      "reason": "Email verification can only occur after a user has been registered."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/roles",
+      "dependent_method": "PATCH",
+      "dependent_path": "/sessions/{id}/role",
+      "dependency_type": "authorization",
+      "reason": "Role assignment requires knowledge of available role IDs."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/roles",
+      "dependent_method": "PUT",
+      "dependent_path": "/sessions/{id}/roles",
+      "dependency_type": "authorization",
+      "reason": "Role replacement requires knowledge of available role IDs."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/categories",
+      "dependent_method": "POST",
+      "dependent_path": "/reports",
+      "dependency_type": "resource",
+      "reason": "Report creation requires a valid categoryId from the categories list."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/offices",
+      "dependent_method": "GET",
+      "dependent_path": "/offices/{id}",
+      "dependency_type": "resource",
+      "reason": "Retrieving a specific office requires an id from the offices list."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/offices",
+      "dependent_method": "GET",
+      "dependent_path": "/offices/{id}/categories",
+      "dependency_type": "resource",
+      "reason": "Retrieving categories for an office requires a valid office id."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/conversations",
+      "dependent_method": "GET",
+      "dependent_path": "/conversations/{conversationId}/messages",
+      "dependency_type": "resource",
+      "reason": "Retrieving messages requires a valid conversation id."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/conversations",
+      "dependent_method": "POST",
+      "dependent_path": "/conversations/{conversationId}/messages",
+      "dependency_type": "resource",
+      "reason": "Sending a message requires a valid conversation id."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/conversations",
+      "dependent_method": "POST",
+      "dependent_path": "/notifications/{conversationId}/read",
+      "dependency_type": "resource",
+      "reason": "Marking notifications as read requires a valid conversation id."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/sessions/available_staff",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{id}/assign_external",
+      "dependency_type": "resource",
+      "reason": "Assigning a report to an external maintainer requires knowledge of available staff."
+    }
+  ],
+  "risks": [
+    "Ambiguity in role assignment: PATCH /sessions/{id}/role vs PUT /sessions/{id}/roles may conflict if not clearly distinguished by client logic.",
+    "External maintainer operations (/reports/{id}/external/*) assume the external user is authenticated but do not specify how they obtain tokens.",
+    "Telegram verification endpoint does not require auth, which could allow unauthenticated users to bypass login if username/code validation is weak.",
+    "Report lifecycle states (start/finish/suspend/resume) are stateful; missing error handling for invalid state transitions is a risk.",
+    "Email verification flow relies on external email service; 410 Gone may indicate expired codes but lacks retry guidance."
+  ]
+}

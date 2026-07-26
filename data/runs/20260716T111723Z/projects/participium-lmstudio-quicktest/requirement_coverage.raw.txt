@@ -1,0 +1,290 @@
+{
+  "matches": [
+    {
+      "requirement_id": "PT28",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/reports/approved", "operation_id": "listApprovedReports"}
+      ],
+      "evidence": ["GET /reports/approved with auth_required: null exposes approved reports for public map viewing"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents GET /reports/approved endpoint accessible without authentication, covering the core behavior of viewing approved reports on a map."
+    },
+    {
+      "requirement_id": "PT24",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "PUT", "path": "/reports/{id}/mainteiner", "operation_id": "assignReportMainteiner"},
+        {"method": "POST", "path": "/reports/{id}/auto-assign-maintainer", "operation_id": "autoAssignMaintainer"}
+      ],
+      "evidence": ["PUT /reports/{id}/mainteiner assigns external maintainer; POST /reports/{id}/auto-assign-maintainer enables auto-assignment"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents both manual and automatic assignment of external maintainers to reports."
+    },
+    {
+      "requirement_id": "PT25",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "PUT", "path": "/reports/{id}/status", "operation_id": "updateReportStatus"}
+      ],
+      "evidence": ["PUT /reports/{id}/status allows updating report status for assigned maintainers"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents PUT /reports/{id}/status endpoint for updating report status."
+    },
+    {
+      "requirement_id": "PT26",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports/{id}/internal-comments", "operation_id": "createInternalComment"},
+        {"method": "GET", "path": "/reports/{id}/internal-comments", "operation_id": "listInternalComments"}
+      ],
+      "evidence": ["POST /reports/{id}/internal-comments creates internal comments; GET /reports/{id}/internal-comments lists them"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents both creating and listing internal comments for report coordination."
+    },
+    {
+      "requirement_id": "PT01",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/registration", "operation_id": "registerCitizen"}
+      ],
+      "evidence": ["POST /registration endpoint for citizen account registration"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents POST /registration endpoint for citizen registration."
+    },
+    {
+      "requirement_id": "PT27",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/citizens/verification-code", "operation_id": "createCitizenVerificationCode"},
+        {"method": "POST", "path": "/citizens/verify-email", "operation_id": "verifyCitizenEmail"}
+      ],
+      "evidence": ["POST /citizens/verification-code generates verification code; POST /citizens/verify-email validates with code"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents email verification workflow with code generation and validation endpoints."
+    },
+    {
+      "requirement_id": "PT02",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/admin/createuser", "operation_id": "createMunicipalityUser"}
+      ],
+      "evidence": ["POST /admin/createuser creates municipality operator or external maintainer accounts"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents POST /admin/createuser endpoint for setting up municipality users."
+    },
+    {
+      "requirement_id": "PT03",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/admin/addcategory", "operation_id": "addOperatorCategory"},
+        {"method": "DELETE", "path": "/admin/removecategory", "operation_id": "removeOperatorCategory"}
+      ],
+      "evidence": ["POST /admin/addcategory adds category to operator; DELETE /admin/removecategory removes category"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents category assignment operations which relate to role configuration."
+    },
+    {
+      "requirement_id": "PT04",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No endpoint for selecting/map location on city map; report creation may accept coordinates but no dedicated map interaction documented"],
+      "rationale": "OpenAPI lacks explicit endpoint for map-based location selection; only POST /reports exists without map-specific parameters visible."
+    },
+    {
+      "requirement_id": "PT05",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports", "operation_id": "createReport"}
+      ],
+      "evidence": ["POST /reports endpoint for creating new citizen reports with details"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents POST /reports endpoint for report creation with classification details."
+    },
+    {
+      "requirement_id": "PT06",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No approve/reject operation documented; only GET /reports/approved lists approved reports but no action to approve/reject"],
+      "rationale": "OpenAPI lacks explicit approve or reject report operations; only listing of approved reports exists."
+    },
+    {
+      "requirement_id": "PT07",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/reports/approved", "operation_id": "listApprovedReports"}
+      ],
+      "evidence": ["GET /reports/approved with auth_required: null exposes approved reports for public viewing"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents GET /reports/approved endpoint accessible without authentication, covering the core behavior."
+    },
+    {
+      "requirement_id": "PT15",
+      "status": "not_assessable",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports", "operation_id": "createReport"}
+      ],
+      "evidence": ["POST /reports endpoint exists but request schema not visible to confirm anonymity parameter"],
+      "missing_behaviors": ["Cannot verify if anonymous flag is supported in report creation without seeing request body schema"],
+      "rationale": "OpenAPI documents POST /reports but without schema details, cannot assess whether anonymity option is supported."
+    },
+    {
+      "requirement_id": "PT08",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/reports/assigned", "operation_id": "listAssignedReports"}
+      ],
+      "evidence": ["GET /reports/assigned lists reports assigned to logged-in technical officer or external maintainer"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents GET /reports/assigned endpoint for viewing assigned reports."
+    },
+    {
+      "requirement_id": "PT09",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "GET", "path": "/citizens", "operation_id": "getCitizenProfile"},
+        {"method": "PUT", "path": "/citizens", "operation_id": "updateCitizenProfile"}
+      ],
+      "evidence": ["GET /citizens retrieves profile; PUT /citizens updates profile including notification settings"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents GET and PUT /citizens endpoints for account configuration."
+    },
+    {
+      "requirement_id": "PT30",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No search endpoint by address or area; only GET /reports lists reports without filter parameters visible"],
+      "rationale": "OpenAPI lacks explicit search endpoint for reports by address/area; no query/filter parameters documented."
+    },
+    {
+      "requirement_id": "PT10",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/admin/addcategory", "operation_id": "addOperatorCategory"},
+        {"method": "DELETE", "path": "/admin/removecategory", "operation_id": "removeOperatorCategory"}
+      ],
+      "evidence": ["POST /admin/addcategory and DELETE /admin/removecategory modify operator categories/roles"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents category modification operations which relate to role assignment for municipality users."
+    },
+    {
+      "requirement_id": "PT11",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "PUT", "path": "/reports/{id}/status", "operation_id": "updateReportStatus"}
+      ],
+      "evidence": ["PUT /reports/{id}/status allows updating report status for technical office staff"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents PUT /reports/{id}/status endpoint for updating report statuses."
+    },
+    {
+      "requirement_id": "PT12",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No Telegram bot-specific endpoints; POST /reports exists but no Telegram integration documented"],
+      "rationale": "OpenAPI lacks Telegram bot-specific endpoints; report creation via Telegram cannot be assessed from REST contract."
+    },
+    {
+      "requirement_id": "PT13",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No Telegram bot-specific endpoints for checking report status"],
+      "rationale": "OpenAPI lacks Telegram bot-specific endpoints; status checking via Telegram cannot be assessed from REST contract."
+    },
+    {
+      "requirement_id": "PT14",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No Telegram bot-specific endpoints for help commands"],
+      "rationale": "OpenAPI lacks Telegram bot-specific endpoints; help commands via Telegram cannot be assessed from REST contract."
+    },
+    {
+      "requirement_id": "PT18",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports/{id}/messages", "operation_id": "createReportMessage"},
+        {"method": "GET", "path": "/reports/{id}/messages", "operation_id": "listReportMessages"}
+      ],
+      "evidence": ["POST /reports/{id}/messages creates messages; GET /reports/{id}/messages lists chat messages"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents message creation and listing endpoints for report chat communication."
+    },
+    {
+      "requirement_id": "PT16",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No follow/subscribe endpoint for following other citizens' reports; GET /chats lists chats but no follow functionality"],
+      "rationale": "OpenAPI lacks explicit follow/subscribe operation for tracking other citizens' reports."
+    },
+    {
+      "requirement_id": "PT17",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No Telegram bot-specific push notification endpoints; GET /notifications exists but no Telegram integration documented"],
+      "rationale": "OpenAPI lacks Telegram bot-specific push notification endpoints; real-time notifications via Telegram cannot be assessed from REST contract."
+    },
+    {
+      "requirement_id": "PT19",
+      "status": "not_assessable",
+      "matched_operations": [
+        {"method": "PUT", "path": "/citizens", "operation_id": "updateCitizenProfile"}
+      ],
+      "evidence": ["PUT /citizens may include notification settings but email alert configuration not visible in schema"],
+      "missing_behaviors": ["Cannot verify if email alerts are configurable without seeing request body schema"],
+      "rationale": "OpenAPI documents PUT /citizens but without schema details, cannot assess whether email alert option is supported."
+    },
+    {
+      "requirement_id": "PT20",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No statistics endpoint for public report trends; no GET /statistics or similar documented"],
+      "rationale": "OpenAPI lacks explicit statistics endpoint for viewing public report trends."
+    },
+    {
+      "requirement_id": "PT21",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No admin-specific statistics endpoint; no GET /admin/statistics or similar documented"],
+      "rationale": "OpenAPI lacks explicit statistics endpoint for municipal administrator private statistics."
+    },
+    {
+      "requirement_id": "PT29",
+      "status": "implemented",
+      "matched_operations": [
+        {"method": "POST", "path": "/reports/{id}/auto-assign-officer", "operation_id": "autoAssignTechnicalOfficer"},
+        {"method": "POST", "path": "/reports/{id}/auto-assign-maintainer", "operation_id": "autoAssignMaintainer"}
+      ],
+      "evidence": ["POST /reports/{id}/auto-assign-officer and POST /reports/{id}/auto-assign-maintainer enable automatic assignment"],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents auto-assignment endpoints for technical officers and maintainers."
+    },
+    {
+      "requirement_id": "PT22",
+      "status": "not_assessable",
+      "matched_operations": [
+        {"method": "GET", "path": "/reports", "operation_id": "listReports"}
+      ],
+      "evidence": ["GET /reports lists reports but filter parameters not visible in schema"],
+      "missing_behaviors": ["Cannot verify if filtering by area/category is supported without seeing request query parameters"],
+      "rationale": "OpenAPI documents GET /reports but without schema details, cannot assess whether filtering functionality is supported."
+    },
+    {
+      "requirement_id": "PT23",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": ["No download/export endpoint for reports summary table; no GET /reports/download or similar documented"],
+      "rationale": "OpenAPI lacks explicit download/export endpoint for report summary table."
+    }
+  ]
+}

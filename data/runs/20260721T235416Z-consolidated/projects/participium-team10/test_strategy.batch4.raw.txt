@@ -1,0 +1,134 @@
+[
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters to explore and analyze existing reports.",
+    "api_endpoint": "/api/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /api/reports. Include query parameters for filtering by category (e.g., 'Water Supply') and status (e.g., 'Pending Approval'). Verify that the response returns a paginated list of report summaries matching the filters, including fields like title, location, category, and status.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Validates the core functionality of browsing and filtering reports as defined in PT22."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Search for reports in a specific area by typing in an address to explore existing reports.",
+    "api_endpoint": "/api/reports/search",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /api/reports/search. Include a query parameter 'address' with a valid street name or partial address (e.g., 'Main St'). Verify that the response returns reports located near the specified address, sorted by relevance or distance.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Validates the search functionality for citizens/unregistered users as defined in PT30."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Reply to messages from municipal operators in the platform to communicate directly about a report.",
+    "api_endpoint": "/api/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /api/reports/{id}/messages. Include a JSON body with 'content' describing a reply to a municipal operator's message. Ensure the session is authenticated as a citizen. Verify that the response creates a new message object and returns it with status 201.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create an active session for a citizen user via POST /api/sessions."
+    ],
+    "cleanup_strategy": "Delete the created message by sending a DELETE request to /api/reports/{id}/messages/{message_id} if it was successfully created; otherwise, verify no resource was created.",
+    "expected_status_codes": [201],
+    "rationale": "Validates the ability for citizens to reply to messages as defined in PT18."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters to explore and analyze existing reports.",
+    "api_endpoint": "/api/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /api/reports. Include query parameters for filtering by category 'Architectural Barriers' and status 'Resolved'. Verify that the response returns only reports matching these specific filters.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Tests the edge case of filtering by a specific combination of category and status to ensure filter logic works correctly."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Search for reports in a specific area by typing in an address to explore existing reports.",
+    "api_endpoint": "/api/reports/search",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /api/reports/search. Include a query parameter 'address' with an empty string or null value. Verify that the system handles this input gracefully, either by returning an error message indicating invalid input or by returning all reports (depending on implementation), but not crashing.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [400],
+    "rationale": "Tests the negative case of providing an invalid or empty address to ensure robust error handling."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Reply to messages from municipal operators in the platform to communicate directly about a report.",
+    "api_endpoint": "/api/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /api/reports/{id}/messages. Include a JSON body with 'content' containing malicious script tags (e.g., '<script>alert(1)</script>'). Verify that the system sanitizes the input and does not execute scripts, returning either a sanitized response or an error if content is restricted.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create an active session for a citizen user via POST /api/sessions."
+    ],
+    "cleanup_strategy": "Delete the created message by sending a DELETE request to /api/reports/{id}/messages/{message_id} if it was successfully created; otherwise, verify no resource was created.",
+    "expected_status_codes": [201, 400],
+    "rationale": "Tests the negative case of XSS vulnerability when posting messages to ensure input sanitization."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Search for reports in a specific area by typing in an address to explore existing reports.",
+    "api_endpoint": "/api/reports/search",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /api/reports/search. Include a query parameter 'address' with a non-existent or very distant address (e.g., 'Mars Colony'). Verify that the response returns an empty list or a message indicating no reports found in that area.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Tests the edge case of searching in an area with no reports to ensure the system handles empty results correctly."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Reply to messages from municipal operators in the platform to communicate directly about a report.",
+    "api_endpoint": "/api/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /api/reports/{id}/messages. Include a JSON body with 'content' as null or an empty string. Verify that the system rejects this input with a 400 Bad Request error, as messages should contain valid content.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create an active session for a citizen user via POST /api/sessions."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [400],
+    "rationale": "Tests the negative case of submitting invalid message content to ensure input validation."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters to explore and analyze existing reports.",
+    "api_endpoint": "/api/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /api/reports. Include query parameters for filtering by category 'Public Green Areas and Playgrounds' and status 'Suspended'. Verify that the response returns only reports matching these specific filters.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Tests the edge case of filtering by a less common category and status combination to ensure filter logic works correctly."
+  }
+]

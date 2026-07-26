@@ -1,0 +1,451 @@
+{
+  "summary": "Participium is a web application for citizens to report urban issues in Turin, managed by municipal offices and external maintainers. It supports registration, report submission via map or Telegram bot, lifecycle management (Pending to Resolved), notifications, statistics, and role-based access control.",
+  "requirements": [
+    {
+      "id": "PT28",
+      "source": "user story",
+      "text": "As an unregistered user I want to see approved reports on an interactive map So that I can know about issues in my area and beyond.",
+      "role": "Unregistered User",
+      "business_value": 990,
+      "constraints": [
+        "Reports must be approved before visibility.",
+        "Map must support zooming."
+      ],
+      "expected_behaviors": [
+        "Approved reports appear on interactive map of Turin geolocated at point indicated by citizen.",
+        "Unregistered users can view reports on maps without login."
+      ]
+    },
+    {
+      "id": "PT24",
+      "source": "user story",
+      "text": "As a technical office staff member I want to assign reports to external maintainers So that specialized maintainers can handle and update the intervention.",
+      "role": "Technical Office Staff Member",
+      "business_value": 980,
+      "constraints": [
+        "Assignment possible for specific reports of certain categories based on content reviewed by technical office staff member.",
+        "External maintainers must be added by system administrator."
+      ],
+      "expected_behaviors": [
+        "Technical office staff member can assign report to external maintainer users.",
+        "Case 1: External maintainer has access to Participium and can update status."
+      ]
+    },
+    {
+      "id": "PT25",
+      "source": "user story",
+      "text": "As an external maintainer I want to update the status of a report assigned to me So that I can updated citizens about the intervention.",
+      "role": "External Maintainer",
+      "business_value": 975,
+      "constraints": [
+        "Only if Case 1 (company has access to Participium).",
+        "Internal comments exchanged are not visible to reporter or citizens."
+      ],
+      "expected_behaviors": [
+        "External maintainer can move report from Assigned to In Progress.",
+        "External maintainer can resolve the report once work is finished."
+      ]
+    },
+    {
+      "id": "PT26",
+      "source": "user story",
+      "text": "As a technical office staff member/external maintainer I want to exchange information and comments on the report internally So that coordination happens without exposing internal notes to citizens.",
+      "role": "Technical Office Staff Member, External Maintainer",
+      "business_value": 970,
+      "constraints": [
+        "Comments are reserved and report-specific.",
+        "Not visible to reporter or citizens."
+      ],
+      "expected_behaviors": [
+        "Technical office staff members and external maintainers can exchange information and comment through the report."
+      ]
+    },
+    {
+      "id": "PT01",
+      "source": "user story",
+      "text": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+      "role": "Citizen",
+      "business_value": 950,
+      "constraints": [
+        "Registration is required before submitting reports.",
+        "Email is a mandatory field for registration."
+      ],
+      "expected_behaviors": [
+        "User gets an email with a confirmation code after registration.",
+        "User can use application only after confirming by entering the code valid for 30 minutes."
+      ]
+    },
+    {
+      "id": "PT27",
+      "source": "user story",
+      "text": "As a citizen I want to confirm my registration with a code So that my account becomes valid and I can start using the system.",
+      "role": "Citizen",
+      "business_value": 945,
+      "constraints": [
+        "Confirmation code is valid for 30 minutes."
+      ],
+      "expected_behaviors": [
+        "User enters confirmation code to activate account."
+      ]
+    },
+    {
+      "id": "PT02",
+      "source": "user story",
+      "text": "As a system administrator I want to set up municipality users So that internal accounts of the municipality are created.",
+      "role": "System Administrator",
+      "business_value": 940,
+      "constraints": [
+        "Roles of 'municipal public relations officer' and 'municipal administrator' are automatically associated with the Organization Office."
+      ],
+      "expected_behaviors": [
+        "System administrator creates internal accounts for municipality staff."
+      ]
+    },
+    {
+      "id": "PT03",
+      "source": "user story",
+      "text": "As a system administrator I want to assign roles to municipality users So that staff can be assigned specific responsibilities.",
+      "role": "System Administrator",
+      "business_value": 935,
+      "constraints": [
+        "Possible roles: municipal public relations officer, municipal administrator, technical office staff member, external maintainer.",
+        "Only technical office staff members can have multiple roles."
+      ],
+      "expected_behaviors": [
+        "System administrator assigns roles to municipality users."
+      ]
+    },
+    {
+      "id": "PT04",
+      "source": "user story",
+      "text": "As a citizen I want to select a location on the city map So that my report is geolocated with latitude and longitude.",
+      "role": "Citizen",
+      "business_value": 930,
+      "constraints": [
+        "Reports must be tied to a specific location."
+      ],
+      "expected_behaviors": [
+        "System uses OpenStreetMap (or any other derivative map based on it), standard layer.",
+        "Report is geolocated at the point indicated by the citizen."
+      ]
+    },
+    {
+      "id": "PT05",
+      "source": "user story",
+      "text": "As a citizen I want to provide details for my report So that the problem is classified correctly.",
+      "role": "Citizen",
+      "business_value": 920,
+      "constraints": [
+        "Mandatory fields: title, description, category, photos (min 1 max 3).",
+        "Once a report has been inserted, it cannot be modified or deleted by the citizen."
+      ],
+      "expected_behaviors": [
+        "System asks citizen if they want the report to be anonymous.",
+        "Category chosen from list: Water Supply, Architectural Barriers, Sewer System, Public Lighting, Waste, Road Signs and Traffic Lights, Roads and Urban Furnishings, Public Green Areas and Playgrounds, Other."
+      ]
+    },
+    {
+      "id": "PT06",
+      "source": "user story",
+      "text": "As a municipal public relations officer I want to review and approve or reject reports So that only valid reports are processed further.",
+      "role": "Municipal Public Relations Officer",
+      "business_value": 915,
+      "constraints": [
+        "Rejected reports must include an explanation from the Municipality Organization Office."
+      ],
+      "expected_behaviors": [
+        "If accepted, report is assigned to the technical office bound to the report category.",
+        "Public Relation officer can assign a report either to a specific technical office or directly to a staff member of the specific technical office."
+      ]
+    },
+    {
+      "id": "PT07",
+      "source": "user story",
+      "text": "As a citizen I want to see approved reports on an interactive map So that I can know about issues in my area and beyond.",
+      "role": "Citizen",
+      "business_value": 910,
+      "constraints": [
+        "Map should be zoomable."
+      ],
+      "expected_behaviors": [
+        "When zooming out, reports can be grouped into a cumulative report for better visualization (total number reported).",
+        "When zooming in, reports can be seen separated with title and reporter name (or anonymous if flagged).",
+        "Anonymous user's name still visible to staff and only hidden in the Turin map of reports for citizens."
+      ]
+    },
+    {
+      "id": "PT15",
+      "source": "user story",
+      "text": "As a citizen I want to choose whether to make my report anonymous So that my name is not shown in the public list of reports.",
+      "role": "Citizen",
+      "business_value": 905,
+      "constraints": [
+        "Choice made at issue description time."
+      ],
+      "expected_behaviors": [
+        "Name hidden in public list if anonymous option chosen.",
+        "Anonymous name visible to staff."
+      ]
+    },
+    {
+      "id": "PT08",
+      "source": "user story",
+      "text": "As a technical office staff member I want to see the list of reports assigned to me So that I can get an overview of the maintenance to be done.",
+      "role": "Technical Office Staff Member",
+      "business_value": 900,
+      "constraints": [],
+      "expected_behaviors": [
+        "System displays list of reports assigned to the technical office staff member."
+      ]
+    },
+    {
+      "id": "PT09",
+      "source": "user story",
+      "text": "As a citizen I want to configure my account So that I can better manage notifications and my virtual presence.",
+      "role": "Citizen",
+      "business_value": 895,
+      "constraints": [
+        "Email notifications can be disabled in configuration panel."
+      ],
+      "expected_behaviors": [
+        "Citizens can upload a personal photo.",
+        "Citizens can add their Telegram username.",
+        "Citizens can switch off/on email notifications."
+      ]
+    },
+    {
+      "id": "PT30",
+      "source": "user story",
+      "text": "As a citizen/unregistered user I want to search for reports in a specific area by typing in an address So that I can easily explore and analyze existing reports in that specific area.",
+      "role": "Citizen, Unregistered User",
+      "business_value": 890,
+      "constraints": [
+        "You can choose how much to zoom in."
+      ],
+      "expected_behaviors": [
+        "System allows typing an address into search bar to zoom in on that area of the map and see all reports in that area."
+      ]
+    },
+    {
+      "id": "PT10",
+      "source": "user story",
+      "text": "As a system administrator I want to modify roles to municipality users So that the staff can be more flexible.",
+      "role": "System Administrator",
+      "business_value": 885,
+      "constraints": [
+        "Modification includes cancellation.",
+        "A municipality user can now have multiple roles."
+      ],
+      "expected_behaviors": [
+        "System administrator modifies roles for municipality users."
+      ]
+    },
+    {
+      "id": "PT11",
+      "source": "user story",
+      "text": "As a technical office staff member I want to update report statuses So that citizens are informed of the problem resolution process.",
+      "role": "Technical Office Staff Member",
+      "business_value": 880,
+      "constraints": [
+        "At each status change, the citizen receives notification in the platform with the corresponding update."
+      ],
+      "expected_behaviors": [
+        "Municipal operators working on reports can send messages to citizens in the platform.",
+        "Citizen can reply to messages from municipal operators."
+      ]
+    },
+    {
+      "id": "PT12",
+      "source": "user story",
+      "text": "As a citizen I want to create a new report through a Telegram bot So that I can quickly notify the public administration about an issue in my area.",
+      "role": "Citizen",
+      "business_value": 875,
+      "constraints": [
+        "Bot asks if the report should be anonymous."
+      ],
+      "expected_behaviors": [
+        "Command /newreport starts guided process to create new issue report with location, title, description, category, photos, and anonymity preference.",
+        "Citizen can select location on Turin map via bot."
+      ]
+    },
+    {
+      "id": "PT13",
+      "source": "user story",
+      "text": "As a citizen I want to check my report status through a Telegram bot So that I can quickly get updates.",
+      "role": "Citizen",
+      "business_value": 865,
+      "constraints": [
+        "Check the status of their own reports."
+      ],
+      "expected_behaviors": [
+        "Command /myreports lists all submitted reports with current status.",
+        "Command /reportstatus 12345 shows details and current status of report ID 12345."
+      ]
+    },
+    {
+      "id": "PT14",
+      "source": "user story",
+      "text": "As a citizen I want to access quick assistance and help commands from the Telegram bot So that I can understand how to use the system and find useful contacts.",
+      "role": "Citizen",
+      "business_value": 840,
+      "constraints": [
+        "Provides contact info for Municipality support team."
+      ],
+      "expected_behaviors": [
+        "Command /help lists available commands and how to use them.",
+        "Command /contact provides contact info for Municipality support team.",
+        "Command /faq shows frequently asked questions."
+      ]
+    },
+    {
+      "id": "PT18",
+      "source": "user story",
+      "text": "As a citizen I want to reply to messages from municipal operators in the platform So that I can communicate directly about my report.",
+      "role": "Citizen",
+      "business_value": 830,
+      "constraints": [
+        "Two-way communication is possible within the platform."
+      ],
+      "expected_behaviors": [
+        "Citizen receives notification in platform with corresponding update at each status change.",
+        "Citizen can reply to messages from municipal operators."
+      ]
+    },
+    {
+      "id": "PT16",
+      "source": "user story",
+      "text": "As a citizen I want to follow reports done by other citizens So that I can be updated.",
+      "role": "Citizen",
+      "business_value": 820,
+      "constraints": [
+        "Only not closed reports can be followed."
+      ],
+      "expected_behaviors": [
+        "Notifications follow the same rules as for owned reports."
+      ]
+    },
+    {
+      "id": "PT17",
+      "source": "user story",
+      "text": "As a citizen I want to receive real-time push notifications via the Telegram bot So that I know instantly when my report status changes.",
+      "role": "Citizen",
+      "business_value": 810,
+      "constraints": [
+        "Notifications/messages can be set to either be sent in real time or when the page is refreshed."
+      ],
+      "expected_behaviors": [
+        "Command /subscribe enables real-time notifications for all reports.",
+        "Command /unsubscribe disables notifications.",
+        "Command /subscribe report 12345 subscribes only to updates for report ID 12345."
+      ]
+    },
+    {
+      "id": "PT19",
+      "source": "user story",
+      "text": "As a citizen I want to receive optional email alerts in addition to platform notifications So that I can choose the best way to stay updated.",
+      "role": "Citizen",
+      "business_value": 790,
+      "constraints": [
+        "Unless disabled in their configuration panel."
+      ],
+      "expected_behaviors": [
+        "Each time a citizen receives a platform notification, he/she also receives an email."
+      ]
+    },
+    {
+      "id": "PT20",
+      "source": "user story",
+      "text": "As a citizen/unregistered user I want to see public statistics about reports So that I understand trends in city issues.",
+      "role": "Citizen, Unregistered User",
+      "business_value": 770,
+      "constraints": [
+        "Public statistics visible on the site include number of reports by category and trends by day, week, or month."
+      ],
+      "expected_behaviors": [
+        "Statistics visible also to unregistered users."
+      ]
+    },
+    {
+      "id": "PT21",
+      "source": "user story",
+      "text": "As a municipal administrator I want to see detailed private statistics So that I can monitor usage and performance of the system.",
+      "role": "Municipal Administrator",
+      "business_value": 755,
+      "constraints": [
+        "Private statistics for administrators only."
+      ],
+      "expected_behaviors": [
+        "Charts and tables about number of reports by status, type, reporter, etc.",
+        "Includes top 1% and top 5% of reporters by type."
+      ]
+    },
+    {
+      "id": "PT29",
+      "source": "user story",
+      "text": "As a municipal administrator I want to configure automatic assignment of all reports in a certain category So that interventions will be faster.",
+      "role": "Municipal Administrator",
+      "business_value": 750,
+      "constraints": [
+        "Automatic assignment possible only if previously set by the municipal administrator."
+      ],
+      "expected_behaviors": [
+        "System assigns all issues of a certain category without initial review of municipal public relations officer if configured."
+      ]
+    },
+    {
+      "id": "PT22",
+      "source": "user story",
+      "text": "As a citizen/unregistered user I want to browse a summary table of reports with filters So that I can easily explore and analyze existing reports.",
+      "role": "Citizen, Unregistered User",
+      "business_value": 740,
+      "constraints": [
+        "Filters: by category, status, period of time."
+      ],
+      "expected_behaviors": [
+        "Data from the table (in case, filtered) can be downloaded as a csv file."
+      ]
+    },
+    {
+      "id": "PT23",
+      "source": "user story",
+      "text": "As a citizen I want to download the summary table of reports So that I can easily explore and analyze existing reports.",
+      "role": "Citizen",
+      "business_value": 730,
+      "constraints": [
+        "If a filter is active on the table view, only filtered data should be downloaded."
+      ],
+      "expected_behaviors": [
+        "Downloaded CSV contains only filtered data if a filter is active on the table view."
+      ]
+    }
+  ],
+  "roles": [
+    "Citizen",
+    "Unregistered User",
+    "System Administrator",
+    "Technical Office Staff Member",
+    "Municipal Public Relations Officer",
+    "Municipal Administrator",
+    "External Maintainer"
+  ],
+  "domain_rules": [
+    "Reports must be tied to a specific location using OpenStreetMap standard layer.",
+    "Rejected reports must include an explanation from the Municipality Organization Office.",
+    "Anonymous user's name is visible to staff but hidden in the public map of reports for citizens.",
+    "Email is a mandatory field for registration and can also be used for login.",
+    "Only technical office staff members can have multiple roles.",
+    "Public statistics are visible to unregistered users.",
+    "Private statistics are for administrators only.",
+    "External maintainers are added by the system administrator.",
+    "Each maintainer should have their own individual account.",
+    "Automatic assignment of all issues of a certain category is possible only if previously set by the municipal administrator.",
+    "Once a report has been inserted, it cannot be modified or deleted by the citizen."
+  ],
+  "edge_cases": [
+    "Map zooming out groups reports into a cumulative report with total number.",
+    "Map zooming in shows separated reports with title and reporter name.",
+    "Telegram commands: /newreport, /myreports, /reportstatus, /help, /contact, /faq, /subscribe, /unsubscribe.",
+    "Notification messages can be set to real time or page refresh depending on preference.",
+    "Downloaded CSV contains only filtered data if a filter is active on the table view.",
+    "External maintainer Case 1: Internal comments exchanged between technical office and external maintainer are report-specific and reserved (not visible to reporter).",
+    "External maintainer Case 2

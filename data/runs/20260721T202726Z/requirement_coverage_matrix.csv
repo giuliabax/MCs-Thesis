@@ -1,0 +1,89 @@
+requirement_id,requirement_summary,participium-team12
+PT28,"As an unregistered user
+I want to see approved reports on an interactive map 
+So that I can know about issues in my area and beyond.",not_assessable
+PT24,"As a technical office staff member
+I want to assign reports to external maintainers
+So that specialized maintainers can handle and update the intervention.",not_implemented
+PT25,"As an external maintainer 
+I want to update the status of a report assigned to me
+So that I can updated citizens about  the intervention.",implemented
+PT26,"As a technical office staff member/external maintainer
+I want to exchange information and comments on the report internally
+So that coordination happens without exposing internal notes to citizens",implemented
+PT01,"As a citizen
+I want to register with my name and username 
+So that I can access the Participium system and submit reports.",implemented
+PT27,"As a citizen 
+I want to confirm my registration with a code
+So that my account becomes valid and I can start using the system.",implemented
+PT02,"As a system administrator
+I want to set up municipality users",implemented
+PT03,"As a system administrator
+I want to assign roles to municipality users",implemented
+PT04,"As a citizen 
+I want to select a location on the city map
+So that my report is geolocated with latitude and longitude.",not_assessable
+PT05,"As a citizen 
+I want to provide details for my report 
+So that the the problem is classified correctly.",implemented
+PT06,"As a municipal public relations officer
+I want to review and approve or reject reports 
+So that only valid reports are processed further.",implemented
+PT07,"As a citizen 
+I want to see approved reports on an interactive map 
+So that I can know about issues in my area and beyond.",not_assessable
+PT15,"As a citizen 
+I want to choose whether to make my report anonymous 
+So that my name is not shown in the public list of reports.",implemented
+PT08,"As a technical office staff member
+I want to see the list of reports assigned to me
+So that I can get an overview of the maintenance to be done",partially_implemented
+PT09,"As a citizen 
+I want to configure my account
+So that I can better manage notifications and my virtual presence.",implemented
+PT30,"As a citizen/unregistered user 
+I want to search for reports in a specific area by typing in an address
+So that I can easily explore and analyze existing reports in that specific area.",partially_implemented
+PT10,"As a system administrator
+I want to modify roles to municipality users
+So that the staff can be more flexible.",implemented
+PT11,"As a technical office staff member 
+I want to update report statuses 
+So that citizens are informed of the problem resolution process.",implemented
+PT12,"As a citizen
+I want to create a new report through a Telegram bot
+So that I can quickly notify the public administration about an issue in my area.",not_assessable
+PT13,"As a citizen 
+I want to check my report status through a Telegram bot 
+So that I can quickly get updates.",not_assessable
+PT14,"As a citizen 
+I want to access quick assistance and help commands from the Telegram bot 
+So that I can understand how to use the system and find useful contacts.",not_assessable
+PT18,"As a citizen 
+I want to reply to messages from municipal operators in the platform 
+So that I can communicate directly about my report.",implemented
+PT16,"As a citizen 
+I want to follow reports done by other citizens 
+So that I can be updated",not_implemented
+PT17,"As a citizen 
+I want to receive real-time push notifications via the Telegram bot 
+So that I know instantly when my report status changes.",not_assessable
+PT19,"As a citizen 
+I want to receive optional email alerts in addition to platform notifications 
+So that I can choose the best way to stay updated.",partially_implemented
+PT20,"As a citizen /unregistered user
+I want to see public statistics about reports 
+So that I understand trends in city issues.",implemented
+PT21,"As a municipal administrator 
+I want to see detailed private statistics 
+So that I can monitor usage and performance of the system.",implemented
+PT29,"As a municipal administrator
+I want to configure automatic assignment of all reports in a certain category
+So that interventions will be faster.",not_implemented
+PT22,"As a citizen/unregistered user
+I want to browse a summary table of reports with filters 
+So that I can easily explore and analyze existing reports.",partially_implemented
+PT23,"As a citizen 
+I want to download the summary table of reports 
+So that I can easily explore and analyze existing reports.",not_implemented

@@ -1,0 +1,200 @@
+[
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/users",
+    "http_method": "POST",
+    "prompt": "Create a new municipality user account with valid credentials and necessary profile data for the 'municipal public relations officer' role.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure authentication session is active as system administrator."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of user creation for administrative roles."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/users/{userId}/roles",
+    "http_method": "PUT",
+    "prompt": "Assign the 'municipal public relations officer' role to an existing user (created in a previous step or via setup) to enable report review capabilities.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Create a municipality user via POST /admin/users if not already present."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Verifies the role assignment mechanism which is critical for workflow progression."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report to ensure correct classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with complete details including title, description, category, and location coordinates.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is logged in as a citizen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the primary use case of report submission with all required fields."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report to ensure correct classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with missing mandatory fields (e.g., empty description or invalid category) to test validation logic.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is logged in as a citizen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates that the system enforces data integrity and rejects incomplete reports."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with the 'anonymous' flag set to true, ensuring the reporter name is hidden from public views but visible to staff.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is logged in as a citizen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Confirms the anonymity feature works correctly for privacy requirements."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with the 'anonymous' flag set to false (default) and verify that the reporter name is included in the payload.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is logged in as a citizen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Ensures the system correctly handles non-anonymous reports and displays reporter info where appropriate."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/municipal/reports/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Update an existing report (created in a previous step) to change its status from 'Pending Approval' to 'Accepted' by the authorized officer.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a report via POST /reports and ensure it is in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the approval workflow transition which moves reports to the next stage of processing."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/municipal/reports/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Update an existing report to change its status from 'Pending Approval' to 'Rejected' with a mandatory explanation field populated.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a report via POST /reports and ensure it is in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the rejection path ensuring that rejected reports do not proceed to 'Assigned' state and explanations are recorded."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users.",
+    "api_endpoint": "/admin/users/{userId}/roles",
+    "http_method": "PUT",
+    "prompt": "Modify the roles of an existing municipality user by removing a role and adding a new one (e.g., changing from 'public relations officer' to 'technical office staff').",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Create a municipality user via POST /admin/users and assign an initial role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Verifies the flexibility of role management to adapt staff capabilities as needed."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report to ensure correct classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to submit a new report without being authenticated (simulate unauthenticated session).",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no active authentication session exists for the test user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Ensures that report submission is strictly protected and requires valid authentication."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/users/{userId}/roles",
+    "http_method": "PUT",
+    "prompt": "Attempt to assign roles to a non-existent user ID (e.g., '99999').",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure authentication session is active as system administrator."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Validates that the API correctly handles attempts to modify resources that do not exist."
+  }
+]

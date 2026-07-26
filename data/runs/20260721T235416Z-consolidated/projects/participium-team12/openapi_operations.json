@@ -1,0 +1,875 @@
+[
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/login",
+    "summary": "Log in and receive a session cookie",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "Username or email"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/register",
+    "summary": "Register a new citizen",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "email",
+        "username",
+        "firstName",
+        "lastName",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "username": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/verify-email",
+    "summary": "Verify a user's email with a code",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "email",
+        "code"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "code": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/logout",
+    "summary": "Log out and clear the session cookie",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/refresh",
+    "summary": "Refresh the current session",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/categories",
+    "summary": "List all categories",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Categories"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/notifications",
+    "summary": "List notifications for the current user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/notifications/{id}/read",
+    "summary": "Mark a notification as read",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/offices",
+    "summary": "List all offices",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Offices"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/profiles/profile/me",
+    "summary": "Get the current user's profile",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Profiles"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/profiles/profile/me",
+    "summary": "Update the current user's profile",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Profiles"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/profiles/telegram/link",
+    "summary": "Link a Telegram account to the current profile",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "telegramCode": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Profiles"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports",
+    "summary": "Create a new report",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "categoryId",
+        "latitude",
+        "longitude"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "categoryId": {
+          "type": "string"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports",
+    "summary": "List reports (authenticated)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/public",
+    "summary": "List public reports",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/stats",
+    "summary": "Get report statistics",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/nearby",
+    "summary": "List reports near a location",
+    "description": null,
+    "parameters": [
+      {
+        "in": "query",
+        "name": "latitude",
+        "schema": {
+          "type": "number"
+        }
+      },
+      {
+        "in": "query",
+        "name": "longitude",
+        "schema": {
+          "type": "number"
+        }
+      },
+      {
+        "in": "query",
+        "name": "radius",
+        "schema": {
+          "type": "number"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/user/{userId}",
+    "summary": "List reports created by a user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "userId",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{id}",
+    "summary": "Get a report by id",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "404"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/reports/{id}",
+    "summary": "Update a report (e.g. status)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "categoryId": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{id}/comments",
+    "summary": "Get comments of a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{id}/comments",
+    "summary": "Add a comment to a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "content"
+      ],
+      "properties": {
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{id}/messages",
+    "summary": "Get messages of a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{id}/messages",
+    "summary": "Send a message on a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "content"
+      ],
+      "properties": {
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/roles",
+    "summary": "List all roles",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Roles"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/municipality",
+    "summary": "List municipality users",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/municipality",
+    "summary": "Create a municipality user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "email",
+        "firstName",
+        "lastName",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/municipality/user/{id}",
+    "summary": "Get a municipality user by id",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/municipality/user/{id}",
+    "summary": "Update a municipality user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/User"
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/users/municipality/user/{id}",
+    "summary": "Delete a municipality user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/external-maintainers",
+    "summary": "List external maintainers",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/municipality/user/{id}/office-roles",
+    "summary": "Get the office-roles of a municipality user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/municipality/user/{id}/office-roles",
+    "summary": "Assign an office-role to a municipality user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "officeId": {
+          "type": "string"
+        },
+        "roleId": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/users/municipality/user/{id}/office-roles/{officeId}",
+    "summary": "Remove an office-role from a municipality user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "in": "path",
+        "name": "officeId",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  }
+]

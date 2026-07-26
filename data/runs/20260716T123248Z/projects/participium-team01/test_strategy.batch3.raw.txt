@@ -1,0 +1,184 @@
+[
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Create a new municipality user with a specific role assigned by the system administrator. Ensure the request body includes valid user credentials and the target role ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an active authenticated session for a system administrator exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of role assignment during user creation as per PT03."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report to ensure correct classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with complete and valid details (title, description, category) from a citizen's perspective. Verify the response confirms successful submission and initial state 'Pending Approval'.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an active authenticated session for a verified citizen exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the primary report submission flow and initial state transition defined in domain rules."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member views the list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports currently assigned to the logged-in technical office staff member. Verify that only reports explicitly assigned to this user or their office appear in the response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure an active authenticated session for a technical office staff member exists.",
+      "Create and assign at least one report to this user's office or directly to them."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the visibility of assigned reports for staff members as per PT08."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles for municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "PUT",
+    "prompt": "Update an existing municipality user's role to a different one. Ensure the request includes the user ID and the new role ID.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an active authenticated session for a system administrator exists.",
+      "Create a municipality user with an initial role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the ability to modify user roles dynamically as required by PT10."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account for notifications and virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update the citizen's profile to disable email notifications and set a specific virtual presence status. Verify the changes are reflected in the response.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an active authenticated session for a citizen exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates account configuration capabilities including notification preferences per PT09."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen browses a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the public summary table of reports. Apply query parameters to filter by category or status (e.g., 'Pending Approval'). Verify that the response contains aggregated data matching the filters.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure at least one report exists in the system with a status of 'Pending Approval'."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests public data exploration and filtering capabilities for unauthenticated users as per PT22."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report to ensure correct classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with missing mandatory fields (e.g., empty title or description) to test validation logic. Expect the system to reject the request due to incomplete data required for classification.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an active authenticated session for a citizen exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests system behavior when report details are insufficient for proper classification."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Attempt to assign a non-existent or invalid role ID to a new municipality user. Verify that the system rejects the request with an appropriate error code indicating the role cannot be found.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an active authenticated session for a system administrator exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates input validation when attempting to assign an invalid role."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member views the list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the assigned reports list for a technical office staff member who has no reports assigned to them. Verify that the response returns an empty list or appropriate indicator without errors.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure an active authenticated session for a technical office staff member exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the system's handling of empty result sets for assigned reports."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles for municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "PUT",
+    "prompt": "Attempt to modify the role of a user who does not exist in the system. Verify that the system returns an error indicating the user cannot be found or modified.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an active authenticated session for a system administrator exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Tests error handling when attempting to modify a non-existent user's role."
+  }
+]

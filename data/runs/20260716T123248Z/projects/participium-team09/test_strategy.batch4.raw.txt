@@ -1,0 +1,170 @@
+[
+  {
+    "requirement_id": "PT20",
+    "requirement_summary": "Citizen can view public statistics about reports to understand trends.",
+    "api_endpoint": "/statistics/public",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /statistics/public without authentication. Verify the response contains aggregated data by category and time trends (day/week/month) as described in the public statistics domain rule. Ensure no private breakdowns or reporter names are exposed.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core public-facing functionality for unregistered users to view trends."
+  },
+  {
+    "requirement_id": "PT21",
+    "requirement_summary": "Municipal administrator can view detailed private statistics.",
+    "api_endpoint": "/statistics/private",
+    "http_method": "GET",
+    "prompt": "Authenticate as a 'municipal administrator' role. Execute a GET request to /statistics/private. Verify the response includes breakdowns by status, type, reporter, and top N reporters (e.g., top 1% or 5%) as per private statistics rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal administrator",
+    "setup_needed": [
+      "Authenticate user with role 'municipal administrator' before making the request."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that authorized administrators can access sensitive internal metrics and reporter breakdowns."
+  },
+  {
+    "requirement_id": "PT21",
+    "requirement_summary": "Unauthorized user attempts to access private statistics.",
+    "api_endpoint": "/statistics/private",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /statistics/private without providing any authentication headers or with an invalid token. Verify the system rejects the request and does not leak any data.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Ensures strict access control on private statistics endpoints to prevent data leakage."
+  },
+  {
+    "requirement_id": "PT20",
+    "requirement_summary": "Public statistics map view behavior when zooming out.",
+    "api_endpoint": "/statistics/public",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /statistics/public. Simulate the 'zoom out' state by including a query parameter or header indicating low zoom level (e.g., ?zoom_level=low). Verify the response aggregates reports into a cumulative count rather than listing individual titles and names.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the specific UI logic requirement where zoom level affects data granularity in public views."
+  },
+  {
+    "requirement_id": "PT21",
+    "requirement_summary": "Private statistics view behavior when zooming in.",
+    "api_endpoint": "/statistics/private",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /statistics/private. Simulate the 'zoom in' state by including a query parameter or header indicating high zoom level (e.g., ?zoom_level=high). Verify the response separates reports, displaying individual titles and reporter names.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "municipal administrator",
+    "setup_needed": [
+      "Authenticate user with role 'municipal administrator' before making the request."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the specific UI logic requirement where zoom level affects data granularity in private views."
+  },
+  {
+    "requirement_id": "PT21",
+    "requirement_summary": "Public statistics view behavior when citizen disables email notifications.",
+    "api_endpoint": "/statistics/public",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /statistics/public. Simulate the state where a specific user has disabled email notifications in their configuration panel (via header or query param). Verify that the response payload does not include email copies of platform notifications, adhering to the notification preference rule.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that user configuration preferences regarding notifications are respected in the public response context."
+  },
+  {
+    "requirement_id": "PT21",
+    "requirement_summary": "Municipality user with multiple roles accessing private statistics.",
+    "api_endpoint": "/statistics/private",
+    "http_method": "GET",
+    "prompt": "Authenticate as a 'municipal administrator' who also holds the role of 'Public Relation officer' (simulating a user with multiple roles). Execute a GET request to /statistics/private. Verify that the user retains access to private statistics despite having additional roles, confirming that multiple roles do not revoke core administrative privileges.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "municipal administrator",
+    "setup_needed": [
+      "Authenticate user with role 'municipal administrator' and optionally 'Public Relation officer'."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures that the system correctly handles users with multiple roles without inadvertently restricting access to required endpoints."
+  },
+  {
+    "requirement_id": "PT21",
+    "requirement_summary": "Public statistics view behavior when citizen is anonymous.",
+    "api_endpoint": "/statistics/public",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /statistics/public. Simulate the state where the reporter name is 'anonymous' (via header or query param). Verify that the response hides the reporter name in the public view, adhering to the anonymity rule for citizens.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that the system correctly masks reporter identities in public-facing statistics as required."
+  },
+  {
+    "requirement_id": "PT21",
+    "requirement_summary": "Public statistics view behavior when municipality user has multiple roles.",
+    "api_endpoint": "/statistics/public",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /statistics/public. Simulate the state where the requesting user is a 'municipal administrator' with multiple roles (e.g., also a technical office staff). Verify that the response still adheres to public statistics rules (no private breakdowns) even though the user has elevated privileges, ensuring role separation in data exposure.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "municipal administrator",
+    "setup_needed": [
+      "Authenticate user with role 'municipal administrator' and optionally another role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures that public endpoints strictly return public data regardless of the authenticated user's additional roles."
+  },
+  {
+    "requirement_id": "PT21",
+    "requirement_summary": "Public statistics view behavior when notifications are set to real-time.",
+    "api_endpoint": "/statistics/public",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /statistics/public. Simulate the state where notifications/messages are set to be sent in real time (via header or query param). Verify that the response structure supports real-time updates if applicable, or confirms the current snapshot is returned correctly without pending message queues interfering with data integrity.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that notification preferences do not corrupt or alter the data returned in public statistics endpoints."
+  }
+]

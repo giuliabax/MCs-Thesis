@@ -1,0 +1,163 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports without any authentication headers. Verify that the response contains only reports with status 'Resolved' or equivalent approved states, excluding 'Pending Approval', 'Assigned', or 'In Progress'. Ensure no sensitive fields (like internal comments) are exposed.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core public-facing feature for unregistered users as per PT28 and domain rules regarding visibility of approved reports."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/report/{id}/assign-maintainer",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a technical office staff member. Perform a PATCH request to /reports/report/{id}/assign-maintainer with the ID of a valid external maintainer. Verify the report status transitions correctly and the assignment is recorded.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a test report with status 'Pending Approval' or 'Assigned'.",
+      "Register an external maintainer user account via admin endpoint.",
+      "Authenticate as technical office staff member."
+    ],
+    "cleanup_strategy": "Delete the assigned report if it was created for this test; otherwise, verify no resource was modified unexpectedly and revert status to original state.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the assignment workflow defined in PT24 and domain rules regarding external maintainer access."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as an external maintainer. Perform a PATCH request to /reports/report/{id}/status to update the status to 'Resolved'. Verify that the system allows this transition only if the maintainer has access (Case 1) and that internal comments are not exposed in the response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a test report with status 'Assigned' to an external maintainer.",
+      "Authenticate as the specific external maintainer user."
+    ],
+    "cleanup_strategy": "Revert the report status back to 'Assigned' or delete the test report if it was created solely for this test.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the resolution capability of external maintainers as per PT25 and domain rules."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and rejects a report.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a municipal public relations officer. Perform a PATCH request to /reports/report/{id}/status to change the status to 'Rejected'. Verify that the response includes a mandatory explanation field populated by the system or required in the payload, adhering to domain rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal_public_relations_officer",
+    "setup_needed": [
+      "Create a test report with status 'Pending Approval'.",
+      "Authenticate as the municipal public relations officer."
+    ],
+    "cleanup_strategy": "Revert the report status back to 'Pending Approval' or delete the test report if it was created solely for this test.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the rejection workflow and mandatory explanation requirement defined in PT06 and domain rules."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user attempts to view pending approval reports.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports without authentication. Verify that the response does NOT include any reports with status 'Pending Approval', 'Assigned', or 'In Progress'. Ensure the system hides these reports from public view as per domain rules.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a test report with status 'Pending Approval'."
+    ],
+    "cleanup_strategy": "Delete the test report created for this scenario.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the edge case where unregistered users cannot see pending reports, ensuring data privacy and correct filtering logic."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses incorrectly.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a technical office staff member. Attempt to update a report status directly from 'Pending Approval' to 'Resolved' without going through 'Assigned' or 'In Progress'. Verify that the system rejects this transition or forces the correct state machine flow.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a test report with status 'Pending Approval'."
+    ],
+    "cleanup_strategy": "Revert the report status back to 'Pending Approval' or delete the test report if it was created solely for this test.",
+    "expected_status_codes": ["400", "default"],
+    "rationale": "Tests negative behavior where state transitions violate domain rules (e.g., skipping intermediate states)."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer resolves a report without access.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as an external maintainer who does NOT have access to the specific report ID (Case 2 scenario). Attempt to update the status of that report. Verify that the system denies the action or returns a 'not found' error, preventing unauthorized resolution.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a test report assigned to a different external maintainer."
+    ],
+    "cleanup_strategy": "Revert the report status back to its original state or delete the test report if it was created solely for this test.",
+    "expected_status_codes": ["403", "404", "default"],
+    "rationale": "Validates security constraints where external maintainers can only resolve reports they have access to."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Citizen attempts to edit their own submitted report.",
+    "api_endpoint": "/reports/report/{id}",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a citizen who previously submitted a report. Attempt to PATCH the report with new data (e.g., changing description). Verify that the system denies this action, enforcing the rule that once inserted, a report cannot be modified by the citizen.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Register a citizen user.",
+      "Submit a test report as the citizen."
+    ],
+    "cleanup_strategy": "Delete the test report created for this scenario.",
+    "expected_status_codes": ["403", "default"],
+    "rationale": "Tests negative behavior where citizens cannot modify their own reports after submission."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "User attempts to submit a report without registering.",
+    "api_endpoint": "/reports/report",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /reports/report with report data but WITHOUT authentication headers. Verify that the system blocks the submission and returns an error indicating that registration is required first.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["401", "default"],
+    "rationale": "Tests negative behavior where unregistered users cannot submit reports."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "User zooms out on map significantly.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports. Simulate a scenario where the client sends a parameter indicating significant zoom-out (e.g., via query params or headers if supported). Verify that the system groups reports into a cumulative view with a total count, as per domain rules.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Create multiple test reports in different locations."
+    ],
+    "cleanup_strategy": "Delete the test reports created for this scenario.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests edge case behavior related to map visualization and report grouping at low zoom levels."
+  }
+]

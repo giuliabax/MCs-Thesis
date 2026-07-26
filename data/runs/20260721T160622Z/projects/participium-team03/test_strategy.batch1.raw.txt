@@ -1,0 +1,238 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without providing any authentication headers or session tokens. Verify that the response returns a list of approved reports (or an empty list if none exist) and that the data structure matches the expected schema for public consumption.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core requirement that unregistered users can access approved reports without authentication."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{id}/assign-external",
+    "http_method": "PUT",
+    "prompt": "First, ensure a report exists in 'Assigned' status (setup step). Then, authenticate as a technical office staff member. Execute a PUT request to /reports/{id}/assign-external with the ID of an external maintainer. Verify the response indicates successful assignment and that the report's owner or assignee field reflects the external maintainer.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure a report exists with status 'Assigned'."
+    ],
+    "cleanup_strategy": "Verify the assignment was successful; no resource deletion required as this is a state change.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the primary workflow for assigning reports to external maintainers as per PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an external maintainer who has been assigned a specific report. Execute a PUT request to /reports/{id}/status with a new valid status (e.g., 'In Progress'). Verify the status update is successful and persists.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Ensure the external maintainer has been assigned a report (status 'Assigned')."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the ability of an external maintainer to update their own assigned reports."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff and external maintainer exchange internal comments on a report.",
+    "api_endpoint": "/comment/{id}/comments",
+    "http_method": "POST",
+    "prompt": "Authenticate as a technical office staff member. Execute a POST request to /comment/{id}/comments with an internal comment payload. Verify the comment is created successfully and check that it is marked as internal (not visible to public endpoints).",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure a report exists with an associated comment thread or create one if necessary."
+    ],
+    "cleanup_strategy": "Delete the created internal comment to maintain database cleanliness.",
+    "expected_status_codes": ["201"],
+    "rationale": "Tests the functionality for creating internal comments between authorized roles."
+  },
+  {
+    "requirement_id": "PT07",
+    "requirement_summary": "Citizen views approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Authenticate as a citizen user. Execute a GET request to /reports/approved. Verify that the response includes approved reports and that the data is formatted correctly for display on an interactive map.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates that authenticated citizens can view approved reports."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a technical office staff member. Execute a PUT request to /reports/{id}/status with a new status (e.g., 'Resolved'). Verify the status update is successful.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure a report exists that the staff member has permission to modify."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the ability of technical office staff to manage report statuses."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{id}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a technical office staff member. Execute a PUT request to /reports/{id}/assign-external with an invalid user ID (non-existent external maintainer). Verify that the system returns an appropriate error code (e.g., 404 or 400) indicating the target user does not exist.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure a report exists in 'Assigned' status."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400", "404"],
+    "rationale": "Tests the system's behavior when attempting to assign a report to a non-existent user."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an external maintainer. Execute a PUT request to /reports/{id}/status with an invalid status value (e.g., 'InvalidStatus'). Verify that the system rejects the request with a 400 Bad Request error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Ensure the external maintainer has been assigned a report."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests validation of status values to ensure only valid statuses are accepted."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff and external maintainer exchange internal comments on a report.",
+    "api_endpoint": "/comment/{id}/comments",
+    "http_method": "GET",
+    "prompt": "Authenticate as an unregistered user. Execute a GET request to /comment/{id}/comments for a comment created by a technical office staff member. Verify that the response indicates unauthorized access or returns an empty list, confirming internal comments are not visible to unauthenticated users.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure a comment exists on a report."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["401", "200"],
+    "rationale": "Tests that internal comments are protected from unauthorized access."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{id}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a technical office staff member. Execute a PUT request to /reports/{id}/assign-external without providing the required 'assigned_to' parameter or with an empty string. Verify that the system returns a 400 Bad Request error.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure a report exists in 'Assigned' status."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests the system's handling of missing or invalid parameters during assignment."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an external maintainer. Execute a PUT request to /reports/{id}/status attempting to move the report directly from 'Assigned' to 'Resolved' without passing through 'In Progress', if the workflow enforces intermediate states. Verify that the system either rejects this transition or handles it gracefully according to domain rules.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Ensure the external maintainer has been assigned a report with status 'Assigned'."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400", "200"],
+    "rationale": "Tests adherence to domain rules regarding valid state transitions."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff and external maintainer exchange internal comments on a report.",
+    "api_endpoint": "/comment/{id}/comments",
+    "http_method": "POST",
+    "prompt": "Authenticate as an external maintainer. Execute a POST request to /comment/{id}/comments with an empty comment body or null content. Verify that the system returns a 400 Bad Request error.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Ensure a report exists with an associated comment thread."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests the system's handling of empty or null comment bodies."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{id}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a technical office staff member. Execute a PUT request to /reports/{id}/assign-external where the report is currently in 'Pending Approval' status instead of 'Assigned'. Verify that the system rejects the assignment with an appropriate error message.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure a report exists in 'Pending Approval' status."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests the dependency edge where assignment requires the report to be in 'Assigned' status."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an external maintainer. Execute a PUT request to /reports/{id}/status where the report is not currently assigned to this user. Verify that the system rejects the status update with an appropriate error message.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Ensure a report exists but is assigned to a different user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Tests the dependency edge where status updates are restricted to the assigned user."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff and external maintainer exchange internal comments on a report.",
+    "api_endpoint": "/comment/{id}/comments",
+    "http_method": "POST",
+    "prompt": "Authenticate as an unregistered user. Execute a POST request to /comment/{id}/comments attempting to add an internal comment. Verify that the system rejects the request with an unauthorized error.",
+    "test_type": "cleanup",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure a report exists."
+    ],
+    "cleanup_strategy": "Verify no comment was created; if any were unexpectedly present due to race conditions, delete them.",
+    "expected_status_codes": ["401"],
+    "rationale": "Ensures that unauthorized users cannot create comments and cleans up any potential anomalies."
+  }
+]

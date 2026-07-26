@@ -1,0 +1,479 @@
+{
+  "summary": "API for Participium civic engagement platform supporting citizen report creation, municipality staff workflow (approval/assignment), external company maintenance, Telegram bot integration, and user management.",
+  "operations": [
+    {
+      "path": "/session",
+      "method": "POST",
+      "operation_id": "login",
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Sets session cookie (connect.sid) in response headers"]
+    },
+    {
+      "path": "/session/current",
+      "method": "GET",
+      "operation_id": "getSession",
+      "auth_required": null,
+      "dependencies": ["login"],
+      "notes": ["Returns 401 if no valid session exists"]
+    },
+    {
+      "path": "/session/current",
+      "method": "DELETE",
+      "operation_id": "logout",
+      "auth_required": true,
+      "dependencies": ["getSession"],
+      "notes": ["Requires active session to invalidate"]
+    },
+    {
+      "path": "/citizen/signup",
+      "method": "POST",
+      "operation_id": "registerCitizen",
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Account remains inactive until email verification via POST /citizen/verify"]
+    },
+    {
+      "path": "/citizen/verify",
+      "method": "POST",
+      "operation_id": "verifyCitizenEmail",
+      "auth_required": false,
+      "dependencies": ["registerCitizen"],
+      "notes": ["Activates account after 6-digit code verification"]
+    },
+    {
+      "path": "/citizen/resend-verification",
+      "method": "POST",
+      "operation_id": "resendCitizenVerificationEmail",
+      "auth_required": false,
+      "dependencies": ["registerCitizen"],
+      "notes": ["Only works for unverified accounts"]
+    },
+    {
+      "path": "/citizen/me",
+      "method": "GET",
+      "operation_id": "getCitizenProfile",
+      "auth_required": true,
+      "dependencies": ["login"],
+      "notes": ["Returns profile and notification settings"]
+    },
+    {
+      "path": "/citizen/me",
+      "method": "PATCH",
+      "operation_id": "updateCitizenConfig",
+      "auth_required": true,
+      "dependencies": ["getCitizenProfile"],
+      "notes": ["Updates name, surname, email, password, notification preference"]
+    },
+    {
+      "path": "/citizen/me/photo",
+      "method": "POST",
+      "operation_id": "uploadCitizenPhoto",
+      "auth_required": true,
+      "dependencies": ["getCitizenProfile"],
+      "notes": ["Replaces existing photo"]
+    },
+    {
+      "path": "/citizen/me/photo",
+      "method": "DELETE",
+      "operation_id": "deleteCitizenPhoto",
+      "auth_required": true,
+      "dependencies": ["uploadCitizenPhoto"],
+      "notes": ["Removes stored photo"]
+    },
+    {
+      "path": "/telegram/generate-token",
+      "method": "POST",
+      "operation_id": "generateTelegramLinkToken",
+      "auth_required": true,
+      "dependencies": ["getCitizenProfile"],
+      "notes": ["Generates deep link token valid for 15 minutes"]
+    },
+    {
+      "path": "/telegram/link",
+      "method": "POST",
+      "operation_id": "linkTelegramAccount",
+      "auth_required": null,
+      "dependencies": ["generateTelegramLinkToken"],
+      "notes": ["Called by Telegram bot to complete linking"]
+    },
+    {
+      "path": "/telegram/status",
+      "method": "GET",
+      "operation_id": "getTelegramStatus",
+      "auth_required": true,
+      "dependencies": ["linkTelegramAccount"],
+      "notes": ["Returns Telegram username if linked"]
+    },
+    {
+      "path": "/telegram/check-linked",
+      "method": "POST",
+      "operation_id": "checkTelegramLinked",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Called by bot to check ID linkage before flows"]
+    },
+    {
+      "path": "/telegram/unlink",
+      "method": "DELETE",
+      "operation_id": "unlinkTelegramAccount",
+      "auth_required": true,
+      "dependencies": ["getTelegramStatus"],
+      "notes": ["Removes link; requires new token to relink"]
+    },
+    {
+      "path": "/telegram/reports",
+      "method": "POST",
+      "operation_id": "createReportFromTelegram",
+      "auth_required": null,
+      "dependencies": ["linkTelegramAccount"],
+      "notes": ["Called by bot; requires linked Telegram ID"]
+    },
+    {
+      "path": "/telegram/{telegramId}/reports",
+      "method": "GET",
+      "operation_id": "getTelegramUserReports",
+      "auth_required": null,
+      "dependencies": ["linkTelegramAccount"],
+      "notes": ["Used by bot for /myreports command"]
+    },
+    {
+      "path": "/telegram/{telegramId}/reports/{reportId}",
+      "method": "GET",
+      "operation_id": "getTelegramReportDetails",
+      "auth_required": null,
+      "dependencies": ["linkTelegramAccount"],
+      "notes": ["Used by bot for /reportstatus command"]
+    },
+    {
+      "path": "/admin/municipality-users",
+      "method": "POST",
+      "operation_id": "createMunicipalityUser",
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Requires admin role; email must be unique"]
+    },
+    {
+      "path": "/admin/municipality-users",
+      "method": "GET",
+      "operation_id": "listMunicipalityUsers",
+      "auth_required": true,
+      "dependencies": ["createMunicipalityUser"],
+      "notes": ["Returns basic info; excludes sensitive data"]
+    },
+    {
+      "path": "/admin/municipality-users/{userId}",
+      "method": "GET",
+      "operation_id": "getMunicipalityUser",
+      "auth_required": true,
+      "dependencies": ["listMunicipalityUsers"],
+      "notes": ["Returns detailed user info"]
+    },
+    {
+      "path": "/admin/municipality-users/{userId}",
+      "method": "DELETE",
+      "operation_id": "deleteMunicipalityUser",
+      "auth_required": true,
+      "dependencies": ["getMunicipalityUser"],
+      "notes": ["Irreversible; requires admin role"]
+    },
+    {
+      "path": "/admin/municipality-users/{userId}",
+      "method": "PATCH",
+      "operation_id": "updateMunicipalityUser",
+      "auth_required": true,
+      "dependencies": ["getMunicipalityUser"],
+      "notes": ["Updates name, email, password, roles"]
+    },
+    {
+      "path": "/admin/roles",
+      "method": "GET",
+      "operation_id": "listMunicipalityRoles",
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Returns available roles for UI selection"]
+    },
+    {
+      "path": "/admin/external-companies",
+      "method": "POST",
+      "operation_id": "createExternalCompany",
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Creates company; defines categories and platform access"]
+    },
+    {
+      "path": "/admin/external-companies",
+      "method": "GET",
+      "operation_id": "listExternalCompanies",
+      "auth_required": true,
+      "dependencies": ["createExternalCompany"],
+      "notes": ["Returns companies with associated maintainers"]
+    },
+    {
+      "path": "/admin/external-companies/{id}",
+      "method": "DELETE",
+      "operation_id": "deleteExternalCompany",
+      "auth_required": true,
+      "dependencies": ["listExternalCompanies"],
+      "notes": ["Requires no associated maintainers"]
+    },
+    {
+      "path": "/admin/external-companies/platform-access",
+      "method": "GET",
+      "operation_id": "getExternalCompaniesWithAccess",
+      "auth_required": true,
+      "dependencies": ["createExternalCompany"],
+      "notes": ["Returns companies with platform access and maintainers"]
+    },
+    {
+      "path": "/admin/external-maintainers",
+      "method": "POST",
+      "operation_id": "createExternalMaintainer",
+      "auth_required": true,
+      "dependencies": ["createExternalCompany"],
+      "notes": ["Requires company with platformAccess=true"]
+    },
+    {
+      "path": "/admin/external-maintainers",
+      "method": "GET",
+      "operation_id": "listExternalMaintainers",
+      "auth_required": true,
+      "dependencies": ["createExternalMaintainer"],
+      "notes": ["Returns maintainers with company details"]
+    },
+    {
+      "path": "/admin/external-maintainers/{maintainerId}",
+      "method": "GET",
+      "operation_id": "getExternalMaintainer",
+      "auth_required": true,
+      "dependencies": ["listExternalMaintainers"],
+      "notes": ["Returns detailed maintainer info"]
+    },
+    {
+      "path": "/admin/external-maintainers/{maintainerId}",
+      "method": "DELETE",
+      "operation_id": "deleteExternalMaintainer",
+      "auth_required": true,
+      "dependencies": ["getExternalMaintainer"],
+      "notes": ["Requires no assigned reports"]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": "createReport",
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Creates report with geolocation; requires citizen role"]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": "listReports",
+      "auth_required": null,
+      "dependencies": ["createReport"],
+      "notes": ["Returns approved reports only; supports bbox/category filters"]
+    },
+    {
+      "path": "/reports/pending",
+      "method": "GET",
+      "operation_id": "getPendingReports",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to PUBLIC_RELATIONS role"]
+    },
+    {
+      "path": "/reports/{reportId}/assignable-technicals",
+      "method": "GET",
+      "operation_id": "getAssignableTechnicals",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to PUBLIC_RELATIONS role"]
+    },
+    {
+      "path": "/reports/{reportId}/assignable-externals",
+      "method": "GET",
+      "operation_id": "getAssignableExternals",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to TECHNICAL_ROLES"]
+    },
+    {
+      "path": "/reports/{reportId}/assign-external",
+      "method": "POST",
+      "operation_id": "assignReportToExternal",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Changes status to EXTERNAL_ASSIGNED"]
+    },
+    {
+      "path": "/reports/{reportId}/approve",
+      "method": "POST",
+      "operation_id": "approveReport",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to PUBLIC_RELATIONS; assigns to technical"]
+    },
+    {
+      "path": "/reports/{reportId}/reject",
+      "method": "POST",
+      "operation_id": "rejectReport",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to PUBLIC_RELATIONS; requires reason"]
+    },
+    {
+      "path": "/reports/mine",
+      "method": "GET",
+      "operation_id": "getMyReports",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to CITIZEN role"]
+    },
+    {
+      "path": "/reports/assigned",
+      "method": "GET",
+      "operation_id": "getAssignedReports",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to TECHNICAL_AND_EXTERNAL_ROLES"]
+    },
+    {
+      "path": "/reports/{reportId}/status",
+      "method": "PATCH",
+      "operation_id": "updateReportStatus",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to assigned technical/external"]
+    },
+    {
+      "path": "/reports/{reportId}/messages",
+      "method": "POST",
+      "operation_id": "sendReportMessage",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Available to citizen, technical staff, external maintainers"]
+    },
+    {
+      "path": "/reports/{reportId}/messages",
+      "method": "GET",
+      "operation_id": "getReportMessages",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to report participants"]
+    },
+    {
+      "path": "/reports/{reportId}/internal-notes",
+      "method": "POST",
+      "operation_id": "addInternalNote",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to technical staff/admins"]
+    },
+    {
+      "path": "/reports/{reportId}/internal-notes",
+      "method": "GET",
+      "operation_id": "getInternalNotes",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to technical staff/admins"]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": "getNotifications",
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Polling endpoint; supports unread/limit filters"]
+    },
+    {
+      "path": "/notifications/{notificationId}/read",
+      "method": "PATCH",
+      "operation_id": "markNotificationAsRead",
+      "auth_required": true,
+      "dependencies": ["getNotifications"],
+      "notes": ["Marks specific notification as read"]
+    },
+    {
+      "path": "/reports/{reportId}",
+      "method": "GET",
+      "operation_id": "getReportById",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Restricted to report owner or assigned staff"]
+    },
+    {
+      "path": "/geocode",
+      "method": "GET",
+      "operation_id": "geocodeAddress",
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Returns coordinates/bbox for address; supports zoom levels"]
+    }
+  ],
+  "authentication_notes": ["/session sets HTTP-only secure cookie; /session/current validates session; all other endpoints require valid session unless explicitly marked auth_required: null"],
+  "dependencies": [
+    "POST /session (login) is prerequisite for all authenticated operations",
+    "POST /citizen/signup must precede POST /citizen/verify to activate account",
+    "POST /telegram/generate-token must precede POST /telegram/link for Telegram linking flow",
+    "POST /admin/municipality-users must precede GET/PUT/DELETE on municipality users",
+    "POST /admin/external-companies must precede creation of external maintainers",
+    "POST /reports (createReport) is prerequisite for all report-specific operations"
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/session/current",
+      "dependency_type": "state",
+      "reason": "getSession requires active session created by login"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/citizen/signup",
+      "dependent_method": "POST",
+      "dependent_path": "/citizen/verify",
+      "dependency_type": "state",
+      "reason": "verifyCitizenEmail requires unverified account created by signup"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/telegram/generate-token",
+      "dependent_method": "POST",
+      "dependent_path": "/telegram/link",
+      "dependency_type": "state",
+      "reason": "linkTelegramAccount requires valid token generated by generate-token"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/admin/municipality-users",
+      "dependent_method": "GET",
+      "dependent_path": "/admin/municipality-users/{userId}",
+      "dependency_type": "resource",
+      "reason": "getMunicipalityUser requires existing user created by createMunicipalityUser"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{reportId}/assignable-technicals",
+      "dependency_type": "resource",
+      "reason": "getAssignableTechnicals requires existing report created by createReport"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{reportId}/approve",
+      "dependency_type": "state",
+      "reason": "approveReport requires pending report created by createReport"
+    }
+  ],
+  "risks": [
+    "Session cookie security relies on HTTP-only and secure flags; misconfiguration could expose session to XSS",
+    "Telegram token expiration (15 minutes) may cause race conditions if user takes too long to click link",
+    "External maintainer deletion requires no assigned reports; frontend must enforce this constraint",
+    "Report approval workflow assumes PUBLIC_RELATIONS role exists and is correctly configured",
+    "Geocoding endpoint returns bounding box but does not validate coordinates against Turin boundaries"
+  ]
+}

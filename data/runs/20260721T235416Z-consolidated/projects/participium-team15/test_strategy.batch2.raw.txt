@@ -1,0 +1,180 @@
+[
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/auth/verify-email",
+    "http_method": "POST",
+    "prompt": "Execute the email verification flow. First, register a new citizen user via POST /auth/register (independent setup). Then, call POST /auth/verify-email with the token received in the registration response body. Verify that the account status changes to 'active' and the user can now access protected endpoints.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Register a new citizen via POST /auth/register with valid email and password."
+    ],
+    "cleanup_strategy": "Delete the registered user account to reset state for subsequent tests.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core registration activation flow defined in PT27."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report to ensure correct classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report via POST /reports. Include all required fields (title, description, category) and optional fields (location, photos). Verify that the response includes a generated 'reportId' and that the status is set to 'Pending Approval' as per domain rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists (login if necessary)."
+    ],
+    "cleanup_strategy": "Use PATCH /reports/{reportId}/manage to mark the report as 'Rejected' with a reason, effectively cleaning up the resource.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the primary report creation functionality and initial state assignment."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Public relations officer reviews and approves or rejects a report.",
+    "api_endpoint": "/reports/{reportId}/manage",
+    "http_method": "PATCH",
+    "prompt": "Perform a stateful workflow test. First, create a report via POST /reports (setup). Then, switch to the 'municipal public relations officer' role and call PATCH /reports/{reportId}/manage to change the status to 'Assigned'. Verify that the transition occurred successfully.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a report via POST /reports (prerequisite for this operation).",
+      "Ensure the current session is authenticated as 'municipal public relations officer'."
+    ],
+    "cleanup_strategy": "Delete the created report if it was not successfully transitioned, or mark it as 'Rejected' to clean up.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the state transition from 'Pending Approval' to 'Assigned' and handles the dependency on an existing report resource."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member views the list of reports assigned to them.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Authenticate as a 'technical office staff member' and call GET /reports. Filter or verify that the response only contains reports where the status is 'Assigned' and the assignee matches the current user's role.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure an authenticated session for a technical office staff member exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the filtering logic for assigned reports based on user role."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account to manage notifications and virtual presence.",
+    "api_endpoint": "/citizens/{username}",
+    "http_method": "PATCH",
+    "prompt": "Update a citizen's profile via PATCH /citizens/{username}. Include fields for 'notification_preference' (e.g., 'real-time') and 'virtual_presence_visibility'. Verify that the changes are persisted in the response.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the ability of a citizen to modify their own profile settings."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report with missing required fields.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to create a report via POST /reports by omitting the 'title' field (a required field). Verify that the API returns a 400 Bad Request error indicating which field is missing.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates input validation for required fields in report creation."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Unregistered user attempts to view reports on the map.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Call GET /reports without any authentication token (simulating an unregistered or anonymous user). Verify that the response includes report data (as per domain rule: 'Unregistered users can view reports on maps') but excludes sensitive fields like reporter name if applicable, or simply returns a 200 with public data.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the public access policy for reports before registration."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Public relations officer attempts to modify a report that is not in 'Pending Approval' state.",
+    "api_endpoint": "/reports/{reportId}/manage",
+    "http_method": "PATCH",
+    "prompt": "First, create a report and immediately transition it to 'Assigned' status (setup). Then, attempt to call PATCH /reports/{reportId}/manage to change its status again. Verify that the API rejects this operation because the report is no longer in 'Pending Approval' state.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Transition the report to 'Assigned' status via PATCH."
+    ],
+    "cleanup_strategy": "Mark the report as 'Rejected' or delete it if possible to clean up the state.",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Validates state machine constraints preventing invalid transitions."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/auth/register-municipality",
+    "http_method": "POST",
+    "prompt": "Call POST /auth/register-municipality with a valid payload for a new municipality user. Verify that the user is created successfully and the response includes the new user's details.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an authenticated session with 'system administrator' role exists."
+    ],
+    "cleanup_strategy": "Delete the newly created municipality user account.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the admin capability to create specific user types."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen attempts to update their profile without being authenticated.",
+    "api_endpoint": "/citizens/{username}",
+    "http_method": "PATCH",
+    "prompt": "Attempt to call PATCH /citizens/{username} without providing an authentication token. Verify that the API returns a 401 Unauthorized error.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that profile updates are strictly protected by authentication."
+  }
+]

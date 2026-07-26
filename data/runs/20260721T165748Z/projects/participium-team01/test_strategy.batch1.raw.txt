@@ -1,0 +1,182 @@
+[
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Execute a happy path test where a technical office staff member updates the maintainer of an existing report. Ensure the request body contains a valid maintainer ID or email. Verify the response indicates successful assignment.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data (lat/lon, category, description).",
+      "Ensure the session token for 'technical office staff member' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation updates an existing report attribute, so the report itself remains. No specific cleanup of the report is needed unless the test logic requires resetting state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality of assigning a maintainer to a report as per requirement PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Execute a happy path test where an external maintainer updates the status of a report they are assigned to. Use a valid status value (e.g., 'in_progress' or 'resolved'). Verify the response confirms the status update.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data.",
+      "Assign an external maintainer to the report using PUT /reports/{id}/mainteiner (simulating prior assignment).",
+      "Ensure the session token for 'external maintainer' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation updates an existing report attribute, so the report itself remains.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability of an external maintainer to update report status as per requirement PT25."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member/external maintainer exchange information and comments on the report internally.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Execute a happy path test where a technical office staff member adds an internal comment to a report. Verify that the comment is created successfully and is not visible to citizens (implied by domain rules).",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data.",
+      "Ensure the session token for 'technical office staff member' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation creates a comment, which is a resource. If the test framework requires strict cleanup of all created resources, ensure the comment is deleted or ignored based on policy.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the internal communication feature for staff/maintainers as per requirement PT26."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Execute a negative test where a technical office staff member attempts to update the status of a report that has already been resolved or closed. Verify that the API rejects this action with an appropriate error code (e.g., 400 or 409) indicating that the operation is not allowed on a closed report.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data.",
+      "Update the status of the report to 'resolved' or 'closed' using PUT /reports/{id}/status.",
+      "Ensure the session token for 'technical office staff member' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation updates an existing report attribute, so the report itself remains.",
+    "expected_status_codes": [
+      "400",
+      "default"
+    ],
+    "rationale": "Validates that closed reports cannot be modified further, adhering to domain rules and requirement PT11 constraints."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a happy path test where a citizen sends a reply message to an existing report. Verify that the message is created successfully and appears in the list of messages for that report.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data.",
+      "Ensure the session token for 'citizen' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation creates a message, which is a resource. If the test framework requires strict cleanup of all created resources, ensure the message is deleted or ignored based on policy.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the citizen's ability to communicate directly about their report as per requirement PT18."
+  },
+  {
+    "requirement_id": "PT29",
+    "requirement_summary": "Municipal administrator configures automatic assignment of all reports in a certain category.",
+    "api_endpoint": "/reports/{id}/auto-assign-maintainer",
+    "http_method": "POST",
+    "prompt": "Execute an edge case test where a municipal administrator attempts to configure automatic assignment for a report that does not exist yet (pre-configuration). Verify that the API handles this gracefully, either by creating a placeholder configuration or returning a specific error indicating that the target report must exist first.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "municipal administrator",
+    "setup_needed": [
+      "Ensure the session token for 'municipal administrator' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation creates a configuration or assignment, which is a resource. If the test framework requires strict cleanup of all created resources, ensure the configuration is deleted or ignored based on policy.",
+    "expected_status_codes": [
+      "201",
+      "400",
+      "default"
+    ],
+    "rationale": "Validates the behavior of automatic assignment configuration when applied to non-existent reports, covering an edge case in requirement PT29."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Execute a negative test where a technical office staff member attempts to assign an invalid maintainer ID or email to a report. Verify that the API rejects this action with an appropriate error code (e.g., 400) indicating invalid input.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data.",
+      "Ensure the session token for 'technical office staff member' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation updates an existing report attribute, so the report itself remains.",
+    "expected_status_codes": [
+      "400",
+      "default"
+    ],
+    "rationale": "Validates input validation for maintainer assignment as per requirement PT24."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a negative test where a citizen attempts to reply to a message on a report that has been closed. Verify that the API rejects this action with an appropriate error code (e.g., 403 or 400) indicating that citizens can only follow not closed reports.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data.",
+      "Update the status of the report to 'closed' using PUT /reports/{id}/status.",
+      "Ensure the session token for 'citizen' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation creates a message, which is a resource. If the test framework requires strict cleanup of all created resources, ensure the message is deleted or ignored based on policy.",
+    "expected_status_codes": [
+      "403",
+      "400",
+      "default"
+    ],
+    "rationale": "Validates that citizens cannot interact with closed reports as per domain rules and requirement PT18 constraints."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member/external maintainer exchange information and comments on the report internally.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "GET",
+    "prompt": "Execute a stateful test where a technical office staff member retrieves internal comments for a report that has previously had comments added by another staff member. Verify that the list of comments is returned correctly and includes only internal comments.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data.",
+      "Add an internal comment to the report using POST /reports/{id}/internal-comments (simulating prior action).",
+      "Ensure the session token for 'technical office staff member' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation retrieves existing resources, so no cleanup of the report itself is needed unless the test logic requires resetting state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the retrieval of internal comments as per requirement PT26, ensuring proper handling of stateful dependencies."
+  }
+]

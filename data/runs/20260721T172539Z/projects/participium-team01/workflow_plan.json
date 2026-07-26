@@ -1,0 +1,1870 @@
+{
+  "run_id": "20260721T172539Z",
+  "project_name": "participium-team01",
+  "requirements_summary": {
+    "summary": "Participium is a web application for the Municipality of Turin enabling citizens to report urban issues (e.g., potholes, trash) via an interactive map or Telegram bot. Reports undergo a lifecycle: Pending Approval -> Assigned (to Technical Office) -> In Progress -> Resolved/Rejected/Suspended. The system supports external maintainers (with or without platform access), internal communication channels, notifications (email/push), and detailed statistics for administrators.",
+    "requirements": [
+      {
+        "id": "PT28",
+        "source": "user_stories_xlsx",
+        "text": "As an unregistered user\nI want to see approved reports on an interactive map \nSo that I can know about issues in my area and beyond.",
+        "role": "unregistered user",
+        "business_value": 990,
+        "constraints": [
+          "See similar story for citizen"
+        ],
+        "expected_behaviors": [
+          "I can know about issues in my area and beyond"
+        ]
+      },
+      {
+        "id": "PT24",
+        "source": "user_stories_xlsx",
+        "text": "As a technical office staff member\nI want to assign reports to external maintainers\nSo that specialized maintainers can handle and update the intervention.",
+        "role": "technical office staff member",
+        "business_value": 980,
+        "constraints": [
+          "It can be possible for specific reports of certain categories (e.g., Enel X for category Public Lighting) based on their content reviewed by the technical office staff member."
+        ],
+        "expected_behaviors": [
+          "specialized maintainers can handle and update the intervention"
+        ]
+      },
+      {
+        "id": "PT25",
+        "source": "user_stories_xlsx",
+        "text": "As an external maintainer \nI want to update the status of a report assigned to me\nSo that I can updated citizens about  the intervention.",
+        "role": "external maintainer",
+        "business_value": 975,
+        "constraints": [],
+        "expected_behaviors": [
+          "I can updated citizens about  the intervention"
+        ]
+      },
+      {
+        "id": "PT26",
+        "source": "user_stories_xlsx",
+        "text": "As a technical office staff member/external maintainer\nI want to exchange information and comments on the report internally\nSo that coordination happens without exposing internal notes to citizens",
+        "role": "technical office staff member/external maintainer",
+        "business_value": 970,
+        "constraints": [],
+        "expected_behaviors": [
+          "coordination happens without exposing internal notes to citizens"
+        ]
+      },
+      {
+        "id": "PT01",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen\nI want to register with my name and username \nSo that I can access the Participium system and submit reports.",
+        "role": "citizen",
+        "business_value": 950,
+        "constraints": [
+          "Registration is required before submitting reports."
+        ],
+        "expected_behaviors": [
+          "I can access the Participium system and submit reports"
+        ]
+      },
+      {
+        "id": "PT27",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen \nI want to confirm my registration with a code\nSo that my account becomes valid and I can start using the system.",
+        "role": "citizen",
+        "business_value": 945,
+        "constraints": [
+          "Once a registration is completed, the user gets an email with a confirmation code. The person can use the application only after confirming by entering the code valid for 30 minutes."
+        ],
+        "expected_behaviors": [
+          "my account becomes valid and I can start using the system"
+        ]
+      },
+      {
+        "id": "PT02",
+        "source": "user_stories_xlsx",
+        "text": "As a system administrator\nI want to set up municipality users",
+        "role": "system administrator",
+        "business_value": 940,
+        "constraints": [
+          "These are the internal accounts of the municipality"
+        ],
+        "expected_behaviors": []
+      },
+      {
+        "id": "PT03",
+        "source": "user_stories_xlsx",
+        "text": "As a system administrator\nI want to assign roles to municipality users",
+        "role": "system administrator",
+        "business_value": 935,
+        "constraints": [
+          "Possible roles: municipal public relations officer, municipal administrator, technical office staff member, external maintainer. You can be more specific on technical offices to run realisti scenarios following the official organizational structure of the municipality of Turin (https://trasparenza.comune.torino.it/media/2212/download)"
+        ],
+        "expected_behaviors": []
+      },
+      {
+        "id": "PT05",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen \nI want to provide details for my report \nSo that the the problem is classified correctly.",
+        "role": "citizen",
+        "business_value": 920,
+        "constraints": [
+          "Mandatory fields: title, description,  category , photos (min 1 max 3)."
+        ],
+        "expected_behaviors": [
+          "the the problem is classified correctly"
+        ]
+      },
+      {
+        "id": "PT06",
+        "source": "user_stories_xlsx",
+        "text": "As a municipal public relations officer\nI want to review and approve or reject reports \nSo that only valid reports are processed further.",
+        "role": "municipal public relations officer",
+        "business_value": 915,
+        "constraints": [
+          "Rejected reports must include an explanation. If accepted, the report is assigned to the technical office bound to the report category."
+        ],
+        "expected_behaviors": [
+          "only valid reports are processed further"
+        ]
+      },
+      {
+        "id": "PT07",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen \nI want to see approved reports on an interactive map \nSo that I can know about issues in my area and beyond.",
+        "role": "citizen",
+        "business_value": 910,
+        "constraints": [
+          "Map should be zoomable. When zooming out, reports can be grouped into a cumulative report for a better visualization (total number should be reported on the cumulative report). When zooming in,  reports can be seen separated, with their title and reporter name (or \"anonymous\" if this is flagged on that report)."
+        ],
+        "expected_behaviors": [
+          "I can know about issues in my area and beyond"
+        ]
+      },
+      {
+        "id": "PT15",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen \nI want to choose whether to make my report anonymous \nSo that my name is not shown in the public list of reports.",
+        "role": "citizen",
+        "business_value": 905,
+        "constraints": [
+          "Anonymous option protects privacy. Choice made at issue description time."
+        ],
+        "expected_behaviors": [
+          "my name is not shown in the public list of reports"
+        ]
+      },
+      {
+        "id": "PT08",
+        "source": "user_stories_xlsx",
+        "text": "As a technical office staff member\nI want to see the list of reports assigned to me\nSo that I can get an overview of the maintenance to be done",
+        "role": "technical office staff member",
+        "business_value": 900,
+        "constraints": [],
+        "expected_behaviors": [
+          "I can get an overview of the maintenance to be done"
+        ]
+      },
+      {
+        "id": "PT09",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen \nI want to configure my account\nSo that I can better manage notifications and my virtual presence.",
+        "role": "citizen",
+        "business_value": 895,
+        "constraints": [
+          "Citizens can  upload a personal photo, add their Telegram username and switch off/on email notifications in the configuration panel."
+        ],
+        "expected_behaviors": [
+          "I can better manage notifications and my virtual presence"
+        ]
+      },
+      {
+        "id": "PT10",
+        "source": "user_stories_xlsx",
+        "text": "As a system administrator\nI want to modify roles to municipality users\nSo that the staff can be more flexible.",
+        "role": "system administrator",
+        "business_value": 885,
+        "constraints": [
+          "This story overwrites a previous answer given by PO on the Telegram chat. NB: 1) A municipality user can now have multiple roles, i.e. serving on more than one technical office. 2) Modification includes cancellation."
+        ],
+        "expected_behaviors": [
+          "the staff can be more flexible"
+        ]
+      },
+      {
+        "id": "PT11",
+        "source": "user_stories_xlsx",
+        "text": "As a technical office staff member \nI want to update report statuses \nSo that citizens are informed of the problem resolution process.",
+        "role": "technical office staff member",
+        "business_value": 880,
+        "constraints": [
+          "At each status change, the citizen receives notification in the platform with the corresponding update. Municipal operators working on reports can also send messages to the citizens in the platform, to which the citizen can reply."
+        ],
+        "expected_behaviors": [
+          "citizens are informed of the problem resolution process"
+        ]
+      },
+      {
+        "id": "PT18",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen \nI want to reply to messages from municipal operators in the platform \nSo that I can communicate directly about my report.",
+        "role": "citizen",
+        "business_value": 830,
+        "constraints": [
+          "Two-way communication is possible within the platform."
+        ],
+        "expected_behaviors": [
+          "I can communicate directly about my report"
+        ]
+      },
+      {
+        "id": "PT19",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen \nI want to receive optional email alerts in addition to platform notifications \nSo that I can choose the best way to stay updated.",
+        "role": "citizen",
+        "business_value": 790,
+        "constraints": [
+          "Unless disabled in their configuration panel."
+        ],
+        "expected_behaviors": [
+          "I can choose the best way to stay updated"
+        ]
+      },
+      {
+        "id": "PT29",
+        "source": "user_stories_xlsx",
+        "text": "As a municipal administrator\nI want to configure automatic assignment of all reports in a certain category\nSo that interventions will be faster.",
+        "role": "municipal administrator",
+        "business_value": 750,
+        "constraints": [],
+        "expected_behaviors": [
+          "interventions will be faster"
+        ]
+      },
+      {
+        "id": "PT22",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen/unregistered user\nI want to browse a summary table of reports with filters \nSo that I can easily explore and analyze existing reports.",
+        "role": "citizen/unregistered user",
+        "business_value": 740,
+        "constraints": [
+          "Filters: by category, status, period of time"
+        ],
+        "expected_behaviors": [
+          "I can easily explore and analyze existing reports"
+        ]
+      }
+    ],
+    "roles": [
+      "unregistered user",
+      "technical office staff member",
+      "external maintainer",
+      "technical office staff member/external maintainer",
+      "citizen",
+      "system administrator",
+      "municipal public relations officer",
+      "citizen/unregistered user",
+      "citizen /unregistered user",
+      "municipal administrator"
+    ],
+    "domain_rules": [
+      "Reports must be in 'Pending Approval' state until the Organization Office performs preliminary verification.",
+      "Rejected reports require a mandatory explanation from the Municipality Organization Office.",
+      "Accepted reports move to 'Assigned' state and are sent to the competent technical office based on category.",
+      "Once intervention is scheduled, status changes to 'In Progress'.",
+      "When resolved, technical office updates status to 'Resolved' and closes the report.",
+      "Internal comments between technical office staff and external maintainers are not visible to citizens or reporters.",
+      "Automatic assignment of all issues of a certain category is possible only if previously set by the municipal administrator.",
+      "Only authenticated users (citizens) can view reports initially; from Sprint 4, unregistered users can also view reports.",
+      "An anonymous user's name is visible to staff but hidden in the public Turin map for citizens.",
+      "Once a report has been inserted, it cannot be modified or deleted by the citizen.",
+      "Public Relation officer can assign a report either to a specific technical office or directly to a staff member of that office.",
+      "Only technical office staff members can have multiple roles.",
+      "Notifications/messages can be set to either real-time or on page refresh depending on preference.",
+      "External maintainers are added by the system administrator and must have their own individual account (Case 1).",
+      "Communication between technical office and external maintainers without platform access is out of scope (Case 2).",
+      "Email is a mandatory field for registration and can be used for login.",
+      "Confirmation code for registration is valid for exactly 30 minutes.",
+      "Reports must be geolocated using OpenStreetMap standard layer."
+    ],
+    "edge_cases": [
+      "User attempts to submit a report without registering: System blocks submission until registration and confirmation are complete.",
+      "User attempts to view reports before approval: System hides 'Pending Approval' reports from public view.",
+      "External maintainer resolves a report: System allows transition to 'Resolved' only if maintainer has access (Case 1).",
+      "Citizen tries to edit/delete their own report after submission: System denies action.",
+      "User zooms out on map significantly: System groups reports into cumulative view with total count.",
+      "User filters table by category and clicks download: System exports only the filtered subset as CSV.",
+      "Telegram bot receives command for non-existent report ID: System returns error or 'not found' message.",
+      "Citizen follows a report that is later resolved/rejected: System stops sending notifications once status becomes closed."
+    ],
+    "assumptions": [
+      "The 'Organization Office' refers to the central administrative body responsible for initial review and rejection explanations.",
+      "Competent technical office mapping to categories is pre-configured in the system database.",
+      "Telegram bot integration requires a valid Telegram API connection and user authentication via username.",
+      "Push notifications rely on Telegram's native push mechanism or an integrated service.",
+      "The 'top 1%' and 'top 5%' statistics are calculated based on report volume per reporter over a specific time window (likely all time or configurable).",
+      "External maintainers without platform access (Case 2) communicate via external channels not tracked by Participium.",
+      "The map layer is strictly OpenStreetMap standard unless overridden by admin configuration."
+    ]
+  },
+  "api_summary": {
+    "summary": "A citizen reporting and operator management API supporting authentication, user registration, profile management, report creation, status updates, role-based assignment (technical officers, external maintainers), internal/external messaging, notifications, and chat history.",
+    "operations": [
+      {
+        "path": "/sessions",
+        "method": "POST",
+        "operation_id": "createSession",
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "Log in with username or email and password.",
+          "Initial login required for all authenticated flows",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 201, 401"
+        ]
+      },
+      {
+        "path": "/sessions/current",
+        "method": "GET",
+        "operation_id": "getCurrentSession",
+        "auth_required": true,
+        "dependencies": [
+          "POST /sessions: Session creation is required to establish authenticated state for subsequent requests.",
+          "createSession"
+        ],
+        "notes": [
+          "Return the authenticated user.",
+          "Verifies active session state",
+          "Documented responses: 200, 401"
+        ]
+      },
+      {
+        "path": "/sessions/current",
+        "method": "DELETE",
+        "operation_id": "deleteCurrentSession",
+        "auth_required": true,
+        "dependencies": [
+          "GET /sessions/current: Logout depends on an active session to invalidate.",
+          "getCurrentSession"
+        ],
+        "notes": [
+          "Log out the current user.",
+          "Logout endpoint; invalidates current session",
+          "Documented responses: 200"
+        ]
+      },
+      {
+        "path": "/registration",
+        "method": "POST",
+        "operation_id": "registerCitizen",
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "Register a new citizen account.",
+          "Public registration flow; creates citizen account",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 201, 409, 422, 503"
+        ]
+      },
+      {
+        "path": "/citizens",
+        "method": "GET",
+        "operation_id": "getCitizenProfile",
+        "auth_required": true,
+        "dependencies": [
+          "POST /registration: Citizen profile retrieval requires a registered citizen account.",
+          "createSession"
+        ],
+        "notes": [
+          "Get the logged-in citizen profile.",
+          "Retrieves logged-in citizen profile",
+          "Documented responses: 200, 401, 404, 423, 503"
+        ]
+      },
+      {
+        "path": "/citizens",
+        "method": "PUT",
+        "operation_id": "updateCitizenProfile",
+        "auth_required": true,
+        "dependencies": [
+          "GET /citizens: Profile update requires existing profile state.",
+          "getCitizenProfile"
+        ],
+        "notes": [
+          "Update the logged-in citizen profile.",
+          "Updates logged-in citizen profile",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 400, 401, 404, 409, 500"
+        ]
+      },
+      {
+        "path": "/citizens/verification-code",
+        "method": "POST",
+        "operation_id": "createCitizenVerificationCode",
+        "auth_required": true,
+        "dependencies": [
+          "GET /citizens: Verification code generation requires authenticated citizen context.",
+          "getCitizenProfile"
+        ],
+        "notes": [
+          "Generate and email a verification code for the logged-in citizen.",
+          "Generates email verification code",
+          "Documented responses: 200, 401, 423, 503"
+        ]
+      },
+      {
+        "path": "/citizens/verify-email",
+        "method": "POST",
+        "operation_id": "verifyCitizenEmail",
+        "auth_required": true,
+        "dependencies": [
+          "POST /citizens/verification-code: Email verification requires a generated code to be validated.",
+          "createCitizenVerificationCode"
+        ],
+        "notes": [
+          "Verify the logged-in citizen email using a code.",
+          "Validates email using generated code",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 400, 401, 422, 423, 503"
+        ]
+      },
+      {
+        "path": "/citizens/verification-token",
+        "method": "GET",
+        "operation_id": "getCitizenVerificationToken",
+        "auth_required": true,
+        "dependencies": [
+          "POST /citizens/verify-email: Token expiry check requires prior verification attempt.",
+          "verifyCitizenEmail"
+        ],
+        "notes": [
+          "Get the active email verification token expiry.",
+          "Checks verification token expiry",
+          "Documented responses: 200, 401, 404, 423, 503"
+        ]
+      },
+      {
+        "path": "/upload-url",
+        "method": "POST",
+        "operation_id": "createUploadUrl",
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "Create a signed Supabase upload URL.",
+          "Public file upload URL generation",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 500"
+        ]
+      },
+      {
+        "path": "/categories",
+        "method": "GET",
+        "operation_id": "listCategories",
+        "auth_required": true,
+        "dependencies": [
+          "createSession"
+        ],
+        "notes": [
+          "List all report categories.",
+          "Lists available report categories",
+          "Documented responses: 200, 401, 503"
+        ]
+      },
+      {
+        "path": "/roles",
+        "method": "GET",
+        "operation_id": "listRoles",
+        "auth_required": true,
+        "dependencies": [
+          "createSession"
+        ],
+        "notes": [
+          "List all operator roles.",
+          "Lists operator roles",
+          "Documented responses: 200, 401, 503"
+        ]
+      },
+      {
+        "path": "/companies",
+        "method": "GET",
+        "operation_id": "listCompanies",
+        "auth_required": true,
+        "dependencies": [
+          "createSession"
+        ],
+        "notes": [
+          "List all companies.",
+          "Lists companies",
+          "Documented responses: 200, 401, 503"
+        ]
+      },
+      {
+        "path": "/admin",
+        "method": "GET",
+        "operation_id": "listOperatorsForAdmin",
+        "auth_required": true,
+        "dependencies": [
+          "createSession"
+        ],
+        "notes": [
+          "List municipality operators.",
+          "Admin view of municipality operators",
+          "Documented responses: 200, 401, 403, 500"
+        ]
+      },
+      {
+        "path": "/admin/createuser",
+        "method": "POST",
+        "operation_id": "createMunicipalityUser",
+        "auth_required": true,
+        "dependencies": [
+          "listOperatorsForAdmin"
+        ],
+        "notes": [
+          "Create an operator or external maintainer.",
+          "Creates new operator/maintainer account",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 201, 400, 401, 409, 422, 503"
+        ]
+      },
+      {
+        "path": "/admin/addcategory",
+        "method": "POST",
+        "operation_id": "addOperatorCategory",
+        "auth_required": true,
+        "dependencies": [
+          "POST /admin/createuser: Category addition requires an existing operator user.",
+          "createMunicipalityUser"
+        ],
+        "notes": [
+          "Add a category to an operator.",
+          "Assigns category to operator",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 201, 401, 404, 409, 422, 500"
+        ]
+      },
+      {
+        "path": "/admin/removecategory",
+        "method": "DELETE",
+        "operation_id": "removeOperatorCategory",
+        "auth_required": true,
+        "dependencies": [
+          "POST /admin/addcategory: Category removal requires an existing category assignment.",
+          "addOperatorCategory"
+        ],
+        "notes": [
+          "Remove a category from an operator.",
+          "Removes category from operator",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 401, 404, 422, 500"
+        ]
+      },
+      {
+        "path": "/admin/companies/{companyId}/categories",
+        "method": "GET",
+        "operation_id": "listCompanyCategories",
+        "auth_required": true,
+        "dependencies": [
+          "createMunicipalityUser"
+        ],
+        "notes": [
+          "List categories managed by one company.",
+          "Lists categories managed by specific company",
+          "Parameters: #/components/parameters/CompanyId",
+          "Documented responses: 200, 401, 503"
+        ]
+      },
+      {
+        "path": "/operators",
+        "method": "GET",
+        "operation_id": "listOperatorsByCategory",
+        "auth_required": true,
+        "dependencies": [
+          "addOperatorCategory"
+        ],
+        "notes": [
+          "List assignable operators for a category.",
+          "Lists assignable operators for a category",
+          "Parameters: category_id",
+          "Documented responses: 200, 400, 401, 422, 503"
+        ]
+      },
+      {
+        "path": "/operators/my-categories",
+        "method": "GET",
+        "operation_id": "listMyOperatorCategories",
+        "auth_required": true,
+        "dependencies": [
+          "addOperatorCategory"
+        ],
+        "notes": [
+          "List categories assigned to the authenticated operator.",
+          "Lists categories assigned to authenticated operator",
+          "Documented responses: 200, 401, 503"
+        ]
+      },
+      {
+        "path": "/reports",
+        "method": "POST",
+        "operation_id": "createReport",
+        "auth_required": true,
+        "dependencies": [
+          "getCitizenProfile"
+        ],
+        "notes": [
+          "Create a new citizen report.",
+          "Creates new citizen report",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 201, 401, 422, 503"
+        ]
+      },
+      {
+        "path": "/reports",
+        "method": "GET",
+        "operation_id": "listReports",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: Report listing requires at least one report to exist.",
+          "createReport"
+        ],
+        "notes": [
+          "List all reports for admin or public relations officer.",
+          "Lists reports for admin/PR officer",
+          "Documented responses: 200, 401, 403, 503"
+        ]
+      },
+      {
+        "path": "/reports/approved",
+        "method": "GET",
+        "operation_id": "listApprovedReports",
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "List approved reports for the public map.",
+          "Public view of approved reports",
+          "Documented responses: 200, 503"
+        ]
+      },
+      {
+        "path": "/reports/assigned",
+        "method": "GET",
+        "operation_id": "listAssignedReports",
+        "auth_required": true,
+        "dependencies": [
+          "createReport"
+        ],
+        "notes": [
+          "List reports assigned to the logged-in technical officer or external maintainer.",
+          "Lists reports assigned to logged-in technical officer/maintainer",
+          "Documented responses: 200, 401, 403, 503"
+        ]
+      },
+      {
+        "path": "/reports/{id}/status",
+        "method": "PUT",
+        "operation_id": "updateReportStatus",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: Status update requires an existing report.",
+          "createReport"
+        ],
+        "notes": [
+          "Update the status of a report.",
+          "Updates report status",
+          "Parameters: #/components/parameters/ReportId",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 401, 403, 404, 422, 423, 503"
+        ]
+      },
+      {
+        "path": "/reports/{id}/operator",
+        "method": "PUT",
+        "operation_id": "assignReportOperator",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: Operator assignment requires an existing report.",
+          "createReport"
+        ],
+        "notes": [
+          "Assign an internal technical operator to a report.",
+          "Assigns internal technical operator to report",
+          "Parameters: #/components/parameters/ReportId",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 401, 403, 404, 422, 423, 503"
+        ]
+      },
+      {
+        "path": "/reports/{id}/auto-assign-officer",
+        "method": "POST",
+        "operation_id": "autoAssignTechnicalOfficer",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: Auto-assignment requires an existing report.",
+          "createReport"
+        ],
+        "notes": [
+          "Automatically assign a technical officer to a report.",
+          "Auto-assigns technical officer to report",
+          "Parameters: #/components/parameters/ReportId",
+          "Documented responses: 200, 401, 403, 422, 503"
+        ]
+      },
+      {
+        "path": "/reports/{id}/mainteiner",
+        "method": "PUT",
+        "operation_id": "assignReportMainteiner",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: Maintainer assignment requires an existing report.",
+          "createReport"
+        ],
+        "notes": [
+          "Assign an external maintainer to a report.",
+          "Assigns external maintainer to report",
+          "Parameters: #/components/parameters/ReportId",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 401, 403, 404, 422, 423, 503"
+        ]
+      },
+      {
+        "path": "/reports/{id}/auto-assign-maintainer",
+        "method": "POST",
+        "operation_id": "autoAssignMaintainer",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: Auto-maintainer assignment requires an existing report.",
+          "createReport"
+        ],
+        "notes": [
+          "Automatically assign an external maintainer to a report.",
+          "Auto-assigns external maintainer to report",
+          "Parameters: #/components/parameters/ReportId",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 401, 403, 422, 503"
+        ]
+      },
+      {
+        "path": "/reports/{id}/internal-comments",
+        "method": "POST",
+        "operation_id": "createInternalComment",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: Comment creation requires an existing report.",
+          "createReport"
+        ],
+        "notes": [
+          "Add an internal operator comment to a report.",
+          "Adds internal operator comment to report",
+          "Parameters: #/components/parameters/ReportId",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 201, 401, 403, 422, 503"
+        ]
+      },
+      {
+        "path": "/reports/{id}/internal-comments",
+        "method": "GET",
+        "operation_id": "listInternalComments",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: Comment listing requires an existing report.",
+          "createReport"
+        ],
+        "notes": [
+          "List internal operator comments for a report.",
+          "Lists internal operator comments for report",
+          "Parameters: #/components/parameters/ReportId",
+          "Documented responses: 200, 401, 403, 422, 503"
+        ]
+      },
+      {
+        "path": "/reports/{id}/messages",
+        "method": "POST",
+        "operation_id": "createReportMessage",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: Message creation requires an existing report.",
+          "createReport"
+        ],
+        "notes": [
+          "Add a citizen/operator message to a report chat.",
+          "Adds citizen/operator message to report chat",
+          "Parameters: #/components/parameters/ReportId",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 201, 401, 403, 422, 503"
+        ]
+      },
+      {
+        "path": "/reports/{id}/messages",
+        "method": "GET",
+        "operation_id": "listReportMessages",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: Message listing requires an existing report.",
+          "createReport"
+        ],
+        "notes": [
+          "List messages for a report chat.",
+          "Lists messages for report chat",
+          "Parameters: #/components/parameters/ReportId",
+          "Documented responses: 200, 401, 422, 503"
+        ]
+      },
+      {
+        "path": "/notifications",
+        "method": "GET",
+        "operation_id": "listNotifications",
+        "auth_required": true,
+        "dependencies": [
+          "createSession"
+        ],
+        "notes": [
+          "List notifications for the logged-in citizen.",
+          "Lists notifications for logged-in citizen",
+          "Parameters: limit",
+          "Documented responses: 200, 401, 503"
+        ]
+      },
+      {
+        "path": "/notifications/unread-count",
+        "method": "GET",
+        "operation_id": "getUnreadNotificationCount",
+        "auth_required": true,
+        "dependencies": [
+          "listNotifications"
+        ],
+        "notes": [
+          "Get unread notification count for the logged-in citizen.",
+          "Gets unread notification count",
+          "Documented responses: 200, 401, 503"
+        ]
+      },
+      {
+        "path": "/notifications/{id}/seen",
+        "method": "PUT",
+        "operation_id": "markNotificationAsSeen",
+        "auth_required": true,
+        "dependencies": [
+          "listNotifications"
+        ],
+        "notes": [
+          "Mark one notification as seen.",
+          "Marks single notification as seen",
+          "Parameters: #/components/parameters/NotificationId",
+          "Documented responses: 200, 401, 404, 422, 503"
+        ]
+      },
+      {
+        "path": "/notifications/mark-all-seen",
+        "method": "PUT",
+        "operation_id": "markAllNotificationsAsSeen",
+        "auth_required": true,
+        "dependencies": [
+          "listNotifications"
+        ],
+        "notes": [
+          "Mark all citizen notifications as seen.",
+          "Marks all citizen notifications as seen",
+          "Documented responses: 200, 401, 503"
+        ]
+      },
+      {
+        "path": "/chats",
+        "method": "GET",
+        "operation_id": "listChats",
+        "auth_required": true,
+        "dependencies": [
+          "createSession"
+        ],
+        "notes": [
+          "List chats for the logged-in citizen, technical officer, or maintainer.",
+          "Lists chats for logged-in user",
+          "Documented responses: 200, 401, 403, 503"
+        ]
+      },
+      {
+        "path": "/chats/unread/count",
+        "method": "GET",
+        "operation_id": "getUnreadMessagesCount",
+        "auth_required": true,
+        "dependencies": [
+          "GET /chats: Unread count retrieval requires chat context.",
+          "listChats"
+        ],
+        "notes": [
+          "Get total unread chat message count.",
+          "Gets total unread chat message count",
+          "Documented responses: 200, 401, 503"
+        ]
+      },
+      {
+        "path": "/chats/{reportId}",
+        "method": "GET",
+        "operation_id": "getChatDetails",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: A report must exist before an operation can address reportId.",
+          "createReport"
+        ],
+        "notes": [
+          "Get chat details and messages for a report.",
+          "Gets chat details and messages for a report",
+          "Parameters: #/components/parameters/ChatReportId",
+          "Documented responses: 200, 401, 403, 404, 422, 503"
+        ]
+      },
+      {
+        "path": "/chats/{reportId}/read",
+        "method": "POST",
+        "operation_id": "markChatAsRead",
+        "auth_required": true,
+        "dependencies": [
+          "POST /reports: A report must exist before an operation can address reportId.",
+          "GET /chats/{reportId}: Marking chat as read requires existing chat context.",
+          "getChatDetails"
+        ],
+        "notes": [
+          "Mark a report chat as read for the logged-in user.",
+          "Marks report chat as read for logged-in user",
+          "Parameters: #/components/parameters/ChatReportId",
+          "Documented responses: 200, 401, 422, 503"
+        ]
+      }
+    ],
+    "authentication_notes": [
+      "/sessions POST is the only unauthenticated endpoint; all others require prior session creation or public resource access (registration/upload-url/approved-reports).",
+      "Session state must be maintained via /sessions/current before accessing protected citizen/operator endpoints.",
+      "Operations marked auth_required need an authenticated session during test setup."
+    ],
+    "dependencies": [
+      "createSession -> getCurrentSession -> deleteCurrentSession (session lifecycle)",
+      "registerCitizen -> getCitizenProfile -> updateCitizenProfile (citizen profile lifecycle)",
+      "createCitizenVerificationCode -> verifyCitizenEmail -> getCitizenVerificationToken (email verification flow)",
+      "createReport -> listReports/listAssignedReports/updateReportStatus/assign*/*comments/messages (report lifecycle)",
+      "addOperatorCategory -> removeOperatorCategory/category management",
+      "listOperatorsForAdmin -> createMunicipalityUser -> add/remove categories (operator management)",
+      "POST /reports -> GET /chats/{reportId}: A report must exist before an operation can address reportId.",
+      "POST /reports -> POST /chats/{reportId}/read: A report must exist before an operation can address reportId.",
+      "POST /sessions -> GET /sessions/current: Session creation is required to establish authenticated state for subsequent requests.",
+      "GET /sessions/current -> DELETE /sessions/current: Logout depends on an active session to invalidate.",
+      "POST /registration -> GET /citizens: Citizen profile retrieval requires a registered citizen account.",
+      "GET /citizens -> PUT /citizens: Profile update requires existing profile state.",
+      "GET /citizens -> POST /citizens/verification-code: Verification code generation requires authenticated citizen context.",
+      "POST /citizens/verification-code -> POST /citizens/verify-email: Email verification requires a generated code to be validated.",
+      "POST /citizens/verify-email -> GET /citizens/verification-token: Token expiry check requires prior verification attempt.",
+      "POST /reports -> GET /reports: Report listing requires at least one report to exist.",
+      "POST /reports -> PUT /reports/{id}/status: Status update requires an existing report.",
+      "POST /reports -> PUT /reports/{id}/operator: Operator assignment requires an existing report.",
+      "POST /reports -> POST /reports/{id}/auto-assign-officer: Auto-assignment requires an existing report.",
+      "POST /reports -> PUT /reports/{id}/mainteiner: Maintainer assignment requires an existing report.",
+      "POST /reports -> POST /reports/{id}/auto-assign-maintainer: Auto-maintainer assignment requires an existing report.",
+      "POST /reports -> POST /reports/{id}/internal-comments: Comment creation requires an existing report.",
+      "POST /reports -> GET /reports/{id}/internal-comments: Comment listing requires an existing report.",
+      "POST /reports -> POST /reports/{id}/messages: Message creation requires an existing report.",
+      "POST /reports -> GET /reports/{id}/messages: Message listing requires an existing report.",
+      "POST /admin/createuser -> POST /admin/addcategory: Category addition requires an existing operator user.",
+      "POST /admin/addcategory -> DELETE /admin/removecategory: Category removal requires an existing category assignment.",
+      "GET /chats -> GET /chats/unread/count: Unread count retrieval requires chat context.",
+      "GET /chats/{reportId} -> POST /chats/{reportId}/read: Marking chat as read requires existing chat context."
+    ],
+    "dependency_edges": [
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "GET",
+        "dependent_path": "/chats/{reportId}",
+        "dependency_type": "resource",
+        "reason": "A report must exist before an operation can address reportId."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "POST",
+        "dependent_path": "/chats/{reportId}/read",
+        "dependency_type": "resource",
+        "reason": "A report must exist before an operation can address reportId."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/sessions",
+        "dependent_method": "GET",
+        "dependent_path": "/sessions/current",
+        "dependency_type": "state",
+        "reason": "Session creation is required to establish authenticated state for subsequent requests."
+      },
+      {
+        "prerequisite_method": "GET",
+        "prerequisite_path": "/sessions/current",
+        "dependent_method": "DELETE",
+        "dependent_path": "/sessions/current",
+        "dependency_type": "state",
+        "reason": "Logout depends on an active session to invalidate."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/registration",
+        "dependent_method": "GET",
+        "dependent_path": "/citizens",
+        "dependency_type": "resource",
+        "reason": "Citizen profile retrieval requires a registered citizen account."
+      },
+      {
+        "prerequisite_method": "GET",
+        "prerequisite_path": "/citizens",
+        "dependent_method": "PUT",
+        "dependent_path": "/citizens",
+        "dependency_type": "state",
+        "reason": "Profile update requires existing profile state."
+      },
+      {
+        "prerequisite_method": "GET",
+        "prerequisite_path": "/citizens",
+        "dependent_method": "POST",
+        "dependent_path": "/citizens/verification-code",
+        "dependency_type": "state",
+        "reason": "Verification code generation requires authenticated citizen context."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/citizens/verification-code",
+        "dependent_method": "POST",
+        "dependent_path": "/citizens/verify-email",
+        "dependency_type": "state",
+        "reason": "Email verification requires a generated code to be validated."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/citizens/verify-email",
+        "dependent_method": "GET",
+        "dependent_path": "/citizens/verification-token",
+        "dependency_type": "state",
+        "reason": "Token expiry check requires prior verification attempt."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "GET",
+        "dependent_path": "/reports",
+        "dependency_type": "resource",
+        "reason": "Report listing requires at least one report to exist."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "PUT",
+        "dependent_path": "/reports/{id}/status",
+        "dependency_type": "resource",
+        "reason": "Status update requires an existing report."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "PUT",
+        "dependent_path": "/reports/{id}/operator",
+        "dependency_type": "resource",
+        "reason": "Operator assignment requires an existing report."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "POST",
+        "dependent_path": "/reports/{id}/auto-assign-officer",
+        "dependency_type": "resource",
+        "reason": "Auto-assignment requires an existing report."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "PUT",
+        "dependent_path": "/reports/{id}/mainteiner",
+        "dependency_type": "resource",
+        "reason": "Maintainer assignment requires an existing report."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "POST",
+        "dependent_path": "/reports/{id}/auto-assign-maintainer",
+        "dependency_type": "resource",
+        "reason": "Auto-maintainer assignment requires an existing report."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "POST",
+        "dependent_path": "/reports/{id}/internal-comments",
+        "dependency_type": "resource",
+        "reason": "Comment creation requires an existing report."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "GET",
+        "dependent_path": "/reports/{id}/internal-comments",
+        "dependency_type": "resource",
+        "reason": "Comment listing requires an existing report."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "POST",
+        "dependent_path": "/reports/{id}/messages",
+        "dependency_type": "resource",
+        "reason": "Message creation requires an existing report."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/reports",
+        "dependent_method": "GET",
+        "dependent_path": "/reports/{id}/messages",
+        "dependency_type": "resource",
+        "reason": "Message listing requires an existing report."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/admin/createuser",
+        "dependent_method": "POST",
+        "dependent_path": "/admin/addcategory",
+        "dependency_type": "resource",
+        "reason": "Category addition requires an existing operator user."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/admin/addcategory",
+        "dependent_method": "DELETE",
+        "dependent_path": "/admin/removecategory",
+        "dependency_type": "state",
+        "reason": "Category removal requires an existing category assignment."
+      },
+      {
+        "prerequisite_method": "GET",
+        "prerequisite_path": "/chats",
+        "dependent_method": "GET",
+        "dependent_path": "/chats/unread/count",
+        "dependency_type": "state",
+        "reason": "Unread count retrieval requires chat context."
+      },
+      {
+        "prerequisite_method": "GET",
+        "prerequisite_path": "/chats/{reportId}",
+        "dependent_method": "POST",
+        "dependent_path": "/chats/{reportId}/read",
+        "dependency_type": "state",
+        "reason": "Marking chat as read requires existing chat context."
+      }
+    ],
+    "risks": [
+      "/sessions/current and /sessions/current DELETE share the same path but different methods; ensure client handles both correctly.",
+      "/reports/{id}/mainteiner has a typo in route name ('mainteiner' vs 'maintainer') which may cause confusion or misconfiguration.",
+      "Several endpoints return 423 (Locked) or 409 (Conflict); documentation does not specify exact conditions for these states.",
+      "Auto-assign endpoints rely on backend logic not visible in docs; failure modes are unclear.",
+      "Public endpoints (/upload-url, /reports/approved) lack explicit rate-limiting or abuse-mitigation notes."
+    ]
+  },
+  "strategy_items": [
+    {
+      "requirement_id": "PT28",
+      "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+      "api_endpoint": "/reports/approved",
+      "http_method": "GET",
+      "prompt": "Execute a GET request to /reports/approved without any authentication headers. Verify that the response contains a list of reports where status is 'Resolved' or equivalent approved states, and that no 'Pending Approval' reports are included.",
+      "test_type": "happy_path",
+      "priority": "high",
+      "auth_role": null,
+      "setup_needed": [],
+      "cleanup_strategy": null,
+      "expected_status_codes": [
+        "200"
+      ],
+      "rationale": "Validates the core requirement for public visibility of approved reports without authentication."
+    },
+    {
+      "requirement_id": "PT28",
+      "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+      "api_endpoint": "/reports/approved",
+      "http_method": "GET",
+      "prompt": "Execute a GET request to /reports/approved without authentication. Verify that the response excludes any reports currently in 'Pending Approval' state, ensuring only fully processed reports are visible.",
+      "test_type": "edge_case",
+      "priority": "medium",
+      "auth_role": null,
+      "setup_needed": [],
+      "cleanup_strategy": null,
+      "expected_status_codes": [
+        "200"
+      ],
+      "rationale": "Tests the filtering logic to ensure pending reports are hidden from unauthenticated users as per domain rules."
+    },
+    {
+      "requirement_id": "PT28",
+      "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+      "api_endpoint": "/reports/approved",
+      "http_method": "GET",
+      "prompt": "Execute a GET request to /reports/approved without authentication. Verify that the response returns a 401 Unauthorized status code if the endpoint is strictly protected and not public, or confirm that the system correctly handles unauthenticated access as defined in requirements.",
+      "test_type": "negative",
+      "priority": "low",
+      "auth_role": null,
+      "setup_needed": [],
+      "cleanup_strategy": null,
+      "expected_status_codes": [
+        "401"
+      ],
+      "rationale": "Tests the boundary condition where unauthenticated access might be restricted despite the requirement implying visibility."
+    },
+    {
+      "requirement_id": "PT29",
+      "requirement_summary": "Municipal administrator can configure automatic assignment of all reports in a certain category.",
+      "api_endpoint": "/reports/{id}/auto-assign-officer",
+      "http_method": "POST",
+      "prompt": "Authenticate as a municipal administrator. Execute POST /reports/{id}/auto-assign-officer to assign a report automatically based on its category configuration. Verify that the assignment is successful and the report status changes appropriately.",
+      "test_type": "happy_path",
+      "priority": "high",
+      "auth_role": "municipal_administrator",
+      "setup_needed": [
+        "POST /reports to create a new report resource with a specific category",
+        "POST /sessions to obtain an authenticated session for municipal_administrator"
+      ],
+      "cleanup_strategy": "DELETE the created report via POST /reports/{id}/delete if it exists; otherwise, verify no resource was created.",
+      "expected_status_codes": [
+        "200"
+      ],
+      "rationale": "Validates the automatic assignment functionality configured by administrators."
+    },
+    {
+      "requirement_id": "PT06",
+      "requirement_summary": "Municipal public relations officer can review and approve or reject reports.",
+      "api_endpoint": "/reports/{id}/mainteiner",
+      "http_method": "PUT",
+      "prompt": "Authenticate as a municipal public relations officer. Execute PUT /reports/{id}/mainteiner to assign a report to an external maintainer for review. Verify that the assignment is successful and the report status reflects the new state.",
+      "test_type": "happy_path",
+      "priority": "high",
+      "auth_role": "municipal_public_relations_officer",
+      "setup_needed": [
+        "POST /reports to create a new report resource",
+        "POST /sessions to obtain an authenticated session for municipal_public_relations_officer"
+      ],
+      "cleanup_strategy": "DELETE the created report via POST /reports/{id}/delete if it exists; otherwise, verify no resource was created.",
+      "expected_status_codes": [
+        "200"
+      ],
+      "rationale": "Validates the ability of PR officers to assign reports for review."
+    },
+    {
+      "requirement_id": "PT24",
+      "requirement_summary": "Technical office staff member can assign reports to external maintainers.",
+      "api_endpoint": "/reports/{id}/auto-assign-maintainer",
+      "http_method": "POST",
+      "prompt": "Authenticate as a technical office staff member. Execute POST /reports/{id}/auto-assign-maintainer to automatically assign a report to an external maintainer based on category configuration. Verify that the assignment is successful and the report status changes appropriately.",
+      "test_type": "stateful",
+      "priority": "high",
+      "auth_role": "technical_office_staff",
+      "setup_needed": [
+        "POST /reports to create a new report resource with a specific category",
+        "POST /sessions to obtain an authenticated session for technical_office_staff"
+      ],
+      "cleanup_strategy": "DELETE the created report via POST /reports/{id}/delete if it exists; otherwise, verify no resource was created.",
+      "expected_status_codes": [
+        "200"
+      ],
+      "rationale": "Validates the automatic assignment functionality configured by administrators."
+    },
+    {
+      "requirement_id": "PT01",
+      "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+      "api_endpoint": "/registration",
+      "http_method": "POST",
+      "prompt": "Execute registration for a new citizen user. Provide valid name, unique username, and mandatory email address. Verify response indicates successful account creation or appropriate error if duplicate username/email is detected.",
+      "test_type": "happy_path",
+      "priority": "high",
+      "auth_role": null,
+      "setup_needed": [],
+      "cleanup_strategy": "Delete created resources or restore their previous state.",
+      "expected_status_codes": [
+        "200"
+      ],
+      "rationale": "Validates the entry point for user onboarding and ensures data integrity during initial account creation."
+    },
+    {
+      "requirement_id": "PT27",
+      "requirement_summary": "As a citizen I want to confirm my registration with a code So that my account becomes valid and I can start using the system.",
+      "api_endpoint": "/citizens/verify-email",
+      "http_method": "POST",
+      "prompt": "Simulate email verification flow. First, trigger code generation via /citizens/verification-code (authenticated). Then, call /citizens/verify-email with a valid 6-digit code within the 30-minute window. Verify account status updates to 'verified'.",
+      "test_type": "happy_path",
+      "priority": "high",
+      "auth_role": "citizen",
+      "setup_needed": [
+        "Authenticate as citizen.",
+        "POST /registration with valid citizen data",
+        "POST /citizens/verification-code to generate a valid code"
+      ],
+      "cleanup_strategy": "Delete created resources or restore their previous state.",
+      "expected_status_codes": [
+        "200"
+      ],
+      "rationale": "Ensures the critical account activation flow works correctly and respects the time-bound nature of verification codes."
+    },
+    {
+      "requirement_id": "PT25",
+      "requirement_summary": "As an external maintainer I want to update the status of a report assigned to me So that I can updated citizens about the intervention.",
+      "api_endpoint": "/reports/{id}/status",
+      "http_method": "PUT",
+      "prompt": "Attempt to update the status of a report to 'Resolved' while acting as an external maintainer who does NOT have assignment access to this specific report. Verify the system denies the transition.",
+      "test_type": "negative",
+      "priority": "high",
+      "auth_role": "external_maintainer",
+      "setup_needed": [
+        "Authenticate as external_maintainer.",
+        "POST /registration for external maintainer",
+        "POST /citizens/verification-code",
+        "POST /citizens/verify-email",
+        "POST /reports to create a report assigned to a different user"
+      ],
+      "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+      "expected_status_codes": [
+        "403"
+      ],
+      "rationale": "Validates role-based access control (RBAC) prevents unauthorized status changes."
+    },
+    {
+      "requirement_id": "PT02",
+      "requirement_summary": "System administrator sets up municipality users.",
+      "api_endpoint": "/admin/createuser",
+      "http_method": "POST",
+      "prompt": "Create a new municipality user with valid email, password, and role 'municipality_user'. Verify response includes created user ID and status 201.",
+      "test_type": "happy_path",
+      "priority": "high",
+      "auth_role": "system administrator",
+      "setup_needed": [
+        "Ensure session is active for admin role via /sessions/current"
+      ],
+      "cleanup_strategy": "Delete created resources or restore their previous state.",
+      "expected_status_codes": [
+        "201"
+      ],
+      "rationale": "Validates core user creation functionality required for subsequent role assignment and report management."
+    }
+  ],
+  "assumptions": [
+    "The 'Organization Office' refers to the central administrative body responsible for initial review and rejection explanations.",
+    "Competent technical office mapping to categories is pre-configured in the system database.",
+    "Telegram bot integration requires a valid Telegram API connection and user authentication via username.",
+    "Push notifications rely on Telegram's native push mechanism or an integrated service.",
+    "The 'top 1%' and 'top 5%' statistics are calculated based on report volume per reporter over a specific time window (likely all time or configurable).",
+    "External maintainers without platform access (Case 2) communicate via external channels not tracked by Participium.",
+    "The map layer is strictly OpenStreetMap standard unless overridden by admin configuration."
+  ],
+  "risks": [
+    "/sessions/current and /sessions/current DELETE share the same path but different methods; ensure client handles both correctly.",
+    "/reports/{id}/mainteiner has a typo in route name ('mainteiner' vs 'maintainer') which may cause confusion or misconfiguration.",
+    "Several endpoints return 423 (Locked) or 409 (Conflict); documentation does not specify exact conditions for these states.",
+    "Auto-assign endpoints rely on backend logic not visible in docs; failure modes are unclear.",
+    "Public endpoints (/upload-url, /reports/approved) lack explicit rate-limiting or abuse-mitigation notes.",
+    "Requirement coverage is inferred from OpenAPI documentation and must be verified against the running SUT during execution.",
+    "Coverage reconciliation produced 1 warning(s)."
+  ],
+  "created_at": "2026-07-21T17:40:07.587577Z",
+  "sut_base_url": "http://localhost:8080",
+  "requirement_coverage": {
+    "project_name": "participium-team01",
+    "openapi_path": "projects\\participium-team01\\swagger.yaml",
+    "assessment_basis": "openapi_documentation",
+    "requirements_total": 30,
+    "status_counts": {
+      "implemented": 13,
+      "partially_implemented": 7,
+      "not_implemented": 6,
+      "not_assessable": 4
+    },
+    "matches": [
+      {
+        "requirement_id": "PT28",
+        "status": "partially_implemented",
+        "matched_operations": [
+          {
+            "method": "GET",
+            "path": "/reports/approved",
+            "operation_id": "listApprovedReports"
+          }
+        ],
+        "evidence": [
+          "GET /reports/approved allows unauthenticated access to approved reports data"
+        ],
+        "missing_behaviors": [
+          "Interactive map visualization UI not exposed in REST contract"
+        ],
+        "rationale": "API provides approved reports data but interactive map functionality is UI-only, not assessable from REST contract"
+      },
+      {
+        "requirement_id": "PT24",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "PUT",
+            "path": "/reports/{id}/mainteiner",
+            "operation_id": "assignReportMainteiner"
+          },
+          {
+            "method": "POST",
+            "path": "/reports/{id}/auto-assign-maintainer",
+            "operation_id": "autoAssignMaintainer"
+          }
+        ],
+        "evidence": [
+          "PUT /reports/{id}/mainteiner assigns external maintainer to report",
+          "POST /reports/{id}/auto-assign-maintainer auto-assigns maintainer"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Both manual and automatic maintainer assignment endpoints are documented"
+      },
+      {
+        "requirement_id": "PT25",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "PUT",
+            "path": "/reports/{id}/status",
+            "operation_id": "updateReportStatus"
+          }
+        ],
+        "evidence": [
+          "PUT /reports/{id}/status updates report status for assigned users"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Report status update endpoint exists and is accessible to authenticated maintainers"
+      },
+      {
+        "requirement_id": "PT26",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/reports/{id}/internal-comments",
+            "operation_id": "createInternalComment"
+          },
+          {
+            "method": "GET",
+            "path": "/reports/{id}/internal-comments",
+            "operation_id": "listInternalComments"
+          },
+          {
+            "method": "POST",
+            "path": "/reports/{id}/messages",
+            "operation_id": "createReportMessage"
+          },
+          {
+            "method": "GET",
+            "path": "/reports/{id}/messages",
+            "operation_id": "listReportMessages"
+          }
+        ],
+        "evidence": [
+          "Internal comments and messages endpoints for report coordination"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Both internal comments and chat message endpoints support information exchange"
+      },
+      {
+        "requirement_id": "PT01",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/registration",
+            "operation_id": "registerCitizen"
+          }
+        ],
+        "evidence": [
+          "POST /registration creates new citizen account"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Registration endpoint documented for citizen account creation"
+      },
+      {
+        "requirement_id": "PT27",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/citizens/verification-code",
+            "operation_id": "createCitizenVerificationCode"
+          },
+          {
+            "method": "POST",
+            "path": "/citizens/verify-email",
+            "operation_id": "verifyCitizenEmail"
+          }
+        ],
+        "evidence": [
+          "POST /citizens/verification-code generates verification code",
+          "POST /citizens/verify-email validates with code"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Email verification workflow endpoints are fully documented"
+      },
+      {
+        "requirement_id": "PT02",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/admin/createuser",
+            "operation_id": "createMunicipalityUser"
+          }
+        ],
+        "evidence": [
+          "POST /admin/createuser creates operator or external maintainer"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Admin user creation endpoint documented for municipality user setup"
+      },
+      {
+        "requirement_id": "PT03",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/admin/addcategory",
+            "operation_id": "addOperatorCategory"
+          },
+          {
+            "method": "DELETE",
+            "path": "/admin/removecategory",
+            "operation_id": "removeOperatorCategory"
+          }
+        ],
+        "evidence": [
+          "POST /admin/addcategory adds category to operator",
+          "DELETE /admin/removecategory removes category from operator"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Role/category assignment endpoints documented for admin role management"
+      },
+      {
+        "requirement_id": "PT04",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "No geolocation or location selection endpoint in REST contract"
+        ],
+        "rationale": "Location selection on map is UI behavior; no API endpoint for geolocation input"
+      },
+      {
+        "requirement_id": "PT05",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/reports",
+            "operation_id": "createReport"
+          }
+        ],
+        "evidence": [
+          "POST /reports creates new citizen report with details"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Report creation endpoint documented for providing report details"
+      },
+      {
+        "requirement_id": "PT06",
+        "status": "partially_implemented",
+        "matched_operations": [
+          {
+            "method": "GET",
+            "path": "/reports/approved",
+            "operation_id": "listApprovedReports"
+          }
+        ],
+        "evidence": [
+          "GET /reports/approved lists approved reports for review"
+        ],
+        "missing_behaviors": [
+          "No approve/reject endpoint documented for report approval workflow"
+        ],
+        "rationale": "Can view approved reports but no API endpoint to change approval status"
+      },
+      {
+        "requirement_id": "PT07",
+        "status": "partially_implemented",
+        "matched_operations": [
+          {
+            "method": "GET",
+            "path": "/reports/approved",
+            "operation_id": "listApprovedReports"
+          }
+        ],
+        "evidence": [
+          "GET /reports/approved allows public access to approved reports data"
+        ],
+        "missing_behaviors": [
+          "Interactive map visualization UI not exposed in REST contract"
+        ],
+        "rationale": "API provides approved reports data but interactive map functionality is UI-only"
+      },
+      {
+        "requirement_id": "PT15",
+        "status": "partially_implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/reports",
+            "operation_id": "createReport"
+          }
+        ],
+        "evidence": [
+          "POST /reports creates new report"
+        ],
+        "missing_behaviors": [
+          "No documented parameter for anonymity/anonymity field in createReport"
+        ],
+        "rationale": "Report creation endpoint exists but anonymity option not visible in contract"
+      },
+      {
+        "requirement_id": "PT08",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "GET",
+            "path": "/reports/assigned",
+            "operation_id": "listAssignedReports"
+          }
+        ],
+        "evidence": [
+          "GET /reports/assigned lists reports assigned to authenticated operator/maintainer"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Assigned reports endpoint documented for technical office staff overview"
+      },
+      {
+        "requirement_id": "PT09",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "PUT",
+            "path": "/citizens",
+            "operation_id": "updateCitizenProfile"
+          }
+        ],
+        "evidence": [
+          "PUT /citizens updates logged-in citizen profile"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Profile update endpoint documented for account configuration"
+      },
+      {
+        "requirement_id": "PT30",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [
+          "GET /reports lists all reports but no address/area search filter documented"
+        ],
+        "missing_behaviors": [
+          "No search by address or area filtering endpoint visible in contract"
+        ],
+        "rationale": "Basic list exists but specific search functionality not exposed"
+      },
+      {
+        "requirement_id": "PT10",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/admin/addcategory",
+            "operation_id": "addOperatorCategory"
+          },
+          {
+            "method": "DELETE",
+            "path": "/admin/removecategory",
+            "operation_id": "removeOperatorCategory"
+          }
+        ],
+        "evidence": [
+          "Admin endpoints for adding/removing categories from operators"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Role modification via category management endpoints documented"
+      },
+      {
+        "requirement_id": "PT11",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "PUT",
+            "path": "/reports/{id}/status",
+            "operation_id": "updateReportStatus"
+          }
+        ],
+        "evidence": [
+          "PUT /reports/{id}/status updates report status for technical officers"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Report status update endpoint documented for intervention process tracking"
+      },
+      {
+        "requirement_id": "PT12",
+        "status": "not_assessable",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Telegram bot integration not visible in REST contract"
+        ],
+        "rationale": "Telegram bot is external integration; cannot be assessed from OpenAPI contract"
+      },
+      {
+        "requirement_id": "PT13",
+        "status": "not_assessable",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Telegram bot status check integration not visible in REST contract"
+        ],
+        "rationale": "Telegram bot is external integration; cannot be assessed from OpenAPI contract"
+      },
+      {
+        "requirement_id": "PT14",
+        "status": "not_assessable",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Telegram bot help commands integration not visible in REST contract"
+        ],
+        "rationale": "Telegram bot is external integration; cannot be assessed from OpenAPI contract"
+      },
+      {
+        "requirement_id": "PT18",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/reports/{id}/messages",
+            "operation_id": "createReportMessage"
+          },
+          {
+            "method": "GET",
+            "path": "/reports/{id}/messages",
+            "operation_id": "listReportMessages"
+          }
+        ],
+        "evidence": [
+          "Chat message endpoints for citizen-operator communication"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Report chat messages endpoint supports replying to municipal operator messages"
+      },
+      {
+        "requirement_id": "PT16",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "No follow reports or subscription endpoint documented"
+        ],
+        "rationale": "No API endpoint for following other citizens' reports exists"
+      },
+      {
+        "requirement_id": "PT17",
+        "status": "not_assessable",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Telegram push notification delivery not visible in REST contract"
+        ],
+        "rationale": "Telegram bot is external integration; cannot be assessed from OpenAPI contract"
+      },
+      {
+        "requirement_id": "PT19",
+        "status": "partially_implemented",
+        "matched_operations": [
+          {
+            "method": "GET",
+            "path": "/notifications",
+            "operation_id": "listNotifications"
+          },
+          {
+            "method": "GET",
+            "path": "/notifications/unread-count",
+            "operation_id": "getUnreadNotificationCount"
+          }
+        ],
+        "evidence": [
+          "Notifications endpoint exists for platform notifications"
+        ],
+        "missing_behaviors": [
+          "No email alert configuration endpoint documented"
+        ],
+        "rationale": "Platform notifications exist but email alert configuration not exposed"
+      },
+      {
+        "requirement_id": "PT20",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "No public statistics endpoint documented"
+        ],
+        "rationale": "No API endpoint for viewing public report statistics exists"
+      },
+      {
+        "requirement_id": "PT21",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "No private statistics endpoint documented"
+        ],
+        "rationale": "No API endpoint for viewing detailed private statistics exists"
+      },
+      {
+        "requirement_id": "PT29",
+        "status": "partially_implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/reports/{id}/auto-assign-officer",
+            "operation_id": "autoAssignTechnicalOfficer"
+          },
+          {
+            "method": "POST",
+            "path": "/reports/{id}/auto-assign-maintainer",
+            "operation_id": "autoAssignMaintainer"
+          }
+        ],
+        "evidence": [
+          "Auto-assign endpoints exist for individual reports"
+        ],
+        "missing_behaviors": [
+          "No configuration endpoint for automatic assignment rules per category"
+        ],
+        "rationale": "Individual auto-assignment exists but category-level rule configuration not exposed"
+      },
+      {
+        "requirement_id": "PT22",
+        "status": "partially_implemented",
+        "matched_operations": [
+          {
+            "method": "GET",
+            "path": "/reports",
+            "operation_id": "listReports"
+          }
+        ],
+        "evidence": [
+          "GET /reports lists all reports for browsing"
+        ],
+        "missing_behaviors": [
+          "No filter parameters documented for summary table with filters"
+        ],
+        "rationale": "Basic list exists but filtering functionality not exposed in contract"
+      },
+      {
+        "requirement_id": "PT23",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "No export/download endpoint for summary table documented"
+        ],
+        "rationale": "No API endpoint for downloading/exporting reports data exists"
+      }
+    ],
+    "validation_warnings": [
+      "Cleared contradictory operation matches for PT30"
+    ]
+  }
+}

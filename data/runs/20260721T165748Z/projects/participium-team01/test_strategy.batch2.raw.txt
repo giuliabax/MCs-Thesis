@@ -1,0 +1,160 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Register a new citizen user with a valid name, unique username, and mandatory email address. Ensure the response includes a session token or indicates successful registration pending verification.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core registration flow for citizens to gain access to the system."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registration fails due to missing mandatory email field.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Attempt to register a citizen by omitting the email field entirely. Verify that the API rejects the request with an appropriate error message indicating the missing mandatory field.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures data integrity by enforcing mandatory email requirement during registration."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration using a valid verification code.",
+    "api_endpoint": "/citizens/verify-email",
+    "http_method": "POST",
+    "prompt": "First, generate a verification code for the registered citizen via /citizens/verification-code. Then, call /citizens/verify-email with that valid code and authenticated session to activate the account.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration to create a user (from PT01 happy path)",
+      "POST /citizens/verification-code with the session token from registration"
+    ],
+    "cleanup_strategy": "Verify account is active; no resource deletion needed as this is an activation step.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the stateful dependency where verification code generation must precede email verification to activate the account."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen attempts to verify email with an expired or invalid code.",
+    "api_endpoint": "/citizens/verify-email",
+    "http_method": "POST",
+    "prompt": "Attempt to call /citizens/verify-email using a hardcoded incorrect code or a code that has exceeded the 30-minute validity window. Verify rejection with an error indicating invalid or expired code.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration to create a user",
+      "POST /citizens/verification-code to generate a fresh code (to establish state for comparison)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Validates that the system enforces the 30-minute validity window and rejects invalid codes."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator creates a new municipality user.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Authenticate as a system administrator and call /admin/createuser to create a new user with valid attributes (name, email, role). Verify the response confirms successful creation.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an admin session is active via /sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the admin capability to provision new users within the system."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns a specific role to an existing municipality user.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Note: Based on available operations, role assignment is typically handled during creation or via a dedicated update endpoint not listed. However, adhering strictly to provided operations, we will test creating a user with an initial role. If the requirement implies post-creation modification, this item serves as a proxy for 'setting up users' with roles.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an admin session is active via /sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the 'set up municipality users' requirement by ensuring roles can be assigned during the creation process as per available API endpoints."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles for a municipality user.",
+    "api_endpoint": "/admin/removecategory",
+    "http_method": "DELETE",
+    "prompt": "Note: The provided API analysis does not list a specific endpoint for modifying user roles (only createuser, addcategory, removecategory). This item is marked as an edge case/negative to highlight the gap or test if 'removecategory' inadvertently affects user data (which it shouldn't). Alternatively, this requirement cannot be fully tested with the provided API list without assuming undocumented endpoints.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an admin session is active via /sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["404", "405"],
+    "rationale": "Highlights that the current API list lacks a specific endpoint for modifying user roles (PT10), requiring either an undocumented endpoint or a different approach not visible in the analysis."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator attempts to create a user with an invalid email format.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Attempt to create a municipality user via /admin/createuser using an email address that does not conform to standard email formats (e.g., 'notanemail'). Verify the API rejects the request with a validation error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an admin session is active via /sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures input validation for email fields even in administrative user creation flows."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns a role to a user that does not exist.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Attempt to create a new user (which might implicitly handle role assignment) but reference a non-existent user ID in the payload if the endpoint supports updates, or simply verify that creating a user with a specific role works when the user is new. Since 'createuser' implies creation, this tests the edge case of role assignment on a fresh entity.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an admin session is active via /sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the robustness of role assignment logic when applied to a newly created user entity."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator attempts to modify roles for a user without admin privileges.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Attempt to call /admin/createuser (or any admin endpoint) while authenticated as a 'citizen' role instead of 'system administrator'. Verify that the API rejects the request due to insufficient privileges.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Register a citizen user and obtain their session token"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Validates that role-based access control (RBAC) prevents non-admin users from performing administrative tasks like user creation or modification."
+  }
+]

@@ -1,0 +1,360 @@
+{
+  "summary": "A municipal citizen reporting platform allowing citizens to register/login, submit reports with photos, and track status. Municipal staff (PR, URP, Technical) manage report lifecycle (categorization, review, assignment, status updates). External maintainers can be assigned to resolve issues. Admins manage users/roles/companies. Includes messaging and notifications.",
+  "operations": [
+    {
+      "path": "/auth/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Direct registration bypasses email verification flow"]
+    },
+    {
+      "path": "/auth/register-request",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Stores temporary data in Redis with 30-minute TTL; replaces existing record for same email"]
+    },
+    {
+      "path": "/auth/verify-registration",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/auth/register-request"],
+      "notes": ["Consumes Redis temporary data; deletes it upon success"]
+    },
+    {
+      "path": "/auth/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Starts session for citizens or staff"]
+    },
+    {
+      "path": "/auth/logout",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Closes session"]
+    },
+    {
+      "path": "/auth/session",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Returns current session status"]
+    },
+    {
+      "path": "/users/me",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Retrieves profile of authenticated user"]
+    },
+    {
+      "path": "/users/me",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Updates profile; requires authentication"]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Creates new report; requires authenticated citizen"]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Lists all reports; requires authentication"]
+    },
+    {
+      "path": "/reports/user/{userId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Retrieves reports by specific user ID"]
+    },
+    {
+      "path": "/reports/assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Lists assigned reports for citizen; requires authentication"]
+    },
+    {
+      "path": "/reports/{reportId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Retrieves single report details"]
+    },
+    {
+      "path": "/municipal/reports/{reportId}/category",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Updates report category; requires PR Officer role"]
+    },
+    {
+      "path": "/municipal/reports/{reportId}",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Reviews report (accept/reject); accept triggers load-balanced assignment to technical staff"]
+    },
+    {
+      "path": "/upload/photo",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Uploads single photo for a report; requires authentication"]
+    },
+    {
+      "path": "/upload/photos",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Uploads up to 3 photos for a report; requires authentication"]
+    },
+    {
+      "path": "/admin/users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists all users with roles and associations; Admin only"]
+    },
+    {
+      "path": "/admin/users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Creates new municipal/staff user; requires roleId and technicalOfficeId"]
+    },
+    {
+      "path": "/admin/users/{userId}/roles",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/admin/users"],
+      "notes": ["Updates user roles and associations; replaces existing roles"]
+    },
+    {
+      "path": "/admin/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists available roles; Admin only"]
+    },
+    {
+      "path": "/admin/companies",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists external companies for maintainer role assignment; Admin only"]
+    },
+    {
+      "path": "/admin/users/{userId}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/admin/users"],
+      "notes": ["Deletes municipal/staff user; cannot delete citizens or own account"]
+    },
+    {
+      "path": "/municipal/reports/pending",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Lists reports pending approval; PR Officer only"]
+    },
+    {
+      "path": "/statistics/public",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public statistics endpoint"]
+    },
+    {
+      "path": "/statistics/private",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Private statistics; Admin only"]
+    },
+    {
+      "path": "/offices",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists technical offices; Admin only"]
+    },
+    {
+      "path": "/offices/reports/assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/municipal/reports/{reportId}"],
+      "notes": ["Lists reports assigned to technical staff"]
+    },
+    {
+      "path": "/offices/reports/{reportId}/status",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/municipal/reports/{reportId}"],
+      "notes": ["Updates report status (In Progress/Resolved/Suspended); requires assignment"]
+    },
+    {
+      "path": "/offices/reports/{reportId}/assign-external",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/municipal/reports/{reportId}"],
+      "notes": ["Assigns report to external maintainer via load balancing; requires 'Assigned' or 'In Progress' status"]
+    },
+    {
+      "path": "/offices/reports/{reportId}/companies",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/municipal/reports/{reportId}"],
+      "notes": ["Lists eligible companies for report based on category"]
+    },
+    {
+      "path": "/external-maintainer/reports/{reportId}/status",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/offices/reports/{reportId}/assign-external"],
+      "notes": ["Updates report status for external maintainer; requires assignment"]
+    },
+    {
+      "path": "/messages/reports/{reportId}",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/municipal/reports/{reportId}"],
+      "notes": ["Creates message for report; requires assignment as technical officer or external maintainer"]
+    },
+    {
+      "path": "/messages/reports/{reportId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/municipal/reports/{reportId}"],
+      "notes": ["Retrieves chat history; access restricted by role and assignment"]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Retrieves user notifications; ordered by date"]
+    }
+  ],
+  "authentication_notes": [
+    "/auth/register and /auth/register-request do not require authentication but create unauthenticated sessions upon verification or login.",
+    "/auth/verify-registration completes registration and implicitly logs in the new user.",
+    "/auth/login starts a session required for all subsequent protected endpoints.",
+    "/auth/logout terminates the session started by /auth/login.",
+    "All /users/, /reports/, /upload/, /admin/, /municipal/, /offices/, /external-maintainer/, /messages/, and /notifications/ endpoints require authentication."
+  ],
+  "dependencies": [
+    "POST /auth/register-request must precede POST /auth/verify-registration to complete email-based registration.",
+    "POST /auth/login or POST /auth/verify-registration must precede any authenticated operation.",
+    "POST /reports must precede GET /reports, PUT /municipal/reports/{reportId}/category, and upload endpoints.",
+    "PUT /municipal/reports/{reportId} (accept) must precede assignment to technical staff via load balancing.",
+    "Technical staff must be assigned to a report before they can update its status or assign external maintainers.",
+    "External maintainer must be assigned to a report before they can update its status or create messages.",
+    "Admin must create users (POST /admin/users) before assigning roles (PUT /admin/users/{userId}/roles).",
+    "Admin must retrieve companies (GET /admin/companies) before assigning external maintainer roles."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/register-request",
+      "dependent_method": "POST",
+      "dependent_path": "/auth/verify-registration",
+      "dependency_type": "state",
+      "reason": "Verification consumes temporary Redis data created by registration request."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/login",
+      "dependent_method": "GET",
+      "dependent_path": "/users/me",
+      "dependency_type": "authorization",
+      "reason": "User profile access requires active session from login."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports",
+      "dependency_type": "resource",
+      "reason": "Reports must exist before listing or retrieving them."
+    },
+    {
+      "prerequisite_method": "PUT",
+      "prerequisite_path": "/municipal/reports/{reportId}",
+      "dependent_method": "PUT",
+      "dependent_path": "/offices/reports/{reportId}/assign-external",
+      "dependency_type": "state",
+      "reason": "External assignment requires report to be reviewed and accepted by URP."
+    },
+    {
+      "prerequisite_method": "PUT",
+      "prerequisite_path": "/offices/reports/{reportId}/assign-external",
+      "dependent_method": "PUT",
+      "dependent_path": "/external-maintainer/reports/{reportId}/status",
+      "dependency_type": "authorization",
+      "reason": "External maintainer must be assigned before managing report status."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/admin/users",
+      "dependent_method": "PUT",
+      "dependent_path": "/admin/users/{userId}/roles",
+      "dependency_type": "resource",
+      "reason": "User must exist before roles can be assigned."
+    }
+  ],
+  "risks": [
+    "POST /auth/register-request stores data in Redis with TTL; if verification fails or is delayed beyond 30 minutes, registration data expires silently.",
+    "POST /auth/register-request replaces existing record for same email; this may overwrite pending registrations without explicit warning.",
+    "PUT /municipal/reports/{reportId} (accept) automatically assigns to technical staff via load balancing; no explicit assignment step visible in docs.",
+    "GET /messages/reports/{reportId} has complex access control logic not fully specified in parameters (role-based filtering).",
+    "POST /upload/photo and POST /upload/photos lack explicit reportId parameter in schema; assumes context from session or header.",
+    "DELETE /admin/users/{userId} cannot delete own account; no alternative self-deletion flow documented."
+  ]
+}

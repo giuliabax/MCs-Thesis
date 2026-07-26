@@ -1,0 +1,255 @@
+[
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with valid geographic coordinates (lat/lon), a valid category from the fixed list, and a detailed description. Ensure at least one photo is included in the payload.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as 'citizen' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of report creation and classification based on provided details."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with valid coordinates and category, but omit the description field entirely to test if the system enforces detail provision.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as 'citizen' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the system's ability to reject incomplete reports where details are missing, ensuring data integrity."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with the 'anonymous' flag set to true, ensuring other required fields like coordinates and category are valid.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as 'citizen' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates that the system correctly accepts and processes anonymous reports as per user choice."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with the 'anonymous' flag set to false (default) and verify that the name is included in the payload.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as 'citizen' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the non-anonymous path to ensure standard behavior where the reporter's name is visible."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to the current user, who is authenticated as 'technical office staff member'. Ensure at least one report exists in the system that has been assigned to this role.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a report via POST /reports with valid data and assign it to the current user's role (simulating assignment logic).",
+      "Ensure user is authenticated as 'technical office staff member' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that staff members can view their assigned workload, which depends on the existence of assigned reports."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to a user who has no reports assigned to them yet, expecting an empty list or appropriate handling.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure user is authenticated as 'technical office staff member' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the system's behavior when a staff member has no assignments, ensuring graceful handling of empty states."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Attempt to retrieve the list of reports assigned to a user without authentication or with an invalid session token.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no valid session token is present for the current request."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Ensures that access to assigned reports is strictly protected and requires valid authentication."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user browses a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the public summary table of reports using valid query parameters for filtering (e.g., category, status) without authentication.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure at least one report exists in the system with a valid category and status."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that unauthenticated users can access public report summaries with filtering capabilities."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user browses a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the public summary table of reports using an invalid filter value (e.g., non-existent category) to test error handling.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure at least one report exists in the system."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the system's response to invalid filter inputs, ensuring robust error handling for public endpoints."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update the citizen's profile to enable email alerts while keeping platform notifications enabled, ensuring the email address is valid.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as 'citizen' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that citizens can configure their notification preferences, specifically enabling email alerts."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update the citizen's profile to disable email alerts while keeping platform notifications enabled, ensuring the email address is valid.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as 'citizen' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the system's ability to handle disabling email alerts while maintaining other notification settings."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Attempt to update the citizen's profile with an invalid email address format to test validation of email input.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as 'citizen' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures that invalid email addresses are rejected during profile updates to maintain data quality."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account for notifications and virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update the citizen's profile to configure both notification preferences and virtual presence settings (e.g., status updates) in a single request.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as 'citizen' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that citizens can manage multiple aspects of their account configuration in one operation."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account for notifications and virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Attempt to update the citizen's profile with an invalid virtual presence setting (e.g., non-existent status) to test validation of presence settings.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as 'citizen' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures that invalid virtual presence settings are rejected during profile updates to maintain data integrity."
+  }
+]

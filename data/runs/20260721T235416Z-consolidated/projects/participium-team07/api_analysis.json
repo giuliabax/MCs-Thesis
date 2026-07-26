@@ -1,0 +1,868 @@
+{
+  "summary": "API for user registration (temporary/OTP), authentication, report lifecycle management (create, assign, update status, reject), employee and office administration, and notifications.",
+  "operations": [
+    {
+      "path": "/users/temporary",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Create a new temporary user",
+        "Creates temporary user; email with OTP sent immediately",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 409, 503"
+      ]
+    },
+    {
+      "path": "/otp/resend",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /users/temporary: OTP resend targets the temporary user created by /users/temporary",
+        "/users/temporary"
+      ],
+      "notes": [
+        "Resend OTP email",
+        "Resends OTP to the email of a temporary user",
+        "Documented responses: 201, 400, 500"
+      ]
+    },
+    {
+      "path": "/users/temporary/verify",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /users/temporary: Verification requires the temporary user record created by /users/temporary",
+        "/users/temporary"
+      ],
+      "notes": [
+        "Verify OTP and create user",
+        "Verifies OTP and converts temporary user to permanent",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 503"
+      ]
+    },
+    {
+      "path": "/session",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Perform login",
+        "Standard login; creates session token",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 401, 500"
+      ]
+    },
+    {
+      "path": "/session/current",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Session token from /session is required for authenticated access to /session/current",
+        "/session"
+      ],
+      "notes": [
+        "Get current logged-in user information",
+        "Requires active session; returns current user info",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/session/current",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/session"
+      ],
+      "notes": [
+        "Perform logout",
+        "Invalidates session token; logout",
+        "Documented responses: 204, 500"
+      ]
+    },
+    {
+      "path": "/users/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/session"
+      ],
+      "notes": [
+        "Create a new report",
+        "Create new report; requires authenticated user",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 500"
+      ]
+    },
+    {
+      "path": "/users/myreports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing user reports requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve user's reports",
+        "List reports created by current user",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/users/unassigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing unassigned reports requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve unassigned reports",
+        "List unassigned reports; role-restricted to Municipal Public Relations Officers",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/external-office-assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing external office reports requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve reports assigned to external offices and that has not been accepeted yet",
+        "List reports assigned to external offices awaiting acceptance; role-restricted to external maintainers",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/external-maintainer-my",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing external maintainer reports requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve reports assigned to the logged-in external maintainer and that has been accepted",
+        "List accepted reports assigned to external maintainer; role-restricted",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/external-maintainer/:id",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Updating external maintainer report status requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Update the status of the report assigned to the logged-in external maintainer",
+        "Accept/reject report assigned to external maintainer; role-restricted",
+        "Parameters: id",
+        "Documented responses: 200, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/reports/assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing assigned reports requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve assigned reports",
+        "List reports assigned to office and employee; role-restricted to technical office staff",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/statuses",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing report statuses requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve report statuses",
+        "List all possible report statuses",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/reports/assign",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Assigning a report requires an authenticated session",
+        "/users/reports"
+      ],
+      "notes": [
+        "Assign a report to an office and an employee",
+        "Assign a report to an office and employee; role-restricted to Municipal Public Relations Officers",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/reassign",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Reassigning a report requires an authenticated session",
+        "/users/reports"
+      ],
+      "notes": [
+        "Reassign a report to a different employee",
+        "Reassign report to different employee; role-restricted to admin",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/assignExternal",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Assigning to external office requires an authenticated session",
+        "/users/reports"
+      ],
+      "notes": [
+        "Assign a report to an external office",
+        "Assign report to external office; role-restricted to technical office staff",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/reject",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Rejecting a report requires an authenticated session",
+        "/users/reports"
+      ],
+      "notes": [
+        "Reject a report",
+        "Reject a report; role-restricted to Municipal Public Relations Officers",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/approved",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Retrieve approved reports",
+        "List reports with 'approved' status; public endpoint",
+        "Documented responses: 200, 500"
+      ]
+    },
+    {
+      "path": "/reports/{reportID}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Updating report status requires an authenticated session",
+        "/users/reports"
+      ],
+      "notes": [
+        "Update the status of the report",
+        "Update report status; role-restricted to officer",
+        "Parameters: reportID",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 204, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/reports/officers/{officerId}/office/{officeId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing officer-specific reports requires an authenticated session",
+        "/users/reports"
+      ],
+      "notes": [
+        "Retrieve reports assigned to a specific officer and office",
+        "List reports for specific officer/office; role-restricted to admin and municipal officers",
+        "Parameters: officerId, officeId",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/employees",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Creating employees requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Create a new employee",
+        "Create new employee; role-restricted to admin",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 401, 403, 409, 503"
+      ]
+    },
+    {
+      "path": "/employees/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Deleting employees requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Delete an employee",
+        "Delete employee; role-restricted to admin",
+        "Parameters: id",
+        "Documented responses: 200, 400, 401, 403, 404, 503"
+      ]
+    },
+    {
+      "path": "/employees/unassigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing unassigned employees requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve unassigned employees",
+        "List unassigned employees; role-restricted to admin",
+        "Documented responses: 200, 401, 403, 503"
+      ]
+    },
+    {
+      "path": "/employees/assign",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Assigning employees requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Assign an employee to an office",
+        "Assign employee to office; role-restricted to admin",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 503"
+      ]
+    },
+    {
+      "path": "/employees/techincal-officers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing technical officers requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve technical office employees",
+        "List technical office employees; role-restricted to admin",
+        "Documented responses: 200, 403, 503"
+      ]
+    },
+    {
+      "path": "/employees/technical-officers/assign",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Assigning technical officers requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Assign a technical office employee to an office",
+        "Assign technical office employee to office; role-restricted to admin",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 503"
+      ]
+    },
+    {
+      "path": "/employees/tecnhnical-officers/remove",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Removing technical officers requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Remove a technical office employee from an office",
+        "Remove technical office employee from office; role-restricted to admin",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 503"
+      ]
+    },
+    {
+      "path": "/offices",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing offices requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve all offices",
+        "List all offices; role-restricted to admin",
+        "Documented responses: 200, 401, 403, 503"
+      ]
+    },
+    {
+      "path": "/externalOffices",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing external offices requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve all external offices",
+        "List all external offices; requires authentication",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing roles requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve all roles",
+        "List all roles; role-restricted to admin users",
+        "Documented responses: 200, 401, 403, 503"
+      ]
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Listing categories requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Retrieve all categories",
+        "List all categories; requires authentication",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/api/user/profile",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Updating profile requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Update user profile",
+        "Update user profile; role-restricted to citizens",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/user/profile/photo",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Deleting profile photo requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Delete user profile photo",
+        "Delete profile photo; role-restricted to citizens",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/notifications",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Create a new notification",
+        "Create new notification; public endpoint",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 503"
+      ]
+    },
+    {
+      "path": "/notifications/read",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /session: Marking notifications as read requires an authenticated session",
+        "/session"
+      ],
+      "notes": [
+        "Mark notifications of a report as read",
+        "Mark notifications as read for a report; requires authentication",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 500"
+      ]
+    },
+    {
+      "path": "/bot/verify/username",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Verify if a Telegram username is associated with a user",
+        "Verify Telegram username association with user; public endpoint",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404, 503"
+      ]
+    },
+    {
+      "path": "/bot/verify/password",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Verify user's password",
+        "Verify user password via Telegram bot; public endpoint",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 503"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "/session is the primary authentication entry point. All authenticated operations depend on a valid session token obtained from /session. Some endpoints have additional role-based restrictions (admin, officer, citizen, external maintainer) enforced at runtime.",
+    "Temporary user creation and OTP verification do not require prior authentication but result in a permanent user that can authenticate via /session.",
+    "Operations marked auth_required need an authenticated session during test setup."
+  ],
+  "dependencies": [
+    "/users/temporary -> /otp/resend",
+    "/users/temporary -> /users/temporary/verify",
+    "/session -> all authenticated operations",
+    "/users/reports -> /reports/assign, /reports/reassign, /reports/assignExternal, /reports/reject, /reports/{reportID} (PATCH)",
+    "/employees -> /reports/assigned (indirectly via role assignment)",
+    "POST /users/temporary -> POST /otp/resend: OTP resend targets the temporary user created by /users/temporary",
+    "POST /users/temporary -> POST /users/temporary/verify: Verification requires the temporary user record created by /users/temporary",
+    "POST /session -> GET /session/current: Session token from /session is required for authenticated access to /session/current",
+    "POST /session -> GET /users/myreports: Listing user reports requires an authenticated session",
+    "POST /session -> GET /users/unassigned: Listing unassigned reports requires an authenticated session",
+    "POST /session -> GET /reports/external-office-assigned: Listing external office reports requires an authenticated session",
+    "POST /session -> GET /reports/external-maintainer-my: Listing external maintainer reports requires an authenticated session",
+    "POST /session -> PATCH /reports/external-maintainer/:id: Updating external maintainer report status requires an authenticated session",
+    "POST /session -> GET /reports/assigned: Listing assigned reports requires an authenticated session",
+    "POST /session -> GET /reports/statuses: Listing report statuses requires an authenticated session",
+    "POST /session -> POST /reports/assign: Assigning a report requires an authenticated session",
+    "POST /session -> POST /reports/reassign: Reassigning a report requires an authenticated session",
+    "POST /session -> POST /reports/assignExternal: Assigning to external office requires an authenticated session",
+    "POST /session -> POST /reports/reject: Rejecting a report requires an authenticated session",
+    "POST /session -> PATCH /reports/{reportID}: Updating report status requires an authenticated session",
+    "POST /session -> GET /reports/officers/{officerId}/office/{officeId}: Listing officer-specific reports requires an authenticated session",
+    "POST /session -> POST /employees: Creating employees requires an authenticated session",
+    "POST /session -> DELETE /employees/{id}: Deleting employees requires an authenticated session",
+    "POST /session -> GET /employees/unassigned: Listing unassigned employees requires an authenticated session",
+    "POST /session -> POST /employees/assign: Assigning employees requires an authenticated session",
+    "POST /session -> GET /employees/techincal-officers: Listing technical officers requires an authenticated session",
+    "POST /session -> POST /employees/technical-officers/assign: Assigning technical officers requires an authenticated session",
+    "POST /session -> DELETE /employees/tecnhnical-officers/remove: Removing technical officers requires an authenticated session",
+    "POST /session -> GET /offices: Listing offices requires an authenticated session",
+    "POST /session -> GET /externalOffices: Listing external offices requires an authenticated session",
+    "POST /session -> GET /roles: Listing roles requires an authenticated session",
+    "POST /session -> GET /categories: Listing categories requires an authenticated session",
+    "POST /session -> PUT /api/user/profile: Updating profile requires an authenticated session",
+    "POST /session -> DELETE /api/user/profile/photo: Deleting profile photo requires an authenticated session",
+    "POST /session -> POST /notifications/read: Marking notifications as read requires an authenticated session"
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/temporary",
+      "dependent_method": "POST",
+      "dependent_path": "/otp/resend",
+      "dependency_type": "state",
+      "reason": "OTP resend targets the temporary user created by /users/temporary"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/temporary",
+      "dependent_method": "POST",
+      "dependent_path": "/users/temporary/verify",
+      "dependency_type": "state",
+      "reason": "Verification requires the temporary user record created by /users/temporary"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/session/current",
+      "dependency_type": "authorization",
+      "reason": "Session token from /session is required for authenticated access to /session/current"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/users/myreports",
+      "dependency_type": "authorization",
+      "reason": "Listing user reports requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/users/unassigned",
+      "dependency_type": "authorization",
+      "reason": "Listing unassigned reports requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/external-office-assigned",
+      "dependency_type": "authorization",
+      "reason": "Listing external office reports requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/external-maintainer-my",
+      "dependency_type": "authorization",
+      "reason": "Listing external maintainer reports requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/external-maintainer/:id",
+      "dependency_type": "authorization",
+      "reason": "Updating external maintainer report status requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/assigned",
+      "dependency_type": "authorization",
+      "reason": "Listing assigned reports requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/statuses",
+      "dependency_type": "authorization",
+      "reason": "Listing report statuses requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/assign",
+      "dependency_type": "authorization",
+      "reason": "Assigning a report requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/reassign",
+      "dependency_type": "authorization",
+      "reason": "Reassigning a report requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/assignExternal",
+      "dependency_type": "authorization",
+      "reason": "Assigning to external office requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/reject",
+      "dependency_type": "authorization",
+      "reason": "Rejecting a report requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{reportID}",
+      "dependency_type": "authorization",
+      "reason": "Updating report status requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/officers/{officerId}/office/{officeId}",
+      "dependency_type": "authorization",
+      "reason": "Listing officer-specific reports requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "POST",
+      "dependent_path": "/employees",
+      "dependency_type": "authorization",
+      "reason": "Creating employees requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "DELETE",
+      "dependent_path": "/employees/{id}",
+      "dependency_type": "authorization",
+      "reason": "Deleting employees requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/employees/unassigned",
+      "dependency_type": "authorization",
+      "reason": "Listing unassigned employees requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "POST",
+      "dependent_path": "/employees/assign",
+      "dependency_type": "authorization",
+      "reason": "Assigning employees requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/employees/techincal-officers",
+      "dependency_type": "authorization",
+      "reason": "Listing technical officers requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "POST",
+      "dependent_path": "/employees/technical-officers/assign",
+      "dependency_type": "authorization",
+      "reason": "Assigning technical officers requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "DELETE",
+      "dependent_path": "/employees/tecnhnical-officers/remove",
+      "dependency_type": "authorization",
+      "reason": "Removing technical officers requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/offices",
+      "dependency_type": "authorization",
+      "reason": "Listing offices requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/externalOffices",
+      "dependency_type": "authorization",
+      "reason": "Listing external offices requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/roles",
+      "dependency_type": "authorization",
+      "reason": "Listing roles requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "GET",
+      "dependent_path": "/categories",
+      "dependency_type": "authorization",
+      "reason": "Listing categories requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "PUT",
+      "dependent_path": "/api/user/profile",
+      "dependency_type": "authorization",
+      "reason": "Updating profile requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "DELETE",
+      "dependent_path": "/api/user/profile/photo",
+      "dependency_type": "authorization",
+      "reason": "Deleting profile photo requires an authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/session",
+      "dependent_method": "POST",
+      "dependent_path": "/notifications/read",
+      "dependency_type": "authorization",
+      "reason": "Marking notifications as read requires an authenticated session"
+    }
+  ],
+  "risks": [
+    "/users/temporary and /otp/resend do not specify authentication requirements but may be vulnerable to abuse if rate-limited improperly.",
+    "/reports/approved is public; ensure it does not leak sensitive internal data.",
+    "Role-based restrictions (admin, officer, citizen, external maintainer) are documented in descriptions but not enforced by auth_required flags; runtime checks are assumed.",
+    "DELETE /employees/{id} and DELETE /employees/tecnhnical-officers/remove lack path parameter schema in the provided snippet; ensure implementation matches documentation.",
+    "/bot/verify/password accepts plaintext password in request body without authentication; consider secure transmission and rate limiting."
+  ]
+}

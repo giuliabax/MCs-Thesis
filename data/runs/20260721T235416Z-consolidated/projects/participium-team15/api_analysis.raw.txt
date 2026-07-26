@@ -1,0 +1,314 @@
+{
+  "summary": "API for citizen registration, municipality staff management, authentication (login/logout/verify), citizen profile management, report creation and lifecycle management (including Telegram bot integration), and notification handling.",
+  "operations": [
+    {
+      "path": "/auth/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Creates citizen account; optional profilePicture binary upload"]
+    },
+    {
+      "path": "/auth/register-municipality",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Admin-only; creates staff user with role and external flag"]
+    },
+    {
+      "path": "/auth/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Returns session/token for authenticated requests; 401 on failure"]
+    },
+    {
+      "path": "/auth/logout",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Invalidates current session/token"]
+    },
+    {
+      "path": "/auth/me",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Returns current user profile; 401 if not authenticated"]
+    },
+    {
+      "path": "/auth/createTelegramVerification",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Generates Telegram verification code for current user"]
+    },
+    {
+      "path": "/auth/verifyTelegramUser",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Verifies Telegram user via username and code; no auth required"]
+    },
+    {
+      "path": "/auth/verify-email",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/auth/register"],
+      "notes": ["Verifies citizen email with code; 400 if invalid"]
+    },
+    {
+      "path": "/auth/resend-verification-email",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/auth/register"],
+      "notes": ["Resends email verification code for given email"]
+    },
+    {
+      "path": "/citizens",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Lists all citizens; requires authentication"]
+    },
+    {
+      "path": "/citizens/id/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Fetches citizen by numeric ID"]
+    },
+    {
+      "path": "/citizens/email/{email}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Fetches citizen by email address"]
+    },
+    {
+      "path": "/citizens/username/{username}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Fetches citizen by username"]
+    },
+    {
+      "path": "/citizens/{username}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Updates citizen profile; requires Citizen schema in body"]
+    },
+    {
+      "path": "/citizens/telegram/{username}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Fetches citizen by Telegram username"]
+    },
+    {
+      "path": "/offices",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Admin-only; lists all offices"]
+    },
+    {
+      "path": "/staffs",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/register-municipality"],
+      "notes": ["Lists internal staff members"]
+    },
+    {
+      "path": "/staffs/external",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/register-municipality"],
+      "notes": ["Lists external maintainers/staff"]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Creates new report with photos; requires title, description, category, lat/lon, photos"]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Lists authenticated user's reports"]
+    },
+    {
+      "path": "/reports/public",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public endpoint; lists publicly visible reports"]
+    },
+    {
+      "path": "/reports/{reportId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Fetches specific report by ID; 404 if not found"]
+    },
+    {
+      "path": "/reports/{reportId}/manage",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Staff action: approve/reject/assign report; requires action/explanation/category"]
+    },
+    {
+      "path": "/reports/{reportId}/assignSelf",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Staff self-assigns report"]
+    },
+    {
+      "path": "/reports/{reportId}/assignExternal",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Staff assigns report to external maintainer; requires externalStaffId"]
+    },
+    {
+      "path": "/reports/{reportId}/updateStatus",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Staff updates report status; requires status field"]
+    },
+    {
+      "path": "/reports/{reportId}/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Fetches message history for a report"]
+    },
+    {
+      "path": "/reports/{reportId}/messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports"],
+      "notes": ["Adds new message to report; requires content"]
+    },
+    {
+      "path": "/reports/telegram",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Telegram bot creates report; requires telegram_username"]
+    },
+    {
+      "path": "/reports/telegram/citizen/{telegram_username}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Telegram bot fetches reports for a citizen by Telegram username"]
+    },
+    {
+      "path": "/reports/telegram/report/{reportId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Telegram bot fetches specific report by ID"]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Lists notifications for current user"]
+    },
+    {
+      "path": "/notifications/{id}/read",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/notifications"],
+      "notes": ["Marks specific notification as read"]
+    }
+  ],
+  "authentication_notes": ["/auth/register and /auth/verifyTelegramUser do not require authentication; all other endpoints require prior login or session token. Municipality staff registration requires admin-level auth. Telegram verification creation is tied to current user session.", "Email verification and resend are public but depend on prior citizen registration.", "All report management, citizen listing, and notification operations require authenticated sessions."],
+  "dependencies": ["/auth/register-municipality depends on /auth/login for session establishment. /citizens/* endpoints depend on /auth/login or /auth/register + /auth/verify-email. /reports/* (except public) depend on /auth/login. Staff management (/staffs, /offices) depends on prior staff registration via /auth/register-municipality.", "/reports/{reportId}/manage and related actions depend on existence of a report created via POST /reports or POST /reports/telegram."],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/login",
+      "dependent_method": "GET",
+      "dependent_path": "/citizens",
+      "dependency_type": "state",
+      "reason": "Citizen listing requires authenticated session from login."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/register-municipality",
+      "dependent_method": "GET",
+      "dependent_path": "/staffs",
+      "dependency_type": "resource",
+      "reason": "Staff listing requires prior staff registration via municipality endpoint."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/register",
+      "dependent_method": "POST",
+      "dependent_path": "/auth/verify-email",
+      "dependency_type": "state",
+      "reason": "Email verification applies to newly registered citizen accounts."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{reportId}/manage",
+      "dependency_type": "resource",
+      "reason": "Report management requires an existing report resource."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/login",
+      "dependent_method": "DELETE",
+      "dependent_path": "/auth/logout",
+      "dependency_type": "state",
+      "reason": "Logout invalidates session established by login."
+    }
+  ],
+  "risks": ["/auth/register-municipality claims admin-only but lacks explicit role validation in schema; risk of privilege escalation if not enforced server-side. /reports/telegram endpoint requires auth_required: true despite being a bot endpoint; may cause confusion about whether Telegram bot token is passed via header or body. No operation_id fields provided, making correlation difficult for clients. Email verification and resend do not specify rate limits or expiration, risking abuse. Telegram verification flow lacks explicit link between createTelegramVerification and verifyTelegramUser (e.g., code lifetime).", "Public reports endpoint (/reports/public) may expose sensitive data if filtering logic is weak. No pagination parameters documented on list endpoints, potentially causing performance issues with large datasets."]
+}

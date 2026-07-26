@@ -1,0 +1,192 @@
+[
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of reports assigned to them.",
+    "api_endpoint": "/offices/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /offices/reports/assigned as a technical office staff member. Verify the response contains a list of report objects where the status is 'Assigned' and the assignedTo field matches the current user's role.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Ensure a valid session exists for a technical office staff member (via /auth/login).",
+      "Ensure at least one report exists in the system with status 'Assigned' and assigned to this user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for staff members to view their workload as per PT08."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account (notifications and virtual presence).",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute a PUT request to /users/me as a citizen. Update the 'emailNotificationsEnabled' field to true and 'virtualPresenceEnabled' to false. Verify the response reflects these changes.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a valid session exists for a citizen user (via /auth/login).",
+      "Ensure the current user has an existing profile to update."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the ability of a citizen to modify their notification and presence preferences as per PT09."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/offices/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Execute a PUT request to /offices/reports/{reportId}/status as a technical office staff member. Update the status of an existing 'Assigned' report to 'In Progress'. Verify the response confirms the status change.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Ensure a valid session exists for a technical office staff member (via /auth/login).",
+      "Create a report via POST /reports and approve it so it moves to 'Assigned' state.",
+      "Assign the report to the current technical office staff member."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /municipal/reports/{reportId} if the test environment allows deletion of assigned reports, or verify no resource was created if deletion is restricted by domain rules. If deletion is not possible, log the report ID for manual cleanup.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the workflow transition from 'Assigned' to 'In Progress' as per PT11."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute a PUT request to /users/me as a citizen. Set 'emailNotificationsEnabled' to true and 'platformNotificationsEnabled' to true. Verify the response confirms both notification channels are active.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a valid session exists for a citizen user (via /auth/login).",
+      "Ensure the current user has an existing profile."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the specific edge case where both email and platform notifications are enabled simultaneously as per PT19."
+  },
+  {
+    "requirement_id": "PT20",
+    "requirement_summary": "Unregistered user sees public statistics about reports.",
+    "api_endpoint": "/statistics/public",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /statistics/public without any authentication headers. Verify the response returns aggregated data (e.g., total count, categories) and does not expose private user information.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that public statistics are accessible to unregistered users as per PT20."
+  },
+  {
+    "requirement_id": "PT21",
+    "requirement_summary": "Municipal administrator sees detailed private statistics.",
+    "api_endpoint": "/statistics/private",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /statistics/private as a municipal administrator. Verify the response contains detailed metrics (e.g., resolution times, user counts) that are restricted from public view.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal_administrator",
+    "setup_needed": [
+      "Ensure a valid session exists for a municipal administrator (via /auth/login)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that private statistics are accessible only to authorized administrators as per PT21."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of reports assigned to them.",
+    "api_endpoint": "/offices/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /offices/reports/assigned as a technical office staff member. Attempt to retrieve the list when no reports have been assigned to this user yet.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Ensure a valid session exists for a technical office staff member (via /auth/login).",
+      "Ensure no reports exist in the system assigned to this user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the behavior of the endpoint when the result set is empty (no assigned reports) as per PT08."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/offices/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Execute a PUT request to /offices/reports/{reportId}/status as a technical office staff member. Attempt to update the status of a report that is currently in 'Pending Approval' state directly to 'Resolved', bypassing the required review and assignment steps.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Ensure a valid session exists for a technical office staff member (via /auth/login).",
+      "Create a report via POST /reports and ensure it remains in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /municipal/reports/{reportId} if allowed, or verify no resource was created if deletion is restricted by domain rules.",
+    "expected_status_codes": [
+      "400",
+      "default"
+    ],
+    "rationale": "Tests negative behavior where a staff member attempts to skip mandatory workflow states (Pending Approval -> Assigned) as per PT11 and domain rules."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account (notifications and virtual presence).",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute a PUT request to /users/me as a citizen. Attempt to update the 'virtualPresenceEnabled' field to true while the user is currently logged out or has an invalid session token.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a valid session exists for a citizen user (via /auth/login).",
+      "Immediately invalidate the session or ensure the test runner does not maintain the session between setup and execution."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401",
+      "default"
+    ],
+    "rationale": "Tests negative behavior where an authenticated user attempts to modify their profile without a valid active session as per PT09."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/offices/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Execute a PUT request to /offices/reports/{reportId}/status as a technical office staff member. Attempt to update the status of a report that has already been marked as 'Resolved' back to 'Assigned'.",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Ensure a valid session exists for a technical office staff member (via /auth/login).",
+      "Create a report via POST /reports, approve it to move to 'Assigned', and then update it to 'Resolved' using the same endpoint."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /municipal/reports/{reportId} if allowed, or verify no resource was created if deletion is restricted by domain rules.",
+    "expected_status_codes": [
+      "400",
+      "default"
+    ],
+    "rationale": "Tests stateful workflow dependency where a report cannot be moved backward in the lifecycle (Resolved -> Assigned) as per PT11 and domain rules."
+  }
+]

@@ -1,0 +1,205 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without providing any authentication headers or session tokens. Verify that the response returns a list of approved reports suitable for display on a map, including necessary metadata like location and status.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the public accessibility of approved reports as per requirement PT28 for unregistered users."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "First, create a new report via POST /reports using a valid technical office staff session. Then, execute a PUT request to /reports/{id}/mainteiner with the maintainer ID of an external maintainer. Verify the assignment is successful and the report status reflects the change.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via POST /sessions.",
+      "Create a new report via POST /reports to obtain a valid report ID."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if it was not automatically cleaned up by the system, or verify no resource exists.",
+    "expected_status_codes": ["200", "204"],
+    "rationale": "Tests the core workflow of assigning external maintainers to reports as defined in PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of an assigned report.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an external maintainer. Execute a PUT request to /reports/{id}/status with a new status value (e.g., 'Resolved'). Verify that the status update is accepted and persisted correctly.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer via POST /sessions."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the ability of external maintainers to update report statuses per PT25."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects a report.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a municipal public relations officer. Execute a PUT request to /reports/{id}/status with the status 'Approved' (or 'Rejected'). Verify that the action is permitted and the report state changes accordingly.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Authenticate as municipal public relations officer via POST /sessions."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the approval/rejection workflow for PR officers as per PT06."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a technical office staff member. Execute a PUT request to /reports/{id}/status with a valid status transition (e.g., from 'Assigned' to 'In Progress'). Verify the update is successful.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via POST /sessions."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the status update capability for technical office staff per PT11."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a technical office staff member. Execute a PUT request to /reports/{id}/mainteiner with an invalid or non-existent external maintainer ID. Verify that the system returns an appropriate error code (e.g., 404 Not Found) and does not perform the assignment.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via POST /sessions."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["404"],
+    "rationale": "Ensures the system handles invalid maintainer IDs gracefully and prevents unauthorized or erroneous assignments."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of an assigned report.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an external maintainer. Execute a PUT request to /reports/{id}/status with an invalid status value (e.g., 'InvalidStatus'). Verify that the system rejects the request with a 400 Bad Request error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer via POST /sessions."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Validates that the system enforces valid status transitions and rejects invalid inputs."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without authentication. Verify that the response includes only approved reports and excludes any pending or rejected reports, ensuring data privacy for unregistered users.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the filtering logic to ensure only approved reports are visible to unauthenticated users."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a technical office staff member. Execute a PUT request to /reports/{id}/mainteiner without providing the maintainer ID in the request body or headers. Verify that the system returns an error (e.g., 400 Bad Request) indicating missing required parameters.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via POST /sessions."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures the system validates required input parameters for assignment operations."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of an assigned report.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an external maintainer. Execute a PUT request to /reports/{id}/status where the report ID does not exist or belongs to a different user. Verify that the system returns an appropriate error (e.g., 403 Forbidden or 404 Not Found) and does not allow unauthorized status updates.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer via POST /sessions."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403", "404"],
+    "rationale": "Validates access control to ensure maintainers can only update reports they are assigned to."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without authentication. Verify that the response includes reports with 'anonymous' reporter names instead of actual names, adhering to the domain rule about anonymous user visibility.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the anonymization logic for reporter names in public views."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a technical office staff member. Execute a PUT request to /reports/{id}/mainteiner with a valid maintainer ID but without specifying the report ID in the path (using a placeholder or null). Verify that the system returns an error indicating missing resource identification.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via POST /sessions."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures the system correctly handles malformed or incomplete resource identifiers."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of an assigned report.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an external maintainer. Execute a PUT request to /reports/{id}/status with a valid status value but without including any explanation or comment field if required by the system schema. Verify that the system either accepts the request (if comments are optional) or returns a 400 error (if comments are mandatory for certain transitions).",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer via POST /sessions."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200", "400"],
+    "rationale": "Tests the handling of optional or mandatory metadata fields during status updates."
+  }
+]

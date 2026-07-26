@@ -1,0 +1,196 @@
+[
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/auth/verify-email",
+    "http_method": "POST",
+    "prompt": "Execute verification for the user registered in setup. Use the token/code provided in the registration response body. Assert 200 OK and that the session becomes active for subsequent authenticated calls.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "POST /auth/register with valid citizen data to obtain a registration token/code."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core activation flow required by PT27 before any authenticated operations can occur."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen attempts verification with an invalid or expired code.",
+    "api_endpoint": "/auth/verify-email",
+    "http_method": "POST",
+    "prompt": "Execute verification using a malformed token, an empty string, or a token from a different registration session. Assert 400 Bad Request or 401 Unauthorized and ensure no account state change occurs.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "POST /auth/register with valid citizen data to obtain a registration token/code."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400",
+      "401"
+    ],
+    "rationale": "Ensures security and integrity of the account activation process against invalid inputs."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up a new municipality user.",
+    "api_endpoint": "/users/municipality",
+    "http_method": "POST",
+    "prompt": "Create a new municipality user with valid attributes (username, password, email). Assert 201 Created and verify the user appears in subsequent GET /users/municipality lists. Use an admin role for authentication.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure a valid admin session exists (login if necessary).",
+      "Retrieve list of available roles via GET /roles to include in the payload."
+    ],
+    "cleanup_strategy": "DELETE /users/municipality/user/{id} where {id} is the ID returned from this test.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core user provisioning capability for PT02."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator attempts to create a municipality user with missing required fields.",
+    "api_endpoint": "/users/municipality",
+    "http_method": "POST",
+    "prompt": "Attempt to create a municipality user omitting the 'username' or 'password' field. Assert 400 Bad Request and ensure no new user record is created in the database.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure a valid admin session exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates input validation and data integrity for user creation operations."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to an existing municipality user.",
+    "api_endpoint": "/users/municipality/user/{id}/office-roles",
+    "http_method": "POST",
+    "prompt": "Assign a specific role (e.g., 'viewer') to a specific office for the target municipality user. Use the user ID and office ID obtained from previous setup steps. Assert 200 OK and verify the assignment in the response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "POST /users/municipality to create a test user.",
+      "GET /offices to obtain an office ID.",
+      "GET /roles to obtain a role ID."
+    ],
+    "cleanup_strategy": "DELETE /users/municipality/user/{id}/office-roles/{officeId} using the specific officeId and roleId assigned in this test.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the role assignment workflow for PT03."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen creates a report with the anonymous flag set to true.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report for an authenticated citizen user with 'anonymous': true in the payload. Assert 201 Created. Verify that the response indicates anonymity is active and the public view would hide the name (conceptually).",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/register to create a citizen account.",
+      "POST /auth/verify-email to activate the account.",
+      "GET /categories to obtain a valid categoryId."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the anonymous reporting feature defined in PT15."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen attempts to create a report with an invalid categoryId.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to create a report using a categoryId that does not exist in the system. Assert 400 Bad Request or 422 Unprocessable Entity.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/register to create a citizen account.",
+      "POST /auth/verify-email to activate the account."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400",
+      "422"
+    ],
+    "rationale": "Ensures data integrity and prevents creation of reports with invalid categorization."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles for a municipality user (removes an existing role).",
+    "api_endpoint": "/users/municipality/user/{id}/office-roles/{officeId}",
+    "http_method": "DELETE",
+    "prompt": "Remove a previously assigned office-role from a municipality user. Use the specific user ID and office ID. Assert 200 OK or 204 No Content and verify the role is no longer associated with the user.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "POST /users/municipality to create a test user.",
+      "GET /offices to obtain an office ID.",
+      "GET /roles to obtain a role ID.",
+      "POST /users/municipality/user/{id}/office-roles to assign the role first."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200",
+      "204"
+    ],
+    "rationale": "Validates the flexibility of role management for PT10."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen creates a report with incomplete details (missing description).",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to create a report without providing the 'description' field. Assert 400 Bad Request.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/register to create a citizen account.",
+      "POST /auth/verify-email to activate the account."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates that mandatory report details are enforced as per PT05."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "System administrator attempts to verify an email for a non-existent registration token.",
+    "api_endpoint": "/auth/verify-email",
+    "http_method": "POST",
+    "prompt": "Execute verification with a random UUID string that was never generated by the /auth/register endpoint. Assert 404 Not Found or 400 Bad Request.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure a valid admin session exists (login if necessary)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "404",
+      "400"
+    ],
+    "rationale": "Tests robustness against random token injection attempts."
+  }
+]

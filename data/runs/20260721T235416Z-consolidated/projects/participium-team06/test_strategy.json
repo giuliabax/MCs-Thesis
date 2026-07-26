@@ -1,0 +1,183 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+    "api_endpoint": "/register",
+    "http_method": "POST",
+    "prompt": "Execute registration for a new citizen user. Provide valid name, username, and email. Verify account creation success and return of temporary verification token or status indicating pending verification.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Core onboarding flow; validates user creation without authentication."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "As a citizen I want to confirm my registration with a code So that my account becomes valid and I can start using the system.",
+    "api_endpoint": "/verify",
+    "http_method": "POST",
+    "prompt": "Submit verification code received during registration. Ensure token matches the one issued in PT01 setup. Verify account status transitions to 'active' or equivalent.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute PT01 (register) first to obtain verification token"
+    ],
+    "cleanup_strategy": "Verify account is active; no resource deletion required.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Critical state transition from pending to active user."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "As a system administrator I want to set up municipality users",
+    "api_endpoint": "/admin/accounts/register",
+    "http_method": "POST",
+    "prompt": "Create a new municipality user account via admin endpoint. Provide valid username, email, and role assignment data. Verify successful creation and return of user ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure admin authentication token is present"
+    ],
+    "cleanup_strategy": "Delete created user account if test fails or cleanup flag is set.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates admin capability to provision internal staff."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "As a system administrator I want to assign roles to municipality users",
+    "api_endpoint": "/admin/accounts/assign",
+    "http_method": "PUT",
+    "prompt": "Assign a specific role (e.g., 'technical_office') to an existing municipality user. Verify role assignment succeeds and user permissions update accordingly.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator.",
+      "Create a municipality user via PT02 or equivalent"
+    ],
+    "cleanup_strategy": "Revoke role assignment or delete user if test fails.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates role management functionality for staff."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "As a technical office staff member I want to assign reports to external maintainers So that specialized maintainers can handle and update the intervention.",
+    "api_endpoint": "/tech-lead/report/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Assign an existing report (from PT05) to an external maintainer. Provide valid maintainer ID and assignment details. Verify assignment succeeds and report metadata updates.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Create a report via PT05 to have a valid reportId"
+    ],
+    "cleanup_strategy": "Revoke assignment or delete report if test fails.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates cross-role collaboration and external maintainer assignment."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "As an external maintainer I want to update the status of a report assigned to me So that I can updated citizens about the intervention.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update the status of a previously assigned report (from PT24) to 'in_progress' or 'completed'. Verify status change is persisted and visible to authorized users.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Assign report via PT24 to establish valid reportId"
+    ],
+    "cleanup_strategy": "Revert status change or delete report if test fails.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates external maintainer workflow and status updates."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "As a citizen I want to reply to messages from municipal operators in the platform So that I can communicate directly about my report.",
+    "api_endpoint": "/messages/{chatId}",
+    "http_method": "POST",
+    "prompt": "Send a reply message within an existing chat thread (chatId derived from report). Ensure authenticated citizen session. Verify message is appended to thread and visible to operators.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen.",
+      "Create a report via PT05 to establish chat context"
+    ],
+    "cleanup_strategy": "Delete sent message or archive chat if test fails.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates citizen communication channel within the platform."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "As a citizen/unregistered user I want to browse a summary table of reports with filters So that I can easily explore and analyze existing reports.",
+    "api_endpoint": "/reports/list",
+    "http_method": "GET",
+    "prompt": "Retrieve paginated list of public reports. Apply optional filters (e.g., status, category). Verify response includes report summaries and filter logic works correctly for unauthenticated users.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates public-facing report discovery and filtering."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "As a citizen I want to provide details for my report So that the the problem is classified correctly.",
+    "api_endpoint": "/users/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with invalid category value (e.g., 'unknown_category'). Verify system rejects submission with appropriate error message and does not create resource.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen.",
+      "Execute PT01 and PT27 to create active citizen account"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates input validation for report classification."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "As a technical office staff member I want to update report statuses So that citizens are informed of the problem resolution process.",
+    "api_endpoint": "/tech/reports/list",
+    "http_method": "GET",
+    "prompt": "Retrieve list of reports assigned to technical office staff. Verify response includes status updates from external maintainers (from PT25) and filtering by assignment role works correctly.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Assign report via PT24 and update status via PT25"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates role-based data visibility and status propagation."
+  }
+]

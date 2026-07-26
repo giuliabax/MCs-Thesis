@@ -1,0 +1,94 @@
+[
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with valid citizen details (title, description, category) to trigger correct classification logic. Ensure the request body contains all mandatory fields defined in the schema.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen via /sessions/current (if not already authenticated)",
+      "Ensure no existing session conflicts"
+    ],
+    "cleanup_strategy": "Verify report was created; do not delete as per domain rule 'Once submitted, a report cannot be modified or deleted by the citizen'.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates core functionality of requirement PT05: successful creation and classification based on provided details."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of assigned reports.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to the current authenticated technical office staff member. Verify that only reports in 'Assigned' state and matching the user's role are returned.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via /sessions/current"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates requirement PT08: correct filtering and visibility of assigned reports for the specific role."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures account settings (notifications, virtual presence).",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update the current citizen's profile to modify notification preferences and virtual presence settings. Ensure valid JSON payload with updated fields.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure active session for citizen exists"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates requirement PT09: successful update of account configuration fields."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Send a reply message to an existing report (created in PT05) from the citizen's perspective. Include valid message content and ensure it is associated with the correct report ID.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a report exists (created via PT05)",
+      "Ensure active session for citizen exists"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates requirement PT18: successful creation of a reply message on an existing report."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to create a report with missing mandatory fields (e.g., omit 'description' or 'category') to verify the system rejects incomplete data and returns an appropriate error code.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure active session for citizen exists"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates input validation and error handling for requirement PT05: system must reject incomplete reports."
+  }
+]

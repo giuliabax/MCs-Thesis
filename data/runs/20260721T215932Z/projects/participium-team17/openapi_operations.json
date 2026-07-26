@@ -1,0 +1,798 @@
+[
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/{firebaseUid}",
+    "summary": "Get a user by Firebase UID",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "firebaseUid",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "404"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/users/{userId}",
+    "summary": "Update a user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "userId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/user/reports",
+    "summary": "Get reports created by the authenticated user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/user-registrations",
+    "summary": "Register a new citizen",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "firstName",
+        "lastName",
+        "username",
+        "email",
+        "password"
+      ],
+      "properties": {
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "409"
+    ],
+    "tags": [
+      "Registrations"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/verify-code",
+    "summary": "Verify a registration code",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "email",
+        "code"
+      ],
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Registrations"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/resend-code",
+    "summary": "Resend a registration verification code",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "email"
+      ],
+      "properties": {
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Registrations"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/operators",
+    "summary": "List all operators",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Operators"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/categories/{categoryId}/operators",
+    "summary": "List operators for a category",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "categoryId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Operators"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/operator-registrations",
+    "summary": "Register a new operator (admin)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "firstName",
+        "lastName",
+        "username",
+        "email",
+        "password",
+        "role_id"
+      ],
+      "properties": {
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "role_id": {
+          "type": "integer"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Operators"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/external-maintainers",
+    "summary": "List external maintainers",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Operators"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/operators/{operatorId}/roles",
+    "summary": "Update an operator's roles (admin)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "operatorId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "role_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Operators"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/roles",
+    "summary": "List all roles",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Roles"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/categories",
+    "summary": "List all categories",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Categories"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports",
+    "summary": "Create a new report with photos",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "category_id",
+        "position_lat",
+        "position_lng"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category_id": {
+          "type": "integer"
+        },
+        "address": {
+          "type": "string"
+        },
+        "position_lat": {
+          "type": "number"
+        },
+        "position_lng": {
+          "type": "number"
+        },
+        "is_anonymous": {
+          "type": "boolean"
+        },
+        "photos": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports",
+    "summary": "List reports (authenticated staff)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/map/accepted",
+    "summary": "List accepted reports for the public map",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{reportId}",
+    "summary": "Get a report by id",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "404"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{reportId}/internal-comments",
+    "summary": "Add an internal comment to a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{reportId}/external-comments",
+    "summary": "Add an external comment to a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/report/{reportId}/internal-comments",
+    "summary": "Get internal comments of a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/report/{reportId}/external-comments",
+    "summary": "Get external comments of a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/ext_maintainer/reports",
+    "summary": "List reports assigned to the external maintainer",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/ext_maintainer/reports/{reportId}",
+    "summary": "Update a report as external maintainer",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/tech_officer/reports",
+    "summary": "List reports assigned to the technical officer",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/tech_officer/reports/{reportId}",
+    "summary": "Update a report as technical officer",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/tech_officer/reports/{reportId}/assign_external",
+    "summary": "Assign a report to an external maintainer (technical officer)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "externalMaintainerId": {
+          "type": "integer"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/pub_relations/reports/{reportId}",
+    "summary": "Review/update a report as public relations officer",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "category_id": {
+          "type": "integer"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/notifications",
+    "summary": "List notifications for the authenticated user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/notifications/{notificationId}/set-read",
+    "summary": "Mark a notification as read",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "notificationId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  }
+]

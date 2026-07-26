@@ -1,0 +1,184 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+    "api_endpoint": "/users/signup",
+    "http_method": "POST",
+    "prompt": "Execute a user registration test. Provide valid name and username fields. Verify successful account creation and receipt of confirmation token or redirect.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates core user onboarding flow and data ingestion for new accounts."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+    "api_endpoint": "/users/signup",
+    "http_method": "POST",
+    "prompt": "Execute a user registration test with missing required fields (e.g., empty username). Verify the API rejects the request with an appropriate validation error message.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures input validation prevents invalid account creation and provides clear error feedback."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "As a technical office staff member I want to assign reports to external maintainers So that specialized maintainers can handle and update the intervention.",
+    "api_endpoint": "/reports/{id}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Assign a specific report to an external maintainer. First, ensure a valid report ID exists and an external maintainer is identified. Execute the assignment with the correct maintainer identifier.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Ensure a report resource exists at /reports/{id}",
+      "Ensure an external maintainer record is available in the system"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the stateful workflow of assigning maintenance tasks to external parties, ensuring role-based access and data integrity."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "As a technical office staff member I want to update report statuses So that citizens are informed of the problem resolution process.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update the status of an existing report (e.g., from 'open' to 'in_progress'). Ensure the request body contains a valid status value and that the update is reflected in the resource.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Ensure a report resource exists at /reports/{id}"
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the core lifecycle management capability for technical staff to update intervention progress."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "As a municipal public relations officer I want to review and approve or reject reports So that only valid reports are processed further.",
+    "api_endpoint": "/reports/{id}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Attempt to assign a report to an external maintainer using the role of a municipal public relations officer. Verify that the API rejects this action because the PR officer lacks the necessary permissions for external assignment.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Authenticate as municipal public relations officer.",
+      "Ensure a report resource exists at /reports/{id}"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Validates role-based access control (RBAC) to ensure only authorized technical staff can assign external maintainers."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "As an external maintainer I want to update the status of a report assigned to me So that I can updated citizens about the intervention.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update the status of a report while acting as an external maintainer. Verify that the system allows this update only if the report is explicitly assigned to this maintainer, otherwise reject the request.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer.",
+      "Ensure a report resource exists at /reports/{id}",
+      "Ensure the report is assigned to the current external maintainer"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests boundary conditions for status updates, ensuring external maintainers can only modify their own assignments."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "As a citizen I want to select a location on the city map So that my report is geolocated with latitude and longitude.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report including mandatory fields and valid latitude/longitude coordinates. Verify that the system correctly stores and returns the geolocation data in the response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the creation of reports with geospatial data, a key feature for mapping and dispatching maintenance crews."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "As a citizen I want to provide details for my report So that the the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with detailed description and classification fields. Verify that the system accepts and persists these details without truncation or error, ensuring accurate categorization.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Ensures the system handles rich text and classification data correctly during report creation."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "As a technical office staff member I want to see the list of reports assigned to me So that I can get an overview of the maintenance to be done",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports filtered by the current user's role (technical office staff member). Verify that only reports assigned to this user are returned and that pagination or filtering works as expected.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure at least one report exists and is assigned to the current technical office staff member"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates read access and filtering logic for staff members managing their workload."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "As a citizen I want to configure my account So that I can better manage notifications and my virtual presence.",
+    "api_endpoint": "/users/me",
+    "http_method": "POST",
+    "prompt": "Update the current user's profile settings (e.g., notification preferences). Verify that the API accepts valid configuration updates and returns the updated profile state.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a logged-in citizen session exists"
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the ability of users to manage their own account settings and preferences securely."
+  }
+]

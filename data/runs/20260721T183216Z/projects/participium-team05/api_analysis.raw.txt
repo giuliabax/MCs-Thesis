@@ -1,0 +1,178 @@
+{
+  "summary": "A municipal service API for user management (registration, login, role-based access), report lifecycle (creation, categorization, status updates, assignment to internal staff or external maintainers), and office/category data retrieval.",
+  "operations": [
+    {
+      "path": "/users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Returns list of users; marked as 'Dev' in summary"]
+    },
+    {
+      "path": "/users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Placeholder operation with no schema or description"]
+    },
+    {
+      "path": "/users/signup",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Creates new user; requires NewUser schema"]
+    },
+    {
+      "path": "/users/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Authenticates user; requires LoginRequest schema"]
+    },
+    {
+      "path": "/users/employees",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Admin-only: creates municipality employee; requires NewMunicipalityUser schema"]
+    },
+    {
+      "path": "/users/maintainers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Filters external maintainers by categoryId; requires query parameter categoryId"]
+    },
+    {
+      "path": "/users/me",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Returns current authenticated user and optionally a fresh token"]
+    },
+    {
+      "path": "/users/tsm",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists Technical Staff Members with assigned offices; returns 401/403/500"]
+    },
+    {
+      "path": "/users/tsm/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Updates offices for a specific TSM; requires officeIds array in body"]
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists available categories for reports"]
+    },
+    {
+      "path": "/offices",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Lists offices; no auth required"]
+    },
+    {
+      "path": "/uploads/sign",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Returns Cloudinary signature for client-side file uploads"]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Lists reports filtered by status; requires status query parameter"]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Creates a new report; marked as citizen-only"]
+    },
+    {
+      "path": "/reports/{id}/category",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Updates report category; requires categoryId in body; restricted to public relations officer or municipal administrator"]
+    },
+    {
+      "path": "/reports/{id}/status",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Changes report status (Assigned/Rejected); triggers auto-assignment to least-loaded TSM when Accepted; requires rejectedDescription if Rejected"]
+    },
+    {
+      "path": "/reports/{id}/assign-external",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Assigns report to external maintainer; requires maintainerId in body"]
+    }
+  ],
+  "authentication_notes": ["/users/login is required before any /users/me or protected resource operations; /users/employees, /users/maintainers, /users/tsm, /reports/* all require authentication; /offices and /uploads/sign are public"],
+  "dependencies": ["POST /users/signup must precede authenticated user actions like POST /users/me", "POST /users/login must precede any protected endpoint requiring auth", "GET /categories is required before PUT /reports/{id}/category or PUT /reports/{id}/status", "GET /offices may be needed for context but is not strictly required by other endpoints"],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/signup",
+      "dependent_method": "POST",
+      "dependent_path": "/users/me",
+      "dependency_type": "state",
+      "reason": "User must be registered before accessing their profile"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/login",
+      "dependent_method": "POST",
+      "dependent_path": "/users/me",
+      "dependency_type": "authorization",
+      "reason": "Session must be established to identify current user"
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/categories",
+      "dependent_method": "PUT",
+      "dependent_path": "/reports/{id}/category",
+      "dependency_type": "resource",
+      "reason": "Valid categoryId must exist before updating report category"
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/users/maintainers",
+      "dependent_method": "PUT",
+      "dependent_path": "/reports/{id}/assign-external",
+      "dependency_type": "resource",
+      "reason": "Valid maintainerId must exist before assigning report externally"
+    }
+  ],
+  "risks": ["/users endpoint has both GET and POST with no clear distinction; POST is marked placeholder but could be misused", "/users/signup and /users/login do not specify auth_required, implying they are public but may leak sensitive data if not secured", "PUT /reports/{id}/status auto-assigns to least-loaded TSM without explicit confirmation in docs", "No schema definitions for NewUser, LoginRequest, CreateReport are inline; rely on external components which may be missing", "GET /users returns all users without auth—potential privacy risk if not intended"]
+}

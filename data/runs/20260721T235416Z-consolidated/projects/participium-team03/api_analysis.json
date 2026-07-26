@@ -1,0 +1,596 @@
+{
+  "summary": "A municipal reporting API allowing citizens to submit reports with photos, track status via notifications, and interact via comments/messages. Admins manage users, roles, and report reviews. External maintainers update assigned work progress.",
+  "operations": [
+    {
+      "path": "/comment/{id}/comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Add an internal comment to a report",
+        "Requires report ID in path",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 403, 404"
+      ]
+    },
+    {
+      "path": "/comment/{id}/comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get internal comments for a report",
+        "Requires report ID in path",
+        "Parameters: id",
+        "Documented responses: 200, 403, 404"
+      ]
+    },
+    {
+      "path": "/api/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get report categories",
+        "Read-only category list",
+        "Documented responses: 200, 500"
+      ]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Invia un messaggio (Cittadino o Staff)",
+        "Requires report ID in path",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401"
+      ]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Recupera la chat della segnalazione",
+        "Requires report ID in path",
+        "Parameters: id",
+        "Documented responses: 200, 401, 404"
+      ]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get all notifications for the logged-in user",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/notifications/unread",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get unread notifications for the logged-in user",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/notifications/{id}/read",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Mark a notification as read",
+        "Requires notification ID in path",
+        "Parameters: id",
+        "Documented responses: 200, 400, 401, 404, 500"
+      ]
+    },
+    {
+      "path": "/notifications/read-all",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Mark all notifications as read for the logged-in user",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/notifications/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Delete a notification",
+        "Requires notification ID in path",
+        "Parameters: id",
+        "Documented responses: 200, 400, 401, 404, 500"
+      ]
+    },
+    {
+      "path": "/reports/me",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /sessions: User must be authenticated to view their own reports.",
+        "POST /users: User account must be confirmed before accessing authenticated resources."
+      ],
+      "notes": [
+        "Get all reports created by the logged-in citizen",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Add one new report (with photos upload)",
+        "Requires latitude, longitude, title, description, category, photos",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401"
+      ]
+    },
+    {
+      "path": "/reports/anonymous",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": [
+        "Add one new anonymous report (with photos upload)",
+        "Anonymous report creation",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401"
+      ]
+    },
+    {
+      "path": "/reports/pending",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "List all pending reports for review",
+        "Documented responses: 200, 401, 403"
+      ]
+    },
+    {
+      "path": "/reports/approved",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get approved reports for the public map",
+        "Optional bounding box parameters",
+        "Parameters: north, south, east, west",
+        "Documented responses: 200, 400, 500"
+      ]
+    },
+    {
+      "path": "/reports/citizen",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get reports visible to citizens",
+        "Parameters: north, south, east, west",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/reports/assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get reports assigned to the logged-in technical office staff member",
+        "Restricted to technical office staff",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Report ID must exist before retrieving details."
+      ],
+      "notes": [
+        "Get a single report by ID",
+        "Requires report ID in path",
+        "Parameters: id",
+        "Documented responses: 200, 400, 401, 404"
+      ]
+    },
+    {
+      "path": "/reports/{id}/review",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Review (accept or reject) a report",
+        "Requires status (accepted/rejected) and optional explanation/technicalOffice",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/reports/{id}/assign-external",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Assign a report to an external maintainer",
+        "Requires externalMaintainerId",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/reports/{id}/status",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Update report status (External Maintainer)",
+        "Restricted to external maintainers; requires status (progress/suspended/resolved)",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/reports/external/assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /users/external-maintainers: External maintainer must be created and authenticated to access assigned reports."
+      ],
+      "notes": [
+        "Get reports assigned to the logged-in external maintainer",
+        "Restricted to external maintainers",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/streets",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Search for streets in the database (Autocomplete)",
+        "Autocomplete search by query string",
+        "Parameters: q",
+        "Documented responses: 200, 500"
+      ]
+    },
+    {
+      "path": "/streets/{name}/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get reports and map focus for a specific street",
+        "Requires exact street name in path",
+        "Parameters: name",
+        "Documented responses: 200, 404, 500"
+      ]
+    },
+    {
+      "path": "/sessions",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Login user",
+        "Login with username/password",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/sessions/current",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get current logged-in user",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/sessions/current",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Logout user",
+        "Logout",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/telegram/webhook",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": [
+        "Telegram webhook endpoint",
+        "Telegram bot webhook",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/telegram/info",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get Telegram bot information",
+        "Documented responses: 200, 503"
+      ]
+    },
+    {
+      "path": "/users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Register a new user (citizen)",
+        "Citizen registration; requires confirmation",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 409"
+      ]
+    },
+    {
+      "path": "/users/confirm",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Confirm user registration with code",
+        "Confirm account with code",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404"
+      ]
+    },
+    {
+      "path": "/users/resend-confirmation",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Resend confirmation code",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404"
+      ]
+    },
+    {
+      "path": "/users/admin",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Create a new user (admin only)",
+        "Admin-only user creation",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 409"
+      ]
+    },
+    {
+      "path": "/users/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get allowed roles (admin only)",
+        "Admin-only role list",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/users/municipality",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "List all municipality users (non-citizen, non-admin)",
+        "Documented responses: 200, 401, 403"
+      ]
+    },
+    {
+      "path": "/users/{id}/update",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Update user profile information",
+        "Requires user ID in path",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/users/external-maintainers",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Create a new external maintainer (admin only)",
+        "Admin-only external maintainer creation",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 409"
+      ]
+    },
+    {
+      "path": "/users/external-maintainers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get all external maintainers",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/users/{id}/assign-role",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /users/admin: Admin role creation is prerequisite for assigning roles to other users."
+      ],
+      "notes": [
+        "Assign a role to a municipality user (admin only)",
+        "Admin-only role assignment; requires user ID in path",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404, 409"
+      ]
+    },
+    {
+      "path": "/users/{id}/remove-role",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Remove a role from a municipality user (admin only)",
+        "Admin-only role removal; requires user ID in path",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/users/companies",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get all companies",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "Most endpoints require authentication; only /reports/anonymous and /telegram/webhook are public.",
+    "User registration requires confirmation via email before accessing authenticated resources.",
+    "Operations marked auth_required need an authenticated session during test setup."
+  ],
+  "dependencies": [
+    "POST /sessions (login) is a prerequisite for all authenticated operations.",
+    "POST /users (registration) must be followed by POST /users/confirm before accessing user-specific endpoints.",
+    "POST /reports creates a report ID required for subsequent GET/PUT on /reports/{id} endpoints.",
+    "POST /comment/{id}/comments and POST /reports/{id}/messages depend on the existence of the report (created via POST /reports or POST /reports/anonymous).",
+    "GET /reports/pending, PUT /reports/{id}/review, GET /reports/assigned require admin or municipal staff roles.",
+    "PUT /reports/{id}/status and GET /reports/external/assigned require external maintainer role.",
+    "POST /users/admin and POST /users/external-maintainers require admin role.",
+    "POST /users/{id}/assign-role and DELETE /users/{id}/remove-role require admin role.",
+    "POST /sessions -> GET /reports/me: User must be authenticated to view their own reports.",
+    "POST /reports -> GET /reports/{id}: Report ID must exist before retrieving details.",
+    "POST /users -> GET /reports/me: User account must be confirmed before accessing authenticated resources.",
+    "POST /users/admin -> POST /users/{id}/assign-role: Admin role creation is prerequisite for assigning roles to other users.",
+    "POST /users/external-maintainers -> GET /reports/external/assigned: External maintainer must be created and authenticated to access assigned reports."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/sessions",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/me",
+      "dependency_type": "authorization",
+      "reason": "User must be authenticated to view their own reports."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{id}",
+      "dependency_type": "resource",
+      "reason": "Report ID must exist before retrieving details."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/me",
+      "dependency_type": "authorization",
+      "reason": "User account must be confirmed before accessing authenticated resources."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/admin",
+      "dependent_method": "POST",
+      "dependent_path": "/users/{id}/assign-role",
+      "dependency_type": "authorization",
+      "reason": "Admin role creation is prerequisite for assigning roles to other users."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/external-maintainers",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/external/assigned",
+      "dependency_type": "authorization",
+      "reason": "External maintainer must be created and authenticated to access assigned reports."
+    }
+  ],
+  "risks": [
+    "Ambiguity in role-based access control: some endpoints specify 'admin only' or 'technical office staff' but lack explicit role validation in the schema.",
+    "Anonymous report creation bypasses user authentication, potentially leading to data integrity issues if not properly logged.",
+    "Telegram webhook endpoint is public and could be exploited for spam or abuse if not rate-limited.",
+    "Confirmation code expiration (30 minutes) may lead to failed registrations if users delay confirmation."
+  ]
+}

@@ -1,0 +1,186 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/map/accepted",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/map/accepted without providing any authentication headers. Verify that the response returns a list of accepted reports (status 'Accepted') with location data, category, and title. Ensure no private internal comments or sensitive reporter details are exposed.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core public-facing functionality for unregistered users as per requirement PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/tech_officer/reports/{reportId}/assign_external",
+    "http_method": "PATCH",
+    "prompt": "First, ensure a valid report exists and is in 'Accepted' status. Then, execute a PATCH request to /tech_officer/reports/{reportId}/assign_external with an authenticated token for a technical office staff member. The payload should include the external_maintainer_id obtained from /external-maintainers. Verify the assignment succeeds.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Authenticate as technical_office_staff_member.",
+      "Create a new report via POST /reports with status 'Accepted' to satisfy dependency edges.",
+      "Retrieve a list of external maintainers via GET /external-maintainers and select one valid ID."
+    ],
+    "cleanup_strategy": "Verify the assignment was successful; if the test fails or is aborted, ensure no partial state changes remain by re-fetching the report status to confirm it hasn't been incorrectly modified.",
+    "expected_status_codes": [
+      "200",
+      "403"
+    ],
+    "rationale": "Tests the workflow of assigning external maintainers, a key step in requirement PT24."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username.",
+    "api_endpoint": "/user-registrations",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /user-registrations without authentication. The payload must include 'name', 'username', and 'email'. Verify that the system accepts the registration and returns a confirmation code or success message.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the user registration flow for citizens as per requirement PT01."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer (Edge Case: Invalid External Maintainer).",
+    "api_endpoint": "/tech_officer/reports/{reportId}/assign_external",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /tech_officer/reports/{reportId}/assign_external with an authenticated token for a technical office staff member. The payload should include an invalid or non-existent external_maintainer_id (e.g., '99999'). Verify that the system rejects this operation with an appropriate error code (e.g., 400 or 404) indicating the maintainer does not exist.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Authenticate as technical_office_staff_member.",
+      "Create a new report via POST /reports to satisfy the resource dependency."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400",
+      "404"
+    ],
+    "rationale": "Tests the system's handling of invalid external maintainer IDs during assignment (PT24)."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates status (Negative: Unauthorized Access to Unassigned Report).",
+    "api_endpoint": "/ext_maintainer/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /ext_maintainer/reports/{reportId} with an authenticated token for an external maintainer. The reportId should belong to a report that has NOT been assigned to this specific external maintainer. Verify that the system rejects this operation with a 403 Forbidden error, preventing unauthorized status updates.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Authenticate as external_maintainer.",
+      "Create a new report via POST /reports and assign it to a DIFFERENT external maintainer (or leave it unassigned) to ensure the current user cannot access it."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Tests security boundaries where an external maintainer tries to modify a report they are not assigned to (PT25)."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/verify-code",
+    "http_method": "POST",
+    "prompt": "Send a POST request to /verify-code with the confirmation code received during registration. Assert that the response indicates successful verification and the user session is now active.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core user onboarding flow defined in PT27."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up a new municipality user.",
+    "api_endpoint": "/operator-registrations",
+    "http_method": "POST",
+    "prompt": "First, retrieve the list of available roles via GET /roles. Then, send a POST request to /operator-registrations with a payload containing a valid role_id from the previous step and user details. Assert that the new operator is created successfully.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator.",
+      "Execute GET /roles to obtain a valid role_id for the payload."
+    ],
+    "cleanup_strategy": "Delete the newly created operator via DELETE /operators/{operatorId} if it was not intended to persist, or verify no resource was created if the test failed.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates PT02 while respecting the dependency on role data defined in dependency_edges."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to an existing municipality user.",
+    "api_endpoint": "/operators/{operatorId}/roles",
+    "http_method": "PATCH",
+    "prompt": "Send a PATCH request to /operators/{operatorId}/roles with a payload specifying the desired role assignments for the operator. Assert that the roles are updated successfully on the target user.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator.",
+      "Ensure an existing operator ID is available (created via PT02 or pre-existing)."
+    ],
+    "cleanup_strategy": "Revert the role changes by sending a PATCH request with an empty roles array or null, restoring the user to their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the core functionality of PT03 for assigning roles."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report for a citizen. Include valid latitude and longitude coordinates in the request body. Ensure the category is selected from the available list (e.g., 'Water Supply'). Use a standard citizen role token.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user.",
+      "Fetch available categories via GET /categories to select a valid category_id."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of creating a geolocated report as per PT04."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports so that only valid reports are processed further.",
+    "api_endpoint": "/pub_relations/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Update the status of an existing report to 'Rejected' by a municipal public relations officer. Include a mandatory explanation field in the request body describing why the report was rejected.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a test report via POST /reports using a citizen token to obtain a valid reportId.",
+      "Authenticate as a municipal public relations officer."
+    ],
+    "cleanup_strategy": "Verify the report status is 'Rejected'. No deletion required by citizen, but ensure no further updates occur.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the approval/rejection workflow and mandatory explanation requirement for PT06."
+  }
+]

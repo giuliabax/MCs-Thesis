@@ -1,0 +1,99 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "As a citizen\nI want to register with my name and username \nSo that I can access the Participium system and submit reports.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Execute registration for a new citizen user. Verify account creation and email confirmation code generation.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Reset environment to remove test user account",
+    "expected_status_codes": [
+      "201",
+      "409"
+    ],
+    "rationale": "Validates successful citizen registration and account creation flow as per requirement PT01."
+  },
+  {
+    "requirement_id": "PT29",
+    "requirement_summary": "As a municipal administrator\nI want to configure automatic assignment of all reports in a certain category\nSo that interventions will be faster.",
+    "api_endpoint": "/reports/{id}/auto-assign-maintainer",
+    "http_method": "POST",
+    "prompt": "Attempt automatic maintainer assignment without prior configuration. Verify failure response when auto-assignment rules are not set.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal administrator",
+    "setup_needed": [
+      "Authenticate as municipal administrator.",
+      "Create a report resource via POST /reports"
+    ],
+    "cleanup_strategy": "Delete the report resource associated with this assignment",
+    "expected_status_codes": [
+      "403",
+      "503"
+    ],
+    "rationale": "Tests behavior when automatic assignment is attempted without prior configuration, ensuring safety constraints are enforced."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "As a technical office staff member \nI want to update report statuses \nSo that citizens are informed of the problem resolution process.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update an existing report status from Pending Approval to Assigned. Verify notification trigger and state transition.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Create a report resource via POST /reports"
+    ],
+    "cleanup_strategy": "Delete the report resource associated with this status update",
+    "expected_status_codes": [
+      "200",
+      "404"
+    ],
+    "rationale": "Validates status transition workflow and notification trigger for resolution process as per requirement PT11."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "As a technical office staff member\nI want to assign reports to external maintainers\nSo that specialized maintainers can handle and update the intervention.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Assign an external maintainer to a report. Verify assignment logic respects category constraints (e.g., Public Lighting).",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Create a report resource via POST /reports"
+    ],
+    "cleanup_strategy": "Delete the report resource associated with this assignment",
+    "expected_status_codes": [
+      "200",
+      "403"
+    ],
+    "rationale": "Tests external maintainer assignment logic, including category-specific constraints and spelling variations in endpoint."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "As a technical office staff member/external maintainer\nI want to exchange information and comments on the report internally\nSo that coordination happens without exposing internal notes to citizens",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Create an internal comment for a report. Verify comment creation and subsequent listing of comments.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member/external maintainer",
+    "setup_needed": [
+      "Authenticate as technical office staff member/external maintainer.",
+      "Create a report resource via POST /reports"
+    ],
+    "cleanup_strategy": "Delete the report resource associated with this comment creation",
+    "expected_status_codes": [
+      "201",
+      "403"
+    ],
+    "rationale": "Validates internal comment creation and stateful dependency for listing comments as per requirement PT26."
+  }
+]

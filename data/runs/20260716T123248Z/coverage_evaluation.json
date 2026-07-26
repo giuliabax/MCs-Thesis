@@ -1,0 +1,460 @@
+{
+  "run_id": "20260716T123248Z",
+  "ground_truth_path": "C:\\Users\\info\\AppData\\Local\\Temp\\claude\\c--Users-info-Desktop-MCs-Thesis\\728f98e8-c29e-48ae-9125-520e17bfc5a0\\scratchpad\\ground_truth_2proj.yaml",
+  "positive_statuses": [
+    "implemented",
+    "partially_implemented"
+  ],
+  "projects": {
+    "participium-team09": {
+      "project_name": "participium-team09",
+      "requirements_total": 30,
+      "expected_implemented_total": 18,
+      "predicted_implemented_total": 20,
+      "true_positives": 15,
+      "false_positives": 5,
+      "false_negatives": 3,
+      "true_negatives": 7,
+      "precision": 0.75,
+      "recall": 0.8333333333333334,
+      "f1": 0.7894736842105262,
+      "rows": [
+        {
+          "requirement_id": "PT01",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT02",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT03",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT04",
+          "expected_implemented": true,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "false_negative"
+        },
+        {
+          "requirement_id": "PT05",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT06",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT07",
+          "expected_implemented": true,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "false_negative"
+        },
+        {
+          "requirement_id": "PT08",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT09",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT10",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT11",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT12",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT13",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT14",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT15",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT16",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_implemented",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT17",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT18",
+          "expected_implemented": false,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "false_positive"
+        },
+        {
+          "requirement_id": "PT19",
+          "expected_implemented": false,
+          "predicted_implemented": true,
+          "predicted_status": "partially_implemented",
+          "outcome": "false_positive"
+        },
+        {
+          "requirement_id": "PT20",
+          "expected_implemented": false,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "false_positive"
+        },
+        {
+          "requirement_id": "PT21",
+          "expected_implemented": false,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "false_positive"
+        },
+        {
+          "requirement_id": "PT22",
+          "expected_implemented": false,
+          "predicted_implemented": true,
+          "predicted_status": "partially_implemented",
+          "outcome": "false_positive"
+        },
+        {
+          "requirement_id": "PT23",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_implemented",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT24",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT25",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT26",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT27",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT28",
+          "expected_implemented": true,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "false_negative"
+        },
+        {
+          "requirement_id": "PT29",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_implemented",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT30",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "partially_implemented",
+          "outcome": "true_positive"
+        }
+      ]
+    },
+    "participium-team01": {
+      "project_name": "participium-team01",
+      "requirements_total": 30,
+      "expected_implemented_total": 18,
+      "predicted_implemented_total": 17,
+      "true_positives": 15,
+      "false_positives": 2,
+      "false_negatives": 3,
+      "true_negatives": 10,
+      "precision": 0.8823529411764706,
+      "recall": 0.8333333333333334,
+      "f1": 0.8571428571428571,
+      "rows": [
+        {
+          "requirement_id": "PT01",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT02",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT03",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT04",
+          "expected_implemented": true,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "false_negative"
+        },
+        {
+          "requirement_id": "PT05",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT06",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "partially_implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT07",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "partially_implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT08",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT09",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT10",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT11",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT12",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT13",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT14",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT15",
+          "expected_implemented": true,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "false_negative"
+        },
+        {
+          "requirement_id": "PT16",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_implemented",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT17",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT18",
+          "expected_implemented": false,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "false_positive"
+        },
+        {
+          "requirement_id": "PT19",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_assessable",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT20",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_implemented",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT21",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_implemented",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT22",
+          "expected_implemented": false,
+          "predicted_implemented": true,
+          "predicted_status": "partially_implemented",
+          "outcome": "false_positive"
+        },
+        {
+          "requirement_id": "PT23",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_implemented",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT24",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT25",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT26",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT27",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT28",
+          "expected_implemented": true,
+          "predicted_implemented": true,
+          "predicted_status": "partially_implemented",
+          "outcome": "true_positive"
+        },
+        {
+          "requirement_id": "PT29",
+          "expected_implemented": false,
+          "predicted_implemented": false,
+          "predicted_status": "not_implemented",
+          "outcome": "true_negative"
+        },
+        {
+          "requirement_id": "PT30",
+          "expected_implemented": true,
+          "predicted_implemented": false,
+          "predicted_status": "not_implemented",
+          "outcome": "false_negative"
+        }
+      ]
+    }
+  }
+}

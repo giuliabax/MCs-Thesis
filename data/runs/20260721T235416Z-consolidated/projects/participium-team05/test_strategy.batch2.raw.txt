@@ -1,0 +1,227 @@
+[
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request. Include valid latitude and longitude coordinates in the payload representing a specific point on the OpenStreetMap layer. Ensure the location is within city boundaries.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /users/signup to create a citizen account if not already authenticated.",
+      "Perform POST /users/login to obtain an authentication token."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., check database for orphaned report with this location).",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of geolocating a report, which is essential for maintenance teams to find the issue."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request. Include a detailed description of the issue and select a valid category from the domain rules (e.g., 'Water Supply', 'Road Signs'). Ensure the classification logic maps the input to the correct internal status.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /users/signup to create a citizen account if not already authenticated.",
+      "Perform POST /users/login to obtain an authentication token."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., check database for orphaned report with this description).",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Ensures that the system correctly processes and classifies the textual details provided by the user."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous so that their name is not shown in the public list.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request. Include a flag or boolean field indicating 'anonymous' is true. Verify that the response indicates anonymity was accepted and that subsequent GET requests to public views hide the name while staff views show it.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /users/signup to create a citizen account if not already authenticated.",
+      "Perform POST /users/login to obtain an authentication token."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., check database for orphaned report with this anonymity flag).",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the privacy feature where user identity is hidden from public but retained internally for staff."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them so that they can get an overview of maintenance.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports. Filter or query specifically for reports where the 'assigned_to' field matches the current authenticated user's ID (who has the 'technical office staff member' role). Verify that only assigned reports are returned.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Perform POST /users/signup to create a technical office staff account if not already authenticated.",
+      "Perform POST /users/login to obtain an authentication token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the role-based access control and filtering logic for staff members viewing their workload."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account so that they can better manage notifications and their virtual presence.",
+    "api_endpoint": "/users/me",
+    "http_method": "POST",
+    "prompt": "Update the current user's profile. Modify notification preferences (e.g., enable/disable email or platform notifications) and update virtual presence settings. Ensure the changes are persisted and reflected in subsequent GET requests to /users/me.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /users/signup to create a citizen account if not already authenticated.",
+      "Perform POST /users/login to obtain an authentication token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the ability of users to modify their own account settings and notification configurations."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user browses a summary table of reports with filters so that they can easily explore and analyze existing reports.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports. Apply query parameters for filtering (e.g., by category, status, or location). Verify that the response includes a summary table structure with only the filtered data and that unauthenticated users can access this endpoint.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no specific setup is needed as this is a public read operation."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the public-facing search and filter capabilities for citizens to analyze report data without logging in."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request. Include invalid latitude and longitude coordinates (e.g., outside the range -90 to 90 or -180 to 180, or null values) to simulate an error in location selection.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /users/signup to create a citizen account if not already authenticated.",
+      "Perform POST /users/login to obtain an authentication token."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., check database for orphaned report with invalid location).",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the system rejects geolocation data that is out of bounds or missing, preventing malformed reports."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request. Include an invalid category value (e.g., 'InvalidCategory' which does not match any of the allowed categories in domain rules) to test classification failure.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /users/signup to create a citizen account if not already authenticated.",
+      "Perform POST /users/login to obtain an authentication token."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., check database for orphaned report with invalid category).",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates that the system enforces strict categorization and rejects unknown or invalid report types."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous so that their name is not shown in the public list.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request. Include an invalid boolean value for the anonymity flag (e.g., 'true' as a string instead of a boolean, or null) to test input validation on the privacy setting.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /users/signup to create a citizen account if not already authenticated.",
+      "Perform POST /users/login to obtain an authentication token."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., check database for orphaned report with invalid anonymity flag).",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the system handles malformed privacy settings gracefully and does not store ambiguous data."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them so that they can get an overview of maintenance.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports. Attempt to access the endpoint without being authenticated or with a token belonging to a different role (e.g., citizen) to verify that unauthenticated or unauthorized users cannot see assigned reports.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no specific setup is needed as this tests the lack of authentication."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that access control is strictly enforced and sensitive assignment data is not exposed to unauthorized users."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account so that they can better manage notifications and their virtual presence.",
+    "api_endpoint": "/users/me",
+    "http_method": "POST",
+    "prompt": "Update the current user's profile. Attempt to modify a read-only field or provide an invalid value for a configuration option (e.g., setting email to an empty string when it is mandatory) to test validation on account updates.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /users/signup to create a citizen account if not already authenticated.",
+      "Perform POST /users/login to obtain an authentication token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures that the system prevents invalid modifications to user profiles and enforces mandatory fields like email."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user browses a summary table of reports with filters so that they can easily explore and analyze existing reports.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports. Attempt to apply an invalid filter parameter (e.g., a category name that does not exist in the system) to test how the API handles malformed or non-existent filter values.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no specific setup is needed as this tests invalid input handling."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates that the public search endpoint gracefully handles invalid filter inputs without crashing or leaking data."
+  }
+]

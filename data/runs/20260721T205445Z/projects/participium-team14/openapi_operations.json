@@ -1,0 +1,722 @@
+[
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/session",
+    "summary": "Login",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/LoginRequest"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/auth/session",
+    "summary": "Verify authentication",
+    "description": "Check if the user is currently authenticated",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/auth/session",
+    "summary": "Logout",
+    "description": "Logout the authenticated user",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "204",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/verify",
+    "summary": "Verify registration with code",
+    "description": "Confirm user registration using the verification code sent to their email",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/VerifyRegistrationRequest"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "404",
+      "429",
+      "500"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/resend-code",
+    "summary": "Resend verification code",
+    "description": "Generate and resend a new verification code. Rate limited to 3 resends per hour.",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ResendCodeRequest"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "404",
+      "429",
+      "500"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/email/send-verification",
+    "summary": "Send verification email",
+    "description": "Send a verification email containing a code used to complete registration.",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/SendVerificationRequest"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "500"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports",
+    "summary": "Create a new report",
+    "description": "Submit a new report (authenticated users only)",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ReportRequest"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports",
+    "summary": "List all reports",
+    "description": "Returns the list of all reports. \n",
+    "parameters": [
+      {
+        "in": "query",
+        "name": "status",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ASSIGNED"
+          ]
+        },
+        "description": "Filter reports by status"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{id}",
+    "summary": "Get report by ID",
+    "description": "Retrieve a specific report by its ID (public)",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "404"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{id}",
+    "summary": "Change report status",
+    "description": "Change the status of a report by ID. For rejection a motivation is required. Municipal public officer can also change the category of the report. **Requires role: MUNICIPALITY, EXTERNAL_MAINTAINER**.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "ASSIGNED",
+            "REJECTED"
+          ],
+          "example": "REJECTED"
+        },
+        "motivation": {
+          "type": "string",
+          "example": "The report is not valid because photos are blurry."
+        },
+        "category": {
+          "$ref": "#/components/schemas/ReportCategory"
+        }
+      }
+    },
+    "response_codes": [
+      "204",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/municipality-users/{municipalityUserId}",
+    "summary": "Get reports by municipality user ID",
+    "description": "Get reports by municipality user ID. **Requires role: MUNICIPALITY**.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "municipalityUserId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Municipality user ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{id}/comments",
+    "summary": "Add internal comment to a report",
+    "description": "Add an internal comment to a report by ID. **Requires role: MUNICIPALITY_USER or EXTERNAL_MAINTAINER**. Comments are not visible to citizens.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/CommentRequest"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{id}/comments",
+    "summary": "Get internal comments for a report",
+    "description": "Get internal comments for a report by ID. **Requires role: MUNICIPALITY_USER or EXTERNAL_MAINTAINER**. Comments are not visible to citizens.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{id}/comments/unread",
+    "summary": "Get internal comments for a report unread by the user",
+    "description": "Get internal comments for a report unread by the user by report ID **Requires role: MUNICIPALITY_USER or EXTERNAL_MAINTAINER**. Comments are not visible to citizens.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/reports-map",
+    "summary": "Get reports for map view",
+    "description": "Get reports with location data for map view. Reports on the map  can be visualized by all users, including unauthenticated visitors.\n",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/search",
+    "summary": "Search reports in a specific area",
+    "description": "Return reports inside a geographica area\n",
+    "parameters": [
+      {
+        "name": "bbox",
+        "in": "query",
+        "required": true,
+        "description": "Bounding box in the format `minLng,minLat,maxLng,maxLat` (W,S,E,N)\n",
+        "schema": {
+          "type": "string",
+          "pattern": "^-?\\d+(\\.\\d+)?,-?\\d+(\\.\\d+)?,-?\\d+(\\.\\d+)?,-?\\d+(\\.\\d+)?$"
+        },
+        "example": "7.6600,45.0600,7.6750,45.0700"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users",
+    "summary": "Register a new user",
+    "description": "Create a new pending verification user account. A verification code will be sent via email.",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/UserRegistration"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "409",
+      "500"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users",
+    "summary": "List all users",
+    "description": "Returns the list of all users (citizens and municipality staff). **Requires role: ADMIN**.\n",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/users",
+    "summary": "Account configuration",
+    "description": "Require role: CITIZEN.\n",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/UserConfiguration"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/{id}",
+    "summary": "Get user by ID",
+    "description": "Get user details by ID. **Requires role: ADMIN**.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "User ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/users/{id}",
+    "summary": "Delete user",
+    "description": "Delete a user by ID. **Requires role: ADMIN**.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "User ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "204",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/municipality-users",
+    "summary": "Create a municipality user",
+    "description": "Create an account for a municipality user. **Requires role: ADMIN**.\n",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/MunicipalityUserCreateRequest"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "409",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/municipality-users",
+    "summary": "List municipality users",
+    "description": "Returns the municipality users. **Requires role: ADMIN**.\n",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/municipality-users/roles",
+    "summary": "List municipality roles",
+    "description": "Returns the available roles for municipality users. **Requires role: ADMIN**.\n",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/external-users",
+    "summary": "Create a external company user for maintenance",
+    "description": "Create an account for a external company. **Requires role: ADMIN**.\n",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ExternalUserCreateRequest"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "409",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/external-users",
+    "summary": "List external company accounts",
+    "description": "Returns the external company accounts. **Requires role: ADMIN**.\n",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{report_id}/external-maintainers",
+    "summary": "Assign a report in ASSIGNED status to an external maintainer",
+    "description": "Assign a report to an external maintainer. Can be done only by technical municipality users. **Requires role: MUNICIPALITY**.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "report_id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "204",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/external-maintainers/{id}",
+    "summary": "Get reports assigned to an external maintainer",
+    "description": "Get reports assigned to an external maintainer by ID. **Requires role: MUNICIPALITY, EXTERNAL_MAINTAINER**.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "External maintainer user ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  }
+]

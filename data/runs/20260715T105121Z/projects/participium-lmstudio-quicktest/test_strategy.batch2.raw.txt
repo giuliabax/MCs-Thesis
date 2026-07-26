@@ -1,0 +1,96 @@
+[
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "As a citizen \nI want to confirm my registration with a code\nSo that my account becomes valid and I can start using the system.",
+    "api_endpoint": "/citizens/verify-email",
+    "http_method": "POST",
+    "prompt": "Verify the logged-in citizen email using a code generated in the previous step. Ensure the code is within the 30-minute validity window.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /sessions",
+      "POST /citizens/verification-code"
+    ],
+    "cleanup_strategy": "DELETE /sessions/current; verify no verification code exists",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the stateful dependency edge where email verification requires an active verification code generated previously."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "As a citizen \nI want to provide details for my report \nSo that the the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new citizen report with all mandatory fields: title, description, category, and at least one photo.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /sessions"
+    ],
+    "cleanup_strategy": "DELETE /reports/{id} if created; DELETE /sessions/current",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core happy path for report submission ensuring mandatory constraints are met."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "As a citizen \nI want to provide details for my report \nSo that the the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to create a new report without providing photos, violating the min 1 max 3 constraint.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /sessions"
+    ],
+    "cleanup_strategy": "DELETE /sessions/current",
+    "expected_status_codes": [
+      "422",
+      "400"
+    ],
+    "rationale": "Tests negative behavior where mandatory field constraints (photos) are violated."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "As a system administrator\nI want to set up municipality users",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Create an operator or external maintainer account for internal staff using valid request body.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "POST /sessions"
+    ],
+    "cleanup_strategy": "DELETE /sessions/current; verify no user was created",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the creation of municipality users as per requirement PT02."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "As a system administrator\nI want to modify roles to municipality users\nSo that the staff can be more flexible.",
+    "api_endpoint": "/admin/removecategory",
+    "http_method": "DELETE",
+    "prompt": "Remove a category from an operator to test flexibility and cancellation logic during role modification.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "POST /sessions",
+      "POST /admin/addcategory"
+    ],
+    "cleanup_strategy": "DELETE /sessions/current; verify no category exists",
+    "expected_status_codes": [
+      "200",
+      "404"
+    ],
+    "rationale": "Tests the edge case where modification includes cancellation, ensuring roles/categories can be removed."
+  }
+]

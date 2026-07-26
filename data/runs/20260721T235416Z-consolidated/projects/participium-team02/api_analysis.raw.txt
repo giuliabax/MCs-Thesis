@@ -1,0 +1,307 @@
+{
+  "summary": "A multi-role API for a civic reporting system. It supports user registration (citizen and admin), authentication, profile management, report submission with photos, report lifecycle management (status updates, assignment to technical officers or external maintainers), and comment threads on reports.",
+  "operations": [
+    {
+      "path": "/auth/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Requires username and password in body"]
+    },
+    {
+      "path": "/auth/logout",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Ends the session established by login"]
+    },
+    {
+      "path": "/auth/current",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Returns current authenticated user identity"]
+    },
+    {
+      "path": "/users/register-citizen",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public endpoint for citizen registration; requires username, name, surname, email, password"]
+    },
+    {
+      "path": "/users/register-user",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Admin-only; creates users with specific roles"]
+    },
+    {
+      "path": "/users/edit-user",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/register-user"],
+      "notes": ["Admin-only; updates another user's info and roles"]
+    },
+    {
+      "path": "/users/edit-me",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Updates current authenticated user's profile"]
+    },
+    {
+      "path": "/users/get-roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/register-user"],
+      "notes": ["Admin-only; lists all defined roles"]
+    },
+    {
+      "path": "/users/get-roles/{userId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/register-user"],
+      "notes": ["Admin-only; retrieves roles for a specific user"]
+    },
+    {
+      "path": "/users/search-users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/register-user"],
+      "notes": ["Admin-only; paginated search with filters"]
+    },
+    {
+      "path": "/users/admin/create-municipality-user",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/register-user"],
+      "notes": ["Admin-only; creates municipality user with optional roles"]
+    },
+    {
+      "path": "/users/admin/assign-roles",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/register-user"],
+      "notes": ["Admin-only; replaces roles for an existing user"]
+    },
+    {
+      "path": "/reports/upload",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/register-citizen"],
+      "notes": ["Citizen-only; uploads report with photos and location"]
+    },
+    {
+      "path": "/reports/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public; lists available report categories"]
+    },
+    {
+      "path": "/reports/report/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/reports/upload"],
+      "notes": ["Public; retrieves a specific report by ID"]
+    },
+    {
+      "path": "/reports/report/{id}/status",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/upload"],
+      "notes": ["Admin/municipality; updates report status and reason"]
+    },
+    {
+      "path": "/reports/search-reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/upload"],
+      "notes": ["Admin/municipality; paginated search with filters"]
+    },
+    {
+      "path": "/reports/get-map-reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/reports/upload"],
+      "notes": ["Public; optimized for map display"]
+    },
+    {
+      "path": "/reports/tos-users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/admin/create-municipality-user"],
+      "notes": ["Admin/municipality; lists technical office staff by category"]
+    },
+    {
+      "path": "/reports/maintainer-users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/admin/create-municipality-user"],
+      "notes": ["Technical officer; lists external maintainers"]
+    },
+    {
+      "path": "/reports/report/{id}/assign",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/upload"],
+      "notes": ["Admin/municipality; assigns report to a user"]
+    },
+    {
+      "path": "/reports/assigned-to-techOfficer",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/report/{id}/assign"],
+      "notes": ["Technical officer; lists reports assigned to them"]
+    },
+    {
+      "path": "/reports/assigned-to-maintainer",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/report/{id}/assign"],
+      "notes": ["Maintainer; lists reports assigned to them"]
+    },
+    {
+      "path": "/reports/report/{id}/assign-maintainer",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/upload"],
+      "notes": ["Technical officer; assigns report to an external maintainer"]
+    },
+    {
+      "path": "/reports/{report_id}/comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/upload"],
+      "notes": ["Admin/municipality; lists comments on a report"]
+    },
+    {
+      "path": "/reports/{report_id}/comment",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/upload"],
+      "notes": ["Admin/municipality; adds a new comment"]
+    },
+    {
+      "path": "/reports/{report_id}/comment",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/upload"],
+      "notes": ["Admin/municipality; edits own comment"]
+    },
+    {
+      "path": "/reports/{report_id}/comment",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/upload"],
+      "notes": ["Admin/municipality; deletes own comment"]
+    }
+  ],
+  "authentication_notes": [
+    "/auth/login establishes the session required for all /auth/* and /users/* endpoints.",
+    "/auth/logout terminates the session.",
+    "/auth/current retrieves the identity of the currently authenticated user.",
+    "Citizen registration (/users/register-citizen) is public; subsequent citizen actions require authentication.",
+    "Admin operations (/users/register-user, /users/edit-user, etc.) require admin-level authentication.",
+    "Report-related read endpoints are public once a report exists; write and management endpoints require authentication."
+  ],
+  "dependencies": [
+    "POST /auth/login is required before any authenticated operation (DELETE /auth/logout, GET /auth/current, all /users/*, all /reports/*).",
+    "POST /users/register-citizen creates the citizen identity needed for POST /reports/upload.",
+    "POST /users/register-user and POST /users/admin/create-municipality-user create admin/municipality identities needed for role management and report assignment operations.",
+    "PATCH /reports/report/{id}/assign is a prerequisite for GET /reports/assigned-to-techOfficer and GET /reports/assigned-to-maintainer."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/login",
+      "dependent_method": "DELETE",
+      "dependent_path": "/auth/logout",
+      "dependency_type": "state",
+      "reason": "Logout requires an active session established by login."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/login",
+      "dependent_method": "GET",
+      "dependent_path": "/auth/current",
+      "dependency_type": "state",
+      "reason": "Current user retrieval requires an active session."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/register-citizen",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/upload",
+      "dependency_type": "authorization",
+      "reason": "Report upload is restricted to citizens who have registered."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/register-user",
+      "dependent_method": "PATCH",
+      "dependent_path": "/users/edit-user",
+      "dependency_type": "authorization",
+      "reason": "Editing another user requires admin identity created via register-user."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/admin/create-municipality-user",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/tos-users",
+      "dependency_type": "authorization",
+      "reason": "Listing technical office staff requires admin/municipality identity."
+    },
+    {
+      "prerequisite_method": "PATCH",
+      "prerequisite_path": "/reports/report/{id}/assign",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/assigned-to-techOfficer",
+      "dependency_type": "state",
+      "reason": "Assigned reports list depends on prior assignment action."
+    },
+    {
+      "prerequisite_method": "PATCH",
+      "prerequisite_path": "/reports/report/{id}/assign",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/assigned-to-maintainer",
+      "dependency_type": "state",
+      "reason": "Assigned reports list depends on prior assignment action."
+    }
+  ],
+  "risks": [
+    "POST /users/edit-user and POST /users/admin/assign-roles allow full user data replacement; documentation does not specify validation rules beyond required fields.",
+    "PATCH /reports/report/{id}/status requires status_reason when status is Rejected, but the schema only marks it as a property without explicit conditional enforcement in the summary.",
+    "GET /reports/get-map-reports accepts an optional statusArray in request body despite being marked public; unclear if this filters results or is ignored.",
+    "DELETE /reports/{report_id}/comment and PATCH /reports/{report_id}/comment require comment_id but do not specify ownership verification logic in the summary."
+  ]
+}

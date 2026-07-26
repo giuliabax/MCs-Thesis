@@ -1,0 +1,189 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user wants to see approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved. Verify that the response contains a list of reports where status is 'Resolved' or equivalent final states, excluding 'Pending Approval', 'Assigned', or 'In Progress'. Ensure the response format matches the expected map data structure (e.g., GeoJSON features).",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Authenticate as a user with the required role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for unregistered users to view public data as per requirement PT28."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer wants to update the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Execute a PUT request to /reports/{id}/status. Set the body to change the status to 'Resolved' and include a resolution comment. Verify that the system accepts this update only if the current user is an authenticated external maintainer assigned to this report.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Authenticate as external_maintainer.",
+      "Create a user with role 'external_maintainer' using POST /users/external-maintainers.",
+      "Assign this maintainer to a specific report ID via the assign-external endpoint."
+    ],
+    "cleanup_strategy": "Verify that the report status was updated. If the update failed, ensure no partial state changes occurred. Reset the report status back to its original value if necessary.",
+    "expected_status_codes": [
+      "200",
+      "403"
+    ],
+    "rationale": "Validates the ability of external maintainers to resolve reports as per PT25."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user wants to see approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved. Verify that the response excludes any reports with status 'Pending Approval', 'Assigned', or 'In Progress'. Ensure that only fully resolved or closed reports are returned.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Authenticate as a user with the required role.",
+      "Create a report with status 'Pending Approval'."
+    ],
+    "cleanup_strategy": "Delete the created report to restore system state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures that unregistered users do not see reports that are not yet fully approved or resolved, adhering to domain rules and PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member wants to assign reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Execute a PUT request to /reports/{id}/assign-external. Set the body to include an 'external_maintainer_id' that does not exist in the system or is not authenticated. Verify that the system returns an appropriate error (e.g., 404 Not Found or 403 Forbidden) indicating that the maintainer cannot be assigned.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Ensure an authenticated session for a user with role 'technical_office_staff_member'."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "403",
+      "404"
+    ],
+    "rationale": "Tests the system's ability to handle invalid external maintainer IDs during assignment as per PT24 and domain rules."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user wants to browse a summary table of reports with filters.",
+    "api_endpoint": "/reports/citizen",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/citizen. Include query parameters for filtering by 'category' and 'status'. Verify that the response returns a paginated list of reports matching the filters, excluding internal comments.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create an authenticated session for a user with role 'citizen'."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for citizens to browse and filter reports as per PT22."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/users",
+    "http_method": "POST",
+    "prompt": "Execute user registration for a new citizen. Provide a unique username, valid email address, and full name. Verify that the response indicates successful creation or returns 409 Conflict if the username/email already exists.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Authenticate as a user with the required role."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core entry point for new users as defined in PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/users/confirm",
+    "http_method": "POST",
+    "prompt": "Execute the confirmation flow. Use the token/code received during registration (from PT01) within the 30-minute validity window. Verify that the account status changes to 'active' and the user can now access authenticated resources.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Authenticate as a user with the required role.",
+      "Execute POST /users with valid citizen data (username: 'citizen_test', email: 'citizen@test.com') to obtain a registration token."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures the account activation mechanism works correctly after initial registration."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/users/admin",
+    "http_method": "POST",
+    "prompt": "Execute the admin user creation endpoint. Authenticate as a system administrator (role: 'admin'). Create a new municipality user with valid credentials and assign them an initial role (e.g., 'staff' or 'maintainer') to prepare for subsequent role assignment tests.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "admin",
+    "setup_needed": [
+      "Ensure the current session is authenticated as a user with 'admin' privileges."
+    ],
+    "cleanup_strategy": "Delete the created user via DELETE /users/{id} if it was not intended to persist in the test environment.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the admin capability to create users, a prerequisite for role management."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/users/{id}/assign-role",
+    "http_method": "POST",
+    "prompt": "Assign a specific role (e.g., 'technical_office_staff') to the user created in PT02. Verify that the assignment is successful and the user's profile reflects the new role.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "admin",
+    "setup_needed": [
+      "Execute POST /users/admin to create a test user (ID: 'user_123') with role 'unassigned' or similar.",
+      "Ensure the current session is authenticated as a user with 'admin' privileges."
+    ],
+    "cleanup_strategy": "Remove the assigned role using DELETE /users/{id}/remove-role for the created user.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the dependency edge where admin creates users first, then assigns roles."
+  },
+  {
+    "requirement_id": "PT17",
+    "requirement_summary": "Citizen receives real-time push notifications via Telegram bot.",
+    "api_endpoint": "/telegram/webhook",
+    "http_method": "POST",
+    "prompt": "Simulate a status change event for a report and verify that the Telegram bot receives the webhook payload correctly, triggering a push notification to the citizen.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure a valid report exists with an active Telegram subscription for the citizen."
+    ],
+    "cleanup_strategy": "Verify no new reports were created; if any webhook test data was persisted, delete it to maintain system cleanliness.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the integration between the reporting system and external Telegram notifications for real-time status updates."
+  }
+]

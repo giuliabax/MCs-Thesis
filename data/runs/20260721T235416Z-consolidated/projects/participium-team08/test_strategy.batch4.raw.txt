@@ -1,0 +1,72 @@
+[
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user browses a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute the GET /reports endpoint. First, perform an independent setup by calling POST /login to obtain a valid JWT token. Use this token for the subsequent request. Apply standard filter parameters (e.g., status='Pending Approval', category='Infrastructure') to simulate the 'browse with filters' behavior described in PT22. Verify that the response contains a paginated list of report summaries matching the filters and that sensitive fields (like reporter name) are handled according to role rules if applicable.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen/unregistered user",
+    "setup_needed": [
+      "Call POST /login with valid credentials to obtain a JWT token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "This is the primary happy path for requirement PT22, verifying that unregistered/citizen users can successfully browse filtered report summaries after authentication."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user browses a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute the GET /reports endpoint. Perform an independent setup by calling POST /login to obtain a valid JWT token. Apply filter parameters that result in zero matching records (e.g., status='Resolved' combined with a category that has no resolved reports, or an invalid filter value). Verify that the system returns an empty list or appropriate pagination metadata without crashing.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen/unregistered user",
+    "setup_needed": [
+      "Call POST /login with valid credentials to obtain a JWT token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the system's behavior when filters yield no results, ensuring graceful handling of empty datasets for requirement PT22."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user browses a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute the GET /reports endpoint. Do NOT perform any setup (do not call POST /login). Attempt to access the endpoint without providing an Authorization header or with an invalid/expired token. Verify that the system rejects the request due to missing or invalid authentication, as the operation is marked auth_required.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Verifies that the authorization dependency (JWT from login) is strictly enforced for requirement PT22, preventing unauthorized access to report data."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user browses a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute the GET /reports endpoint. Perform an independent setup by calling POST /login to obtain a valid JWT token. Immediately after obtaining the token, call POST /logout (if available) or wait for the token to expire (simulate 30+ minutes). Then attempt to access GET /reports with the now-expired token. Verify that the system rejects the request.",
+    "test_type": "cleanup",
+    "priority": "medium",
+    "auth_role": "citizen/unregistered user",
+    "setup_needed": [
+      "Call POST /login with valid credentials to obtain a JWT token."
+    ],
+    "cleanup_strategy": "Simulate token expiration or explicit logout; verify that subsequent requests fail authentication.",
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Ensures that the session established for requirement PT22 is properly invalidated after use, maintaining security hygiene."
+  }
+]

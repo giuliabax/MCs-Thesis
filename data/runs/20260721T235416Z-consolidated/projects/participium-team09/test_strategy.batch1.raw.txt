@@ -1,0 +1,181 @@
+[
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/offices/reports/{reportId}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Execute assignment of a report to an external maintainer. Ensure the report is in 'Assigned' state and the maintainer ID is valid.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports with status 'Pending Approval'.",
+      "Approve the report via PUT /municipal/reports/{reportId} to move it to 'Assigned' state.",
+      "Assign the report to a technical office (simulated prerequisite).",
+      "Ensure an external maintainer exists in the system."
+    ],
+    "cleanup_strategy": "Delete the assigned report if it remains in the database after test completion; verify no orphaned assignments exist.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow of requirement PT24, ensuring external maintainers can be correctly linked to reports."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/external-maintainer/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Update the report status to 'In Progress' or 'Resolved'. Verify that only allowed statuses are accepted.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Approve the report via PUT /municipal/reports/{reportId}.",
+      "Assign the report to an external maintainer via PUT /offices/reports/{reportId}/assign-external."
+    ],
+    "cleanup_strategy": "Delete the report if it persists after status update; verify no unauthorized status changes occurred.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the primary function of an external maintainer as defined in PT25, ensuring they can manage report lifecycle."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange information and comments on a report.",
+    "api_endpoint": "/messages/reports/{reportId}",
+    "http_method": "POST",
+    "prompt": "Post an internal comment or information update to the report. Ensure the message is reserved and not visible to citizens.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Approve the report via PUT /municipal/reports/{reportId}."
+    ],
+    "cleanup_strategy": "Delete the message and the associated report if they remain after test execution; verify no public exposure of internal notes.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the communication channel between technical office and external maintainer as per PT26, ensuring data isolation."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/offices/reports/{reportId}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Attempt to assign a report to an external maintainer who has not been assigned to the report yet. Verify that the assignment fails or requires prior assignment logic.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Approve the report via PUT /municipal/reports/{reportId}."
+    ],
+    "cleanup_strategy": "Delete the report if it remains in the database; verify no partial assignment state exists.",
+    "expected_status_codes": [
+      "400",
+      "default"
+    ],
+    "rationale": "Tests edge cases where external maintainer assignment logic might fail due to missing prerequisites or invalid states."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/external-maintainer/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Attempt to update the status of a report that has not been assigned to an external maintainer. Verify that the operation is rejected.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Approve the report via PUT /municipal/reports/{reportId}."
+    ],
+    "cleanup_strategy": "Delete the report if it remains in the database; verify no unauthorized status updates occurred.",
+    "expected_status_codes": [
+      "403",
+      "default"
+    ],
+    "rationale": "Tests negative scenarios where an external maintainer attempts to modify a report they are not authorized to manage."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange information and comments on a report.",
+    "api_endpoint": "/messages/reports/{reportId}",
+    "http_method": "POST",
+    "prompt": "Attempt to post an internal comment on a report that has not been approved or assigned. Verify that the operation is rejected.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a report via POST /reports."
+    ],
+    "cleanup_strategy": "Delete the report if it remains in the database; verify no unauthorized messages were created.",
+    "expected_status_codes": [
+      "400",
+      "default"
+    ],
+    "rationale": "Tests negative scenarios where internal communication is attempted on reports not yet ready for coordination."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/offices/reports/{reportId}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Assign a report to an external maintainer and then verify that the assignment can be retrieved via GET /messages/reports/{reportId} or similar inspection endpoint.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Approve the report via PUT /municipal/reports/{reportId}.",
+      "Assign the report to an external maintainer via PUT /offices/reports/{reportId}/assign-external."
+    ],
+    "cleanup_strategy": "Delete the report and any associated messages if they remain after test execution; verify no orphaned state exists.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the stateful dependency where assignment must precede further operations, ensuring correct state transitions."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/external-maintainer/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Update the status of a report to 'Resolved' and then verify that the external maintainer can no longer modify it without re-assignment.",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Approve the report via PUT /municipal/reports/{reportId}.",
+      "Assign the report to an external maintainer via PUT /offices/reports/{reportId}/assign-external."
+    ],
+    "cleanup_strategy": "Delete the report if it remains in the database; verify no unauthorized status changes occurred.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the stateful dependency where status updates must respect the current state of the report and authorization."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange information and comments on a report.",
+    "api_endpoint": "/messages/reports/{reportId}",
+    "http_method": "GET",
+    "prompt": "Retrieve messages for a report that has no messages yet. Verify that the response indicates an empty list or appropriate error.",
+    "test_type": "cleanup",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Approve the report via PUT /municipal/reports/{reportId}."
+    ],
+    "cleanup_strategy": "Delete the report if it remains in the database; verify no orphaned messages exist.",
+    "expected_status_codes": [
+      "200",
+      "default"
+    ],
+    "rationale": "Tests cleanup scenarios where messages are retrieved but not created, ensuring no unexpected data persists."
+  }
+]

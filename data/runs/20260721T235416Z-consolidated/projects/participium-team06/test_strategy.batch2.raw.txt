@@ -1,0 +1,159 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/register",
+    "http_method": "POST",
+    "prompt": "Execute a happy path registration for a citizen. Provide a unique name, valid email, and username. Verify that the response includes a confirmation code or token required for the next step (PT27). Ensure no prior session exists.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core entry point for new users as defined in PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/verify",
+    "http_method": "POST",
+    "prompt": "Execute verification using the confirmation code received from the previous registration step (PT01). Ensure the session token or state is updated to 'active' so that subsequent authenticated operations (like PT05) succeed.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute POST /register with valid citizen data and capture the returned confirmation code."
+    ],
+    "cleanup_strategy": "Verify account status is 'active'; if verification fails due to expired code (edge case), reset user state by re-registering.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the state transition from unverified to verified user, linking PT01 and PT27."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report including classification.",
+    "api_endpoint": "/users/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with valid details (title, description, category) and an image file. Ensure the user is authenticated via a prior login or verified session. Verify the response indicates the report was created in 'Pending Approval' state.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Execute POST /login to obtain a valid session token for the authenticated user."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (though domain rules state citizens cannot delete, admin might need to handle cleanup).",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates report creation and initial state assignment per PT05."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/register",
+    "http_method": "POST",
+    "prompt": "Attempt registration without providing an email address, which is a mandatory field per domain rules. Verify that the system rejects the request with an appropriate error code indicating missing mandatory fields.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests input validation for mandatory fields in PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/verify",
+    "http_method": "POST",
+    "prompt": "Attempt verification using an expired confirmation code (simulate by waiting >30 minutes or using a hardcoded expired timestamp if supported). Verify that the system rejects the request and does not activate the account.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute POST /register to obtain a confirmation code, then wait for it to expire."
+    ],
+    "cleanup_strategy": "Reset user state by re-registering with fresh data.",
+    "expected_status_codes": ["400", "410"],
+    "rationale": "Tests the edge case of expired verification codes per domain rules and edge_cases list."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report including classification.",
+    "api_endpoint": "/users/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to modify an existing report by sending a PUT or PATCH request to the same endpoint with updated details. Verify that the system denies this action as per domain rules ('Once a report has been inserted, it cannot be modified or deleted by the citizen').",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Execute POST /login to obtain a valid session token.",
+      "Execute POST /users/reports to create an existing report and capture its ID."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (admin cleanup).",
+    "expected_status_codes": ["403", "405"],
+    "rationale": "Tests the negative constraint on modifying reports after creation per domain rules."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/accounts/register",
+    "http_method": "POST",
+    "prompt": "Register a new municipality user (officer) via the admin endpoint. Ensure the request includes valid officer details and that the response confirms successful creation of the account resource.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an authenticated admin session exists (via /login or equivalent)."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the creation of municipality users as per PT02."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/accounts/assign",
+    "http_method": "PUT",
+    "prompt": "Assign a role to an existing municipality user created via PT02. Verify that the response confirms the role assignment and that the user now possesses the assigned role.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute POST /admin/accounts/register to create a municipality user account.",
+      "Ensure an authenticated admin session exists."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates role assignment functionality as per PT03, dependent on user creation."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users.",
+    "api_endpoint": "/admin/accounts/assign",
+    "http_method": "PUT",
+    "prompt": "Modify the role of an existing municipality user by sending a PUT request with a new role. Verify that the system updates the user's role successfully and reflects the change immediately.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute POST /admin/accounts/register to create a municipality user account.",
+      "Ensure an authenticated admin session exists."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates role modification functionality as per PT10, dependent on user creation."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report including classification.",
+    "api_endpoint": "/users/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to submit a report without being authenticated (omit session token). Verify that the system blocks submission and returns an error indicating unauthorized access, as report creation requires authentication.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["401"],
+    "rationale": "Tests the negative constraint on unauthenticated report submission per API analysis."
+  }
+]

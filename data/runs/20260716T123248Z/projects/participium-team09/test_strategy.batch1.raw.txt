@@ -1,0 +1,159 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/auth/register",
+    "http_method": "POST",
+    "prompt": "Register a new citizen user with a valid email, password, and username. Verify the response indicates successful registration or returns a confirmation code if applicable per domain rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the entry point for user access and registration flow."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with an invalid email format.",
+    "api_endpoint": "/auth/register",
+    "http_method": "POST",
+    "prompt": "Attempt to register a user providing an email address that does not match standard email format (e.g., 'user@'). Verify the system rejects the request.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures input validation on mandatory fields like email."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff assigns a report to an external maintainer.",
+    "api_endpoint": "/offices/reports/{reportId}/assign-external",
+    "http_method": "PUT",
+    "prompt": "First, create a report via POST /reports. Then, authenticate as 'technical office staff member'. Perform the PUT request to assign an external maintainer to the existing report.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /reports with valid data to create a new report resource."
+    ],
+    "cleanup_strategy": "DELETE the created report via POST /reports logic (or verify no resource exists if deletion endpoint differs; assume standard cleanup of created resources).",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the workflow dependency where a report must exist before assignment."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of an assigned report.",
+    "api_endpoint": "/external-maintainer/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as 'external maintainer'. Perform a PUT request to update the status of a report previously assigned to them. Verify the status changes successfully.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /reports to create a report.",
+      "PUT /offices/reports/{reportId}/assign-external to assign the report (simulated or pre-existing state)."
+    ],
+    "cleanup_strategy": "DELETE the created report resource if it was created for this test.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the external maintainer's ability to update their assigned tasks."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators.",
+    "api_endpoint": "/messages/reports/{reportId}",
+    "http_method": "POST",
+    "prompt": "Authenticate as 'citizen'. First, ensure a message exists (via GET or POST). Then, perform a POST request to send a reply message on the specific report.",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /messages/reports/{reportId} to create an initial message thread or ensure existence."
+    ],
+    "cleanup_strategy": "DELETE the created message resource if a DELETE endpoint exists, or verify no new message was persisted if using mock data.",
+    "expected_status_codes": ["201", "400"],
+    "rationale": "Tests the messaging capability for citizens to communicate with operators."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff and external maintainer exchange internal comments.",
+    "api_endpoint": "/messages/reports/{reportId}",
+    "http_method": "POST",
+    "prompt": "Authenticate as 'technical office staff member'. Post a message to the report's message thread. Verify that this action is allowed for internal coordination.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /reports to create a report."
+    ],
+    "cleanup_strategy": "DELETE the created message resource if applicable.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates internal communication channels between authorized roles."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff updates report statuses.",
+    "api_endpoint": "/offices/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as 'technical office staff member'. Perform a PUT request to update the status of a report (e.g., from Pending Approval to Assigned). Verify the status transition.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /reports to create a report."
+    ],
+    "cleanup_strategy": "DELETE the created report resource.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the core workflow of status management by technical office staff."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff attempts to update a report that is not yet approved.",
+    "api_endpoint": "/offices/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as 'technical office staff member'. Attempt to update the status of a report that is still in 'Pending Approval' state (or an invalid state for this operation). Verify the system rejects the change or returns an error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /reports to create a report."
+    ],
+    "cleanup_strategy": "DELETE the created report resource.",
+    "expected_status_codes": ["400", "422"],
+    "rationale": "Tests state transition constraints defined in domain rules (e.g., reports must be approved before certain status changes)."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer attempts to update a report not assigned to them.",
+    "api_endpoint": "/external-maintainer/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as 'external maintainer'. Attempt to update the status of a report that has NOT been assigned to this specific external maintainer. Verify the system denies access.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /reports to create a report."
+    ],
+    "cleanup_strategy": "DELETE the created report resource.",
+    "expected_status_codes": ["403", "404"],
+    "rationale": "Tests authorization boundaries ensuring external maintainers can only act on their assigned reports."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "External maintainer attempts to post an internal comment without access rights.",
+    "api_endpoint": "/messages/reports/{reportId}",
+    "http_method": "POST",
+    "prompt": "Authenticate as 'external maintainer' (Case 2 scenario where they have no access). Attempt to post a message to the report's thread. Verify the system rejects the action or returns an error indicating lack of permission.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /reports to create a report."
+    ],
+    "cleanup_strategy": "DELETE the created report resource.",
+    "expected_status_codes": ["403", "401"],
+    "rationale": "Tests Case 2 domain rule where communication happens out of platform if maintainer has no access."
+  }
+]

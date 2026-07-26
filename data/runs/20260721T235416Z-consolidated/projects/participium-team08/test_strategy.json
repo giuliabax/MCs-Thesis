@@ -1,0 +1,185 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/active",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports/active without authentication. Verify that the response contains a list of reports filtered to only those with status 'Approved' or equivalent public-visible states. Ensure no internal notes or sensitive reporter data (like full name if anonymous) are exposed in the payload.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core public-facing functionality for unregistered users as per PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/technician/reports/{id}/external",
+    "http_method": "PATCH",
+    "prompt": "1. Login as a 'technical office staff member' role. 2. Ensure a report exists in 'Assigned' state. 3. Execute PATCH /technician/reports/{id}/external with payload setting the external maintainer ID. 4. Verify the response indicates successful assignment and the report status reflects the delegation.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login with technical office staff credentials",
+      "POST /reports (to create a report in 'Pending Approval' or 'Assigned' state if not pre-existing)"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: This endpoint modifies state, so ensure the external assignment is rolled back or verified as completed before cleanup logic applies to the specific test artifact.",
+    "expected_status_codes": [
+      "200",
+      "403"
+    ],
+    "rationale": "Tests the primary workflow for PT24 regarding external maintainer assignment."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user attempts to view reports with sensitive data exposed.",
+    "api_endpoint": "/reports/active",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports/active without authentication. Verify that the response does NOT contain internal notes, full names of anonymous reporters, or any data marked as private. Ensure only approved reports are returned.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the domain rule regarding anonymous user visibility and data privacy (Domain Rule: Anonymous user's name is visible to staff but hidden in public Turin map)."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer attempts to view internal comments from technical office staff.",
+    "api_endpoint": "/reports/{id}/comments",
+    "http_method": "GET",
+    "prompt": "1. Login as an 'external maintainer'. 2. Ensure a report exists with internal comments added by a 'technical office staff member' (via PT26 setup). 3. Execute GET /reports/{id}/comments. 4. Verify that the response does NOT contain the internal comments added by the technical office staff.",
+    "test_type": "edge_case",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /login with external maintainer credentials",
+      "Ensure report exists and has internal comments from a different role (technical office staff)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the domain rule regarding visibility of internal notes to external maintainers (Domain Rule: Case 1/Case 2)."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/register",
+    "http_method": "POST",
+    "prompt": "Register a new citizen user with a valid name, unique username, and email. Ensure the response includes the verification code or token required for subsequent activation.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core registration flow required for all citizen interactions."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/users/{id}/verify/check",
+    "http_method": "POST",
+    "prompt": "Verify the user account using the valid confirmation code received during registration. Ensure the account status changes to 'active' and JWT is issued upon success.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute POST /register to obtain a user ID and verification code."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the critical account activation step before any report submission can occur."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with valid title, description, category, and location. Ensure the report is created in 'Pending Approval' state as per domain rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen.",
+      "Execute POST /register to create a user.",
+      "Execute POST /users/{id}/verify/check with valid code to activate the user."
+    ],
+    "cleanup_strategy": "Verify no resource was created; if report exists, delete it using an admin endpoint or verify system handles cleanup automatically.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core reporting functionality and initial state management."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/register",
+    "http_method": "POST",
+    "prompt": "Register a new municipality user via the admin endpoint. Ensure the user is created with appropriate default roles or pending role assignment.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute POST /login as a system administrator to obtain an admin JWT."
+    ],
+    "cleanup_strategy": "DELETE the created user via an admin endpoint.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the administrative capability to onboard new staff members."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/users/{id}/role",
+    "http_method": "PUT",
+    "prompt": "Assign a specific role (e.g., 'technical office staff') to an existing municipality user. Verify the role assignment is successful and reflected in the user's profile.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute POST /admin/register to create a test user.",
+      "Execute POST /login as a system administrator."
+    ],
+    "cleanup_strategy": "DELETE the created user via an admin endpoint.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core administrative function of role assignment."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/{id}/approve",
+    "http_method": "PATCH",
+    "prompt": "Execute a stateful workflow test where an officer attempts to approve a report that has already been approved. Verify the system handles this gracefully (e.g., idempotency or error indicating state change is not possible).",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "POST /login with credentials for a user having role 'municipal public relations officer' to obtain JWT.",
+      "Ensure a report exists in 'Pending Approval' state.",
+      "Execute the happy path approval test (from item 1) on this same report ID to transition it to 'Assigned'."
+    ],
+    "cleanup_strategy": "Verify no resource was modified incorrectly; ensure subsequent tests use fresh data or verify the specific report ID used.",
+    "expected_status_codes": [
+      "400",
+      "200"
+    ],
+    "rationale": "Tests the state transition logic to ensure idempotency or proper error handling when re-applying an action."
+  }
+]

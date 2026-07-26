@@ -1,0 +1,464 @@
+{
+  "summary": "Participium is a web application for the Municipality of Turin enabling citizens to report urban issues (e.g., potholes, trash) via an interactive map and form. Reports undergo a lifecycle: Pending Approval -> Assigned (to Technical Office) -> In Progress -> Resolved/Rejected/Suspended. The system supports external maintainers (with or without platform access) for specific categories like Public Lighting. Features include anonymous reporting, multi-channel notifications (platform, email, Telegram bot), public/private statistics, and role-based access control for citizens, staff, administrators, and external partners.",
+  "requirements": [
+    {
+      "id": "REQ-PT01",
+      "source": "Issue-id: PT01 | Description",
+      "text": "A citizen must register with email, username, first name, and last name before submitting reports.",
+      "role": "citizen",
+      "business_value": "950",
+      "constraints": [
+        "Registration is mandatory for report submission."
+      ],
+      "expected_behaviors": [
+        "User inputs registration details.",
+        "System validates input fields."
+      ]
+    },
+    {
+      "id": "REQ-PT27",
+      "source": "Issue-id: PT27 | Description",
+      "text": "A registered user must confirm their account using a code sent via email to activate the application.",
+      "role": "citizen",
+      "business_value": "945",
+      "constraints": [
+        "The confirmation code is valid for 30 minutes."
+      ],
+      "expected_behaviors": [
+        "System sends an email with a confirmation code upon registration completion.",
+        "User enters the code to activate the account."
+      ]
+    },
+    {
+      "id": "REQ-PT04",
+      "source": "Issue-id: PT04 | Description",
+      "text": "A citizen must select a location on the city map when creating a report.",
+      "role": "citizen",
+      "business_value": "920",
+      "constraints": [
+        "The map must be based on OpenStreetMap (standard layer).",
+        "Reports must be geolocated with latitude and longitude."
+      ],
+      "expected_behaviors": [
+        "User clicks a point on the interactive map.",
+        "System records the coordinates for the report."
+      ]
+    },
+    {
+      "id": "REQ-PT05",
+      "source": "Issue-id: PT05 | Description",
+      "text": "A citizen must provide details for their report including title, textual description, category, and photos.",
+      "role": "citizen",
+      "business_value": "920",
+      "constraints": [
+        "Title is mandatory.",
+        "Textual description is mandatory.",
+        "Category is mandatory (chosen from a predefined list).",
+        "At least one photo must be attached.",
+        "Maximum 3 photos per report."
+      ],
+      "expected_behaviors": [
+        "System validates that all required fields are filled before submission.",
+        "System accepts up to 3 image files."
+      ]
+    },
+    {
+      "id": "REQ-PT15",
+      "source": "Issue-id: PT15 | Description",
+      "text": "A citizen can choose whether to make their report anonymous.",
+      "role": "citizen",
+      "business_value": "905",
+      "constraints": [
+        "The anonymity choice is made at the time of issue description."
+      ],
+      "expected_behaviors": [
+        "If selected, the reporter's name is hidden in the public list of reports.",
+        "If not selected, the reporter's name is shown."
+      ]
+    },
+    {
+      "id": "REQ-PT06",
+      "source": "Issue-id: PT06 | Description",
+      "text": "A municipal public relations officer must review and approve or reject submitted reports.",
+      "role": "municipal public relations officer",
+      "business_value": "915",
+      "constraints": [
+        "Rejected reports must include an explanation."
+      ],
+      "expected_behaviors": [
+        "Officer marks report as 'Accepted' -> Status changes to 'Assigned'.",
+        "Officer marks report as 'Rejected' -> Status changes to 'Rejected' and explanation is recorded.",
+        "Accepted reports are assigned to the competent technical office based on category."
+      ]
+    },
+    {
+      "id": "REQ-PT24",
+      "source": "Issue-id: PT24 | Description",
+      "text": "A technical office staff member can assign reports to external maintainers.",
+      "role": "technical office staff member",
+      "business_value": "980",
+      "constraints": [
+        "Assignment is possible for specific reports of certain categories (e.g., Public Lighting) based on content review."
+      ],
+      "expected_behaviors": [
+        "Staff selects an external maintainer account to assign the report."
+      ]
+    },
+    {
+      "id": "REQ-PT25",
+      "source": "Issue-id: PT25 | Description",
+      "text": "An external maintainer can update the status of a report assigned to them.",
+      "role": "external maintainer",
+      "business_value": "975",
+      "constraints": [
+        "Only reports explicitly assigned to them by a technical office staff member."
+      ],
+      "expected_behaviors": [
+        "Maintainer moves report from 'Assigned' to 'In Progress'.",
+        "Maintainer can move report to 'Resolved' upon completion."
+      ]
+    },
+    {
+      "id": "REQ-PT26",
+      "source": "Issue-id: PT26 | Description",
+      "text": "Technical office staff members and external maintainers can exchange information and comments on a report internally.",
+      "role": "technical office staff member, external maintainer",
+      "business_value": "970",
+      "constraints": [
+        "Comments are reserved and not visible to the reporter or citizens."
+      ],
+      "expected_behaviors": [
+        "Users add comments to the report thread.",
+        "System restricts visibility of these comments to authorized internal users only."
+      ]
+    },
+    {
+      "id": "REQ-PT11",
+      "source": "Issue-id: PT11 | Description",
+      "text": "A technical office staff member can update report statuses.",
+      "role": "technical office staff member",
+      "business_value": "890",
+      "constraints": [
+        "Status changes trigger notifications to the citizen."
+      ],
+      "expected_behaviors": [
+        "Staff updates status (e.g., Pending Approval -> Assigned, In Progress -> Resolved).",
+        "System sends a platform notification to the citizen.",
+        "Municipal operators can send messages to citizens via the platform."
+      ]
+    },
+    {
+      "id": "REQ-PT08",
+      "source": "Issue-id: PT08 | Description",
+      "text": "A technical office staff member can see the list of reports assigned to them.",
+      "role": "technical office staff member",
+      "business_value": "900",
+      "constraints": [],
+      "expected_behaviors": [
+        "System displays a filtered list of reports where the user is the assignee."
+      ]
+    },
+    {
+      "id": "REQ-PT02",
+      "source": "Issue-id: PT02 | Description",
+      "text": "A system administrator can set up municipality users.",
+      "role": "system administrator",
+      "business_value": "940",
+      "constraints": [
+        "These are internal accounts of the municipality."
+      ],
+      "expected_behaviors": [
+        "Admin creates new user accounts for municipal staff."
+      ]
+    },
+    {
+      "id": "REQ-PT03",
+      "source": "Issue-id: PT03 | Description",
+      "text": "A system administrator can assign roles to municipality users.",
+      "role": "system administrator",
+      "business_value": "935",
+      "constraints": [
+        "Possible roles include: municipal public relations officer, municipal administrator, technical office staff member, external maintainer.",
+        "Only technical office staff members can have multiple roles."
+      ],
+      "expected_behaviors": [
+        "Admin assigns one or more roles to a user.",
+        "System enforces role restrictions based on the assigned roles."
+      ]
+    },
+    {
+      "id": "REQ-PT10",
+      "source": "Issue-id: PT10 | Description",
+      "text": "A system administrator can modify roles for municipality users.",
+      "role": "system administrator",
+      "business_value": "885",
+      "constraints": [
+        "Modification includes cancellation of existing roles."
+      ],
+      "expected_behaviors": [
+        "Admin removes or adds roles to a user's profile."
+      ]
+    },
+    {
+      "id": "REQ-PT29",
+      "source": "Issue-id: PT29 | Description",
+      "text": "A municipal administrator can configure automatic assignment of all reports in a certain category.",
+      "role": "municipal administrator",
+      "business_value": "750",
+      "constraints": [
+        "Automatic assignment bypasses the initial review by the municipal public relations officer."
+      ],
+      "expected_behaviors": [
+        "Admin enables a toggle for automatic assignment for specific categories.",
+        "System automatically assigns new reports of that category to the designated technical office upon approval."
+      ]
+    },
+    {
+      "id": "REQ-PT07",
+      "source": "Issue-id: PT07 | Description",
+      "text": "A citizen can view approved reports on an interactive map.",
+      "role": "citizen",
+      "business_value": "900",
+      "constraints": [
+        "Map must be zoomable.",
+        "Zooming out groups reports into a cumulative report showing total number.",
+        "Zooming in shows separated reports with title and reporter name (or 'anonymous')."
+      ],
+      "expected_behaviors": [
+        "User interacts with map controls to zoom.",
+        "System aggregates or separates data points based on zoom level."
+      ]
+    },
+    {
+      "id": "REQ-PT12",
+      "source": "Issue-id: PT12 | Description",
+      "text": "A citizen can create a new report through a Telegram bot.",
+      "role": "citizen",
+      "business_value": "865",
+      "constraints": [
+        "Process includes selecting location, entering title/description, choosing category, attaching up to 3 photos, and setting anonymity."
+      ],
+      "expected_behaviors": [
+        "User sends '/newreport' command.",
+        "Bot guides user through the creation steps via chat interface."
+      ]
+    },
+    {
+      "id": "REQ-PT13",
+      "source": "Issue-id: PT13 | Description",
+      "text": "A citizen can check their report status through a Telegram bot.",
+      "role": "citizen",
+      "business_value": "865",
+      "constraints": [
+        "Lists all submitted reports with current status.",
+        "Shows details and status of specific report ID."
+      ],
+      "expected_behaviors": [
+        "User sends '/myreports' to list own reports.",
+        "User sends '/reportstatus <ID>' to view specific report details."
+      ]
+    },
+    {
+      "id": "REQ-PT14",
+      "source": "Issue-id: PT14 | Description",
+      "text": "A citizen can access quick assistance and help commands from the Telegram bot.",
+      "role": "citizen",
+      "business_value": "840",
+      "constraints": [],
+      "expected_behaviors": [
+        "User sends '/help' to list available commands.",
+        "User sends '/contact' to get support contacts.",
+        "User sends '/faq' to view frequently asked questions."
+      ]
+    },
+    {
+      "id": "REQ-PT18",
+      "source": "Issue-id: PT18 | Description",
+      "text": "A citizen can reply to messages from municipal operators in the platform.",
+      "role": "citizen",
+      "business_value": "830",
+      "constraints": [],
+      "expected_behaviors": [
+        "Citizen types a response in the message thread associated with their report."
+      ]
+    },
+    {
+      "id": "REQ-PT16",
+      "source": "Issue-id: PT16 | Description",
+      "text": "A citizen can follow reports done by other citizens.",
+      "role": "citizen",
+      "business_value": "820",
+      "constraints": [
+        "Only not closed reports can be followed."
+      ],
+      "expected_behaviors": [
+        "User selects a report to follow.",
+        "System sends notifications for status changes on followed reports (same rules as owned reports)."
+      ]
+    },
+    {
+      "id": "REQ-PT17",
+      "source": "Issue-id: PT17 | Description",
+      "text": "A citizen can receive real-time push notifications via the Telegram bot.",
+      "role": "citizen",
+      "business_value": "810",
+      "constraints": [
+        "Notifications occur when report status changes."
+      ],
+      "expected_behaviors": [
+        "User sends '/subscribe' to enable all notifications.",
+        "User sends '/unsubscribe' to disable all notifications.",
+        "User sends '/subscribe <reportID>' to subscribe to specific report updates."
+      ]
+    },
+    {
+      "id": "REQ-PT19",
+      "source": "Issue-id: PT19 | Description",
+      "text": "A citizen can receive optional email alerts in addition to platform notifications.",
+      "role": "citizen",
+      "business_value": "790",
+      "constraints": [
+        "Email notifications are disabled by default unless configured otherwise."
+      ],
+      "expected_behaviors": [
+        "User configures email preference in their account panel.",
+        "System sends emails when status changes occur if enabled."
+      ]
+    },
+    {
+      "id": "REQ-PT20",
+      "source": "Issue-id: PT20 | Description",
+      "text": "A citizen or unregistered user can see public statistics about reports.",
+      "role": "citizen, unregistered user",
+      "business_value": "770",
+      "constraints": [
+        "Statistics include number of reports by category and trends by day, week, or month."
+      ],
+      "expected_behaviors": [
+        "System displays charts/tables for public metrics accessible to all users."
+      ]
+    },
+    {
+      "id": "REQ-PT21",
+      "source": "Issue-id: PT21 | Description",
+      "text": "A municipal administrator can see detailed private statistics.",
+      "role": "municipal administrator",
+      "business_value": "755",
+      "constraints": [
+        "Access is restricted to administrators only."
+      ],
+      "expected_behaviors": [
+        "System displays advanced charts/tables including: reports by status, type, reporter, and top % of reporters."
+      ]
+    },
+    {
+      "id": "REQ-PT22",
+      "source": "Issue-id: PT22 | Description",
+      "text": "A citizen or unregistered user can browse a summary table of reports with filters.",
+      "role": "citizen, unregistered user",
+      "business_value": "740",
+      "constraints": [
+        "Filters available: category, status, period of time."
+      ],
+      "expected_behaviors": [
+        "User applies filters to the table view.",
+        "System updates the displayed list based on active filters."
+      ]
+    },
+    {
+      "id": "REQ-PT23",
+      "source": "Issue-id: PT23 | Description",
+      "text": "A citizen can download the summary table of reports.",
+      "role": "citizen",
+      "business_value": "730",
+      "constraints": [
+        "If a filter is active, only filtered data should be downloaded."
+      ],
+      "expected_behaviors": [
+        "User clicks download button.",
+        "System exports the current view (filtered or unfiltered) as a CSV file."
+      ]
+    },
+    {
+      "id": "REQ-PT09",
+      "source": "Issue-id: PT09 | Description",
+      "text": "A citizen can configure their account to manage notifications and virtual presence.",
+      "role": "citizen",
+      "business_value": "895",
+      "constraints": [],
+      "expected_behaviors": [
+        "User uploads a personal photo.",
+        "User adds their Telegram username.",
+        "User toggles email notifications on/off."
+      ]
+    },
+    {
+      "id": "REQ-PT30",
+      "source": "Issue-id: PT30 | Description",
+      "text": "A citizen or unregistered user can search for reports in a specific area by typing an address.",
+      "role": "citizen, unregistered user",
+      "business_value": "890",
+      "constraints": [],
+      "expected_behaviors": [
+        "User types an address into the search bar.",
+        "System zooms the map to that area and displays relevant reports."
+      ]
+    },
+    {
+      "id": "REQ-PT28",
+      "source": "Issue-id: PT28 | Description",
+      "text": "A municipal administrator can configure automatic assignment of all issues of a certain category.",
+      "role": "municipal administrator",
+      "business_value": "750",
+      "constraints": [
+        "This setting allows bypassing the initial review by the municipal public relations officer."
+      ],
+      "expected_behaviors": [
+        "Admin configures global auto-assignment rules for categories."
+      ]
+    }
+  ],
+  "roles": [
+    "citizen",
+    "unregistered user",
+    "system administrator",
+    "municipal public relations officer",
+    "municipal administrator",
+    "technical office staff member",
+    "external maintainer"
+  ],
+  "domain_rules": [
+    "Reports must be tied to a specific location using OpenStreetMap (standard layer).",
+    "Report categories are fixed: Water Supply, Architectural Barriers, Sewer System, Public Lighting, Waste, Road Signs and Traffic Lights, Roads and Urban Furnishings, Public Green Areas and Playgrounds, Other.",
+    "Report statuses are: Pending Approval, Assigned, In Progress, Suspended, Rejected, Resolved.",
+    "Rejected reports must include an explanation from the Municipality Organization Office.",
+    "Anonymous users' names are visible to staff but hidden in the public map view for citizens.",
+    "Only technical office staff members can have multiple roles.",
+    "External maintainers added by the system administrator must have their own individual account.",
+    "Comments exchanged between a technical office and an external maintainer are report-specific and reserved (not visible to citizens).",
+    "Communication between a technical office and external maintainers without access to Participium is out of scope.",
+    "Once a report has been inserted, it cannot be modified or deleted by the citizen.",
+    "The roles of 'municipal public relations officer' and 'municipal administrator' are automatically associated with the Organization Office.",
+    "Public statistics include number of reports by category and trends by day/week/month.",
+    "Private statistics (admin only) include detailed breakdowns by status, type, reporter, and top % of reporters.",
+    "Notifications/messages can be set to either real-time or on page refresh depending on user preference.",
+    "Automatic assignment of all issues of a certain category is possible only if previously set by the municipal administrator."
+  ],
+  "edge_cases": [
+    "External maintainer resolves a report directly after moving it from Assigned to In Progress (Case 1).",
+    "Technical office staff member resolves a report manually when external company has no access (Case 2).",
+    "User zooms out on the map, causing reports to group into a cumulative view with total count.",
+    "User downloads a CSV while filters are active; only filtered data is included.",
+    "Citizen follows a report that was previously closed; system should prevent following or show as unavailable.",
+    "Telegram bot receives a command for a report ID that does not exist or belongs to another user."
+  ],
+  "assumptions": [
+    "The 'Organization Office' is the central entity responsible for initial verification and rejection explanations.",
+    "Competent technical offices are pre-defined and mapped to specific problem categories.",
+    "Telegram bot integration requires users to have a valid Telegram username configured in their profile.",
+    "Email notifications can be fully disabled by the user in their configuration panel.",
+    "The system distinguishes between 'internal' comments (staff/maintainer) and 'public' updates (citizen-facing).",
+    "Unregistered users can view reports but cannot submit new ones or follow reports.",
+    "The map layer is strictly OpenStreetMap based as per the standard layer requirement."
+  ]
+}

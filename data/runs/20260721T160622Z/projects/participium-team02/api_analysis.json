@@ -1,0 +1,535 @@
+{
+  "summary": "A civic engagement API supporting user authentication, citizen registration, admin user management, and a report lifecycle including upload, status updates, role assignment, and commenting.",
+  "operations": [
+    {
+      "path": "/auth/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Log in a user",
+        "Requires username and password in request body",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/auth/logout",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /auth/login: Logout requires an active session established by login.",
+        "/auth/login"
+      ],
+      "notes": [
+        "Log out the current user",
+        "Ends the session established by login",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/auth/current",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /auth/login: Current user retrieval requires authentication.",
+        "/auth/login"
+      ],
+      "notes": [
+        "Get the currently logged in user",
+        "Returns current user identity; requires authentication",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/users/register-citizen",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Register a new citizen (public)",
+        "Public endpoint for citizen registration",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 422"
+      ]
+    },
+    {
+      "path": "/users/register-user",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/login"
+      ],
+      "notes": [
+        "Create a user with a given role (admin only)",
+        "Admin-only; creates users with specific roles",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 401"
+      ]
+    },
+    {
+      "path": "/users/edit-user",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /users/register-user: User editing requires the user to exist.",
+        "/users/register-user"
+      ],
+      "notes": [
+        "Update another user's information (admin only)",
+        "Admin-only; updates another user's details",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/users/edit-me",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/login"
+      ],
+      "notes": [
+        "Update the current user's information",
+        "Updates the authenticated user's own profile",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/users/get-roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/login"
+      ],
+      "notes": [
+        "Retrieve all roles defined in the system (admin only)",
+        "Admin-only; lists all system roles",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/users/get-roles/{userId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /users/register-user: Role retrieval requires the user to exist.",
+        "/users/register-user"
+      ],
+      "notes": [
+        "Retrieve the roles assigned to a user (admin only)",
+        "Admin-only; retrieves roles for a specific user",
+        "Parameters: userId",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/users/search-users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users/register-user"
+      ],
+      "notes": [
+        "Search users with pagination and filters (admin only)",
+        "Admin-only; paginated search with filters",
+        "Parameters: page_num, page_size, first_name, last_name, email, role",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/users/admin/create-municipality-user",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users/register-user"
+      ],
+      "notes": [
+        "Create a municipality user and optionally assign roles (admin only)",
+        "Admin-only; creates municipality users with optional roles",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 401"
+      ]
+    },
+    {
+      "path": "/users/admin/assign-roles",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users/register-user"
+      ],
+      "notes": [
+        "Replace the roles of a user (admin only)",
+        "Admin-only; replaces roles for an existing user",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/upload",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /users/register-citizen: Citizens must register before uploading reports.",
+        "/users/register-citizen"
+      ],
+      "notes": [
+        "Upload a new report with photos (citizen only)",
+        "Citizen-only; uploads reports with photos",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401"
+      ]
+    },
+    {
+      "path": "/reports/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "List all report categories (public)",
+        "Public; lists report categories",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/report/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/reports/upload"
+      ],
+      "notes": [
+        "Get a report by id (public)",
+        "Public; retrieves a specific report by ID",
+        "Parameters: id",
+        "Documented responses: 200, 404"
+      ]
+    },
+    {
+      "path": "/reports/report/{id}/status",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports/upload: Status update requires an existing report.",
+        "/reports/upload"
+      ],
+      "notes": [
+        "Update a report status (admin or municipality)",
+        "Admin/municipality; updates report status",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/search-reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/reports/upload"
+      ],
+      "notes": [
+        "Search reports with pagination and filters (admin or municipality)",
+        "Admin/municipality; paginated search with filters",
+        "Parameters: page_num, page_size, status, is_public, category_id",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/get-map-reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/reports/upload"
+      ],
+      "notes": [
+        "Get reports for map display (public)",
+        "Public; retrieves reports for map display",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/tos-users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /users/admin/create-municipality-user: Technical office staff listing depends on municipality users existing.",
+        "/users/admin/create-municipality-user"
+      ],
+      "notes": [
+        "Get technical office staff users by category (admin or municipality)",
+        "Admin/municipality; lists technical office staff",
+        "Parameters: category_id",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/maintainer-users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users/admin/create-municipality-user"
+      ],
+      "notes": [
+        "Get all external maintainer users (technical officer)",
+        "Technical officer; lists external maintainers",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/report/{id}/assign",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports/upload: Assignment requires an existing report.",
+        "/reports/upload"
+      ],
+      "notes": [
+        "Assign a report to a user (admin or municipality)",
+        "Admin/municipality; assigns report to a user",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/assigned-to-techOfficer",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users/admin/create-municipality-user"
+      ],
+      "notes": [
+        "Get reports assigned to the authenticated technical officer",
+        "Technical officer; lists assigned reports",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/assigned-to-maintainer",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users/admin/create-municipality-user"
+      ],
+      "notes": [
+        "Get reports assigned to the authenticated maintainer",
+        "Maintainer; lists assigned reports",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/report/{id}/assign-maintainer",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/reports/upload"
+      ],
+      "notes": [
+        "Assign a report to an external maintainer (technical officer)",
+        "Technical officer; assigns report to external maintainer",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/{report_id}/comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports/upload: Comment listing requires an existing report.",
+        "/reports/upload"
+      ],
+      "notes": [
+        "Get all comments for a report (admin or municipality)",
+        "Admin/municipality; lists comments on a report",
+        "Parameters: report_id",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/{report_id}/comment",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports/upload: Comment creation requires an existing report.",
+        "/reports/upload"
+      ],
+      "notes": [
+        "Add a comment to a report (admin or municipality)",
+        "Admin/municipality; adds a comment to a report",
+        "Parameters: report_id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 401"
+      ]
+    },
+    {
+      "path": "/reports/{report_id}/comment",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/reports/upload"
+      ],
+      "notes": [
+        "Edit an own comment on a report (admin or municipality)",
+        "Admin/municipality; edits own comment on a report",
+        "Parameters: report_id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/{report_id}/comment",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/reports/upload"
+      ],
+      "notes": [
+        "Delete an own comment on a report (admin or municipality)",
+        "Admin/municipality; deletes own comment on a report",
+        "Parameters: report_id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 204, 401"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "/auth/login establishes session state required for all authenticated endpoints; /auth/logout terminates it.",
+    "Operations marked auth_required need an authenticated session during test setup."
+  ],
+  "dependencies": [
+    "POST /auth/login is prerequisite for any operation requiring authentication.",
+    "POST /users/register-citizen creates citizen accounts needed for POST /reports/upload.",
+    "POST /users/register-user and related admin endpoints require prior login and create users needed for role management and report assignment.",
+    "POST /reports/upload creates reports that are prerequisites for status updates, assignments, and comments.",
+    "POST /auth/login -> DELETE /auth/logout: Logout requires an active session established by login.",
+    "POST /auth/login -> GET /auth/current: Current user retrieval requires authentication.",
+    "POST /users/register-citizen -> POST /reports/upload: Citizens must register before uploading reports.",
+    "POST /users/register-user -> PATCH /users/edit-user: User editing requires the user to exist.",
+    "POST /users/register-user -> GET /users/get-roles/{userId}: Role retrieval requires the user to exist.",
+    "POST /reports/upload -> PATCH /reports/report/{id}/status: Status update requires an existing report.",
+    "POST /reports/upload -> PATCH /reports/report/{id}/assign: Assignment requires an existing report.",
+    "POST /reports/upload -> GET /reports/{report_id}/comments: Comment listing requires an existing report.",
+    "POST /reports/upload -> POST /reports/{report_id}/comment: Comment creation requires an existing report.",
+    "POST /users/admin/create-municipality-user -> GET /reports/tos-users: Technical office staff listing depends on municipality users existing."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/login",
+      "dependent_method": "DELETE",
+      "dependent_path": "/auth/logout",
+      "dependency_type": "state",
+      "reason": "Logout requires an active session established by login."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/login",
+      "dependent_method": "GET",
+      "dependent_path": "/auth/current",
+      "dependency_type": "authorization",
+      "reason": "Current user retrieval requires authentication."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/register-citizen",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/upload",
+      "dependency_type": "resource",
+      "reason": "Citizens must register before uploading reports."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/register-user",
+      "dependent_method": "PATCH",
+      "dependent_path": "/users/edit-user",
+      "dependency_type": "resource",
+      "reason": "User editing requires the user to exist."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/register-user",
+      "dependent_method": "GET",
+      "dependent_path": "/users/get-roles/{userId}",
+      "dependency_type": "resource",
+      "reason": "Role retrieval requires the user to exist."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports/upload",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/report/{id}/status",
+      "dependency_type": "resource",
+      "reason": "Status update requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports/upload",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/report/{id}/assign",
+      "dependency_type": "resource",
+      "reason": "Assignment requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports/upload",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{report_id}/comments",
+      "dependency_type": "resource",
+      "reason": "Comment listing requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports/upload",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{report_id}/comment",
+      "dependency_type": "resource",
+      "reason": "Comment creation requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/admin/create-municipality-user",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/tos-users",
+      "dependency_type": "resource",
+      "reason": "Technical office staff listing depends on municipality users existing."
+    }
+  ],
+  "risks": [
+    "Ambiguity in 'admin only' vs 'municipality' role distinctions for report management endpoints.",
+    "Missing explicit error codes for invalid user roles or unauthorized role assignments.",
+    "No documented rate limiting or throttling for public endpoints like /reports/upload."
+  ]
+}

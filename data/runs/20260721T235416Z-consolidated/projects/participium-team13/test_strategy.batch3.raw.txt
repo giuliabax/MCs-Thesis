@@ -1,0 +1,142 @@
+[
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/geocode",
+    "http_method": "GET",
+    "prompt": "Execute a happy path test for geocoding. Send a GET request to /geocode with a valid address string (e.g., 'Piazza Castello, Turin') in the query parameter or body as per API spec. Verify that the response contains valid latitude and longitude coordinates.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core functionality of geolocation required for report creation (PT04). No auth needed per API analysis."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Execute a happy path test for creating a report. Authenticate as 'citizen'. Send a POST to /reports with a valid JSON body containing required fields (e.g., title, description) and optional geolocation data from PT04. Verify the response indicates successful creation (201 or 200) and returns the new report ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate user as 'citizen' to obtain a valid session cookie."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present by calling DELETE /reports/{reportId} (if endpoint exists) or ignoring if immutable per domain rules.",
+    "expected_status_codes": ["201", "200"],
+    "rationale": "Tests the primary creation flow for reports based on PT05. Domain rule states inserted reports cannot be modified/deleted by citizen, so cleanup is verification-only."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports so that only valid reports are processed further.",
+    "api_endpoint": "/reports/{reportId}/approve",
+    "http_method": "POST",
+    "prompt": "Execute a stateful test for approving a report. First, create a report using the endpoint from PT05 (or reuse an existing one if available in context). Then, authenticate as 'municipal public relations officer'. Send a POST to /reports/{reportId}/approve with the ID of the created report. Verify the response indicates approval and that the report status transitions to 'Assigned' or equivalent.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a new report via POST /reports (authenticated as citizen) to obtain a valid reportId."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present by calling DELETE /reports/{reportId} (if endpoint exists) or ignoring if immutable per domain rules.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the workflow dependency where approval requires an existing report (PT06). Domain rule: 'Once approved, accepted reports immediately become visible on the Participium portal'."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and rejects a report with a mandatory explanation.",
+    "api_endpoint": "/reports/{reportId}/reject",
+    "http_method": "POST",
+    "prompt": "Execute an edge case test for rejecting a report. First, create a report via POST /reports (authenticated as citizen). Then, authenticate as 'municipal public relations officer'. Send a POST to /reports/{reportId}/reject with the report ID and a mandatory explanation field in the body. Verify the response indicates rejection and that the status changes appropriately (e.g., to 'Rejected').",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a new report via POST /reports (authenticated as citizen) to obtain a valid reportId."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present by calling DELETE /reports/{reportId} (if endpoint exists) or ignoring if immutable per domain rules.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the rejection workflow which requires a mandatory explanation (Domain Rule: 'Rejected reports require a mandatory explanation'). This is an edge case of the approval/rejection flow."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/municipality-users/{userId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a negative test for assigning roles. Authenticate as 'system administrator'. Send a PATCH request to /admin/municipality-users/{userId} with an invalid role name (e.g., 'SuperAdmin' which is not in the allowed list) or missing required fields. Verify that the API returns a 400 Bad Request or 403 Forbidden error indicating the operation failed.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate user as 'system administrator' to obtain a valid session cookie."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400", "403"],
+    "rationale": "Tests input validation and security constraints for role assignment (PT03). Negative test ensures invalid roles are rejected."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users so that staff can be more flexible.",
+    "api_endpoint": "/admin/municipality-users/{userId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a cleanup test for modifying roles. Authenticate as 'system administrator'. Send a PATCH request to /admin/municipality-users/{userId} with a valid role modification (e.g., changing from 'Viewer' to 'Editor'). Verify the update succeeds. Then, immediately verify that the user's role has been updated in the system state.",
+    "test_type": "cleanup",
+    "priority": "low",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate user as 'system administrator' to obtain a valid session cookie."
+    ],
+    "cleanup_strategy": "Reset the user's role back to its original value (e.g., 'Viewer') by sending another PATCH request with the original role data.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the modification capability for roles (PT10). Cleanup strategy ensures state is restored after the test."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Citizen/unregistered user searches for reports in a specific area by typing in an address.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a happy path test for searching reports. Send a GET request to /reports with a query parameter 'address' set to a valid location (e.g., 'Piazza Castello'). Verify that the response returns a list of reports matching the address, including their details.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the search functionality for unregistered users (PT30). Domain rule: 'Unregistered users can view reports on maps but cannot submit new reports'."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Execute an edge case test for creating a report with missing optional fields. Authenticate as 'citizen'. Send a POST request to /reports with only the mandatory fields (e.g., title) but omitting optional fields like geolocation or category. Verify that the API accepts the request and creates the report, possibly assigning default values to the missing optional fields.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate user as 'citizen' to obtain a valid session cookie."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present by calling DELETE /reports/{reportId} (if endpoint exists) or ignoring if immutable per domain rules.",
+    "expected_status_codes": ["201", "200"],
+    "rationale": "Tests the behavior of the API when optional fields are missing (PT05). Edge case ensures robustness against incomplete data."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/municipality-users/{userId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a negative test for assigning roles with insufficient permissions. Authenticate as 'citizen' (not 'system administrator'). Send a PATCH request to /admin/municipality-users/{userId} attempting to assign a role. Verify that the API returns a 403 Forbidden error, indicating that the user does not have permission to modify roles.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate user as 'citizen' to obtain a valid session cookie."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Tests access control for role assignment (PT03). Negative test ensures that only authorized users (system administrator) can perform this operation."
+  }
+]

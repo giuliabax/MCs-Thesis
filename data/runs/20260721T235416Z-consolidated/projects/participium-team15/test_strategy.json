@@ -1,0 +1,194 @@
+[
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{reportId}/assignExternal",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to assign an existing report to an external maintainer. Ensure the user is authenticated as 'technical office staff member'. Verify that the assignment succeeds and the report status updates or metadata reflects the new assignee.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "POST /reports to create a valid report in 'Pending Approval' state.",
+      "Ensure an external maintainer account exists in the system (via admin setup or prior registration)."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow for requirement PT24, ensuring staff can delegate reports to external parties."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{reportId}/updateStatus",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a report currently in 'Assigned' state. Authenticate as an 'external maintainer'. Attempt to transition the status to 'In Progress'. Verify the response confirms the status change.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /reports to create a report and assign it to an external maintainer (using the endpoint from PT24).",
+      "Ensure the current user session is authenticated as 'external maintainer'."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow for requirement PT25, ensuring external maintainers can progress assigned reports."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{reportId}/assignExternal",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to assign a report to an external maintainer. Authenticate as 'technical office staff member'. Attempt to assign the report to a non-existent or invalid external maintainer ID (e.g., empty string or null). Verify that the system rejects this operation with an appropriate error code.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "POST /reports to create a valid report in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400",
+      "404"
+    ],
+    "rationale": "Tests negative behavior for PT24 by attempting to assign a report to an invalid target, ensuring data integrity."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange internal comments on a report.",
+    "api_endpoint": "/reports/{reportId}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to add an internal comment. Authenticate as 'technical office staff member'. Attempt to post a message containing PII (Personally Identifiable Information) or sensitive data that should not be logged in plain text, depending on system configuration. Verify the response behavior regarding sensitive data handling.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "POST /reports to create a valid report in 'Assigned' state."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201",
+      "400"
+    ],
+    "rationale": "Tests edge case behavior for PT26 regarding data sensitivity in internal comments."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{reportId}/assignExternal",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to assign a report. Authenticate as 'technical office staff member'. Attempt to assign the same report to multiple different external maintainers in rapid succession without waiting for state updates. Verify that the system handles concurrent assignment attempts correctly (e.g., last write wins or error on conflict).",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "POST /reports to create a valid report in 'Pending Approval' state.",
+      "Ensure at least two external maintainer accounts exist."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200",
+      "409"
+    ],
+    "rationale": "Tests stateful behavior for PT24 by simulating concurrent assignments to ensure data consistency."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/auth/verify-email",
+    "http_method": "POST",
+    "prompt": "Execute the email verification flow. First, register a new citizen user via POST /auth/register (independent setup). Then, call POST /auth/verify-email with the token received in the registration response body. Verify that the account status changes to 'active' and the user can now access protected endpoints.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Register a new citizen via POST /auth/register with valid email and password."
+    ],
+    "cleanup_strategy": "Delete the registered user account to reset state for subsequent tests.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core registration activation flow defined in PT27."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report to ensure correct classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report via POST /reports. Include all required fields (title, description, category) and optional fields (location, photos). Verify that the response includes a generated 'reportId' and that the status is set to 'Pending Approval' as per domain rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists (login if necessary)."
+    ],
+    "cleanup_strategy": "Use PATCH /reports/{reportId}/manage to mark the report as 'Rejected' with a reason, effectively cleaning up the resource.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the primary report creation functionality and initial state assignment."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Public relations officer reviews and approves or rejects a report.",
+    "api_endpoint": "/reports/{reportId}/manage",
+    "http_method": "PATCH",
+    "prompt": "Perform a stateful workflow test. First, create a report via POST /reports (setup). Then, switch to the 'municipal public relations officer' role and call PATCH /reports/{reportId}/manage to change the status to 'Assigned'. Verify that the transition occurred successfully.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a report via POST /reports (prerequisite for this operation).",
+      "Ensure the current session is authenticated as 'municipal public relations officer'."
+    ],
+    "cleanup_strategy": "Delete the created report if it was not successfully transitioned, or mark it as 'Rejected' to clean up.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the state transition from 'Pending Approval' to 'Assigned' and handles the dependency on an existing report resource."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/auth/register-municipality",
+    "http_method": "POST",
+    "prompt": "Call POST /auth/register-municipality with a valid payload for a new municipality user. Verify that the user is created successfully and the response includes the new user's details.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an authenticated session with 'system administrator' role exists."
+    ],
+    "cleanup_strategy": "Delete the newly created municipality user account.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the admin capability to create specific user types."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Create a new report through a Telegram bot",
+    "api_endpoint": "/reports/telegram",
+    "http_method": "POST",
+    "prompt": "Execute a POST to /reports/telegram with a valid authenticated citizen session. Payload should include necessary report details (e.g., location, description) as expected by the bot integration. Verify that the report is created successfully and returns a 201 status code.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists (login via /auth/login or valid token).",
+      "Prepare a valid Telegram bot payload with required fields for report creation."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of creating reports via the Telegram bot interface as per PT12."
+  }
+]

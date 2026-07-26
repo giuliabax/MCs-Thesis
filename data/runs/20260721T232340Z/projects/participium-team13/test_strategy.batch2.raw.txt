@@ -1,0 +1,166 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/citizen/signup",
+    "http_method": "POST",
+    "prompt": "Execute a happy path registration. Send a POST request to /citizen/signup with valid JSON containing 'name' and 'username'. Ensure the response indicates successful creation or returns a session token/confirmation ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200", "201"],
+    "rationale": "Validates the core entry point for new users as defined in PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/citizen/verify",
+    "http_method": "POST",
+    "prompt": "Execute a happy path verification. First, ensure a user exists (via PT01 setup). Send a POST request to /citizen/verify with the correct 'code' and 'username'. Verify the account status changes to active.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute PT01 (signup) to create a user record."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the state transition from unverified to verified as per PT27 and domain rules."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal notes on a report.",
+    "api_endpoint": "/reports/{reportId}/internal-notes",
+    "http_method": "POST",
+    "prompt": "Execute a happy path for internal note exchange. First, create a report (via PT01 signup + PT27 verify + POST /reports). Then, send a POST request to /reports/{reportId}/internal-notes with valid JSON content as a technical office staff member.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Execute PT01 (signup) to create a user.",
+      "Execute PT27 (verify) to activate the user.",
+      "POST /reports with valid data to create a report resource."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was created; otherwise verify no resource exists.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the internal communication workflow for staff as per PT26 and domain rules regarding report-specific notes."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/citizen/signup",
+    "http_method": "POST",
+    "prompt": "Execute an edge case for registration. Send a POST request to /citizen/signup where the 'username' is already taken by another user in the database.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute PT01 (signup) with a unique username to create an existing user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["409", "400"],
+    "rationale": "Tests system handling of duplicate usernames, a common edge case in registration flows."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/citizen/verify",
+    "http_method": "POST",
+    "prompt": "Execute an edge case for verification. Send a POST request to /citizen/verify using a valid 'username' but an incorrect or expired 'code'.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute PT01 (signup) to create a user.",
+      "Execute PT27 (verify) with a correct code to activate the account."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400", "401"],
+    "rationale": "Tests system behavior when the verification code is invalid or has expired (referencing domain rule on 30-minute expiration)."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal notes on a report.",
+    "api_endpoint": "/reports/{reportId}/internal-notes",
+    "http_method": "POST",
+    "prompt": "Execute a negative test for internal notes. Send a POST request to /reports/{reportId}/internal-notes without providing the required 'content' field or with an empty string.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Execute PT01 (signup) to create a user.",
+      "Execute PT27 (verify) to activate the user.",
+      "POST /reports with valid data to create a report resource."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was created; otherwise verify no resource exists.",
+    "expected_status_codes": ["400"],
+    "rationale": "Validates that the API rejects malformed requests lacking required fields for internal notes."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators.",
+    "api_endpoint": "/reports/{reportId}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a stateful workflow test. First, create a report (via PT01 signup + PT27 verify + POST /reports). Then, simulate an operator sending a message (POST /reports/{reportId}/messages). Finally, execute this item to have the citizen reply to that specific message.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Execute PT01 (signup) to create a user.",
+      "Execute PT27 (verify) to activate the user.",
+      "POST /reports with valid data to create a report resource.",
+      "POST /reports/{reportId}/messages with valid operator message content."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was created; otherwise verify no resource exists.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the multi-step communication flow where a citizen replies to an existing operator message, covering PT18."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/municipality-users",
+    "http_method": "POST",
+    "prompt": "Execute a negative test for user setup. Send a POST request to /admin/municipality-users with an invalid 'role' value that is not recognized by the system (e.g., 'super_admin' if only 'citizen', 'staff', 'maintainer' are allowed).",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system_administrator",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures the system validates role permissions strictly as per domain rules regarding external maintainers and staff roles."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal notes on a report.",
+    "api_endpoint": "/reports/{reportId}/internal-notes",
+    "http_method": "GET",
+    "prompt": "Execute an edge case for retrieving internal notes. Send a GET request to /reports/{reportId}/internal-notes where the 'reportId' in the URL does not match any existing report resource.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Execute PT01 (signup) to create a user.",
+      "Execute PT27 (verify) to activate the user.",
+      "POST /reports with valid data to create a report resource."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was created; otherwise verify no resource exists.",
+    "expected_status_codes": ["404"],
+    "rationale": "Tests system resilience when attempting to access internal notes for a non-existent report ID."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal notes on a report.",
+    "api_endpoint": "/reports/{reportId}/internal-notes",
+    "http_method": "POST",
+    "prompt": "Execute a cleanup verification test. Attempt to POST an internal note to a report that was never created (ensure the prerequisite /reports call was skipped or failed). Verify the system handles the missing resource gracefully.",
+    "test_type": "cleanup",
+    "priority": "low",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["404"],
+    "rationale": "Ensures the API correctly identifies missing resources before attempting to attach internal notes, preventing silent failures."
+  }
+]

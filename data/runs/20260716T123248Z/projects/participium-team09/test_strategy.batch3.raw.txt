@@ -1,0 +1,186 @@
+[
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/municipal/reports/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Execute a happy path test where the Municipal Public Relations Officer authenticates, retrieves a report in 'Pending Approval' state, and updates it to 'Accepted'. Verify the response indicates success and the report status changes.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Authenticate as Municipal Public Relations Officer via /auth/login.",
+      "Ensure a report exists in 'Pending Approval' state (created by citizen or system)."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The PUT operation modifies an existing resource, so cleanup focuses on ensuring the modification is reversible or logged appropriately.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow for report approval as defined in PT06."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and rejects a report with a mandatory explanation.",
+    "api_endpoint": "/municipal/reports/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Execute an edge case test where the Municipal Public Relations Officer authenticates, retrieves a report in 'Pending Approval' state, and updates it to 'Rejected'. Ensure the request body includes a mandatory explanation field. Verify the response indicates success and the report status changes to 'Rejected' with the explanation attached.",
+    "test_type": "edge_case",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Authenticate as Municipal Public Relations Officer via /auth/login.",
+      "Ensure a report exists in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The PUT operation modifies an existing resource, so cleanup focuses on ensuring the modification is reversible or logged appropriately.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the requirement that rejected reports require a mandatory explanation (PT06)."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them.",
+    "api_endpoint": "/offices/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Execute a happy path test where the Technical Office Staff Member authenticates and retrieves the list of reports assigned to their specific technical office. Verify the response contains the expected list of reports with correct filtering.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as Technical Office Staff Member via /auth/login.",
+      "Ensure at least one report exists in 'Assigned' state for the specific technical office."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for staff to view assigned reports (PT08)."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account to manage notifications and virtual presence.",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute a happy path test where the Citizen authenticates, retrieves their current profile, updates notification preferences (e.g., enabling email alerts), and verifies the update was successful.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as Citizen via /auth/login."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability for citizens to configure their account settings (PT09)."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Citizen/unregistered user searches for reports in a specific area by typing in an address.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a happy path test where the Citizen/Unregistered User authenticates (or uses guest token if applicable) and queries the /reports endpoint with a filter parameter for a specific area/address. Verify the response returns reports matching the specified area.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen/unregistered user",
+    "setup_needed": [
+      "Authenticate as Citizen/Unregistered User via /auth/login."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the search functionality for reports by area (PT30)."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/notifications",
+    "http_method": "GET",
+    "prompt": "Execute a happy path test where the Citizen authenticates and retrieves their notification history. Verify that the response includes both platform notifications and any configured email alert confirmations (if applicable).",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as Citizen via /auth/login."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the integration of email alerts with platform notifications (PT19)."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user browses a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute an edge case test where the Citizen/Unregistered User authenticates and queries the /reports endpoint with multiple filter parameters (e.g., category, status, date range). Verify the response returns a summary table of reports matching all specified filters.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen/unregistered user",
+    "setup_needed": [
+      "Authenticate as Citizen/Unregistered User via /auth/login."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the filtering capabilities of the report summary table (PT22)."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and rejects a report without providing an explanation.",
+    "api_endpoint": "/municipal/reports/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Execute a negative test where the Municipal Public Relations Officer authenticates, retrieves a report in 'Pending Approval' state, and attempts to update it to 'Rejected' without including the mandatory explanation field. Verify the API returns a 400 Bad Request error indicating the missing explanation.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Authenticate as Municipal Public Relations Officer via /auth/login.",
+      "Ensure a report exists in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates that the system enforces the mandatory explanation for rejected reports (PT06)."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account to disable email notifications.",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute a negative test where the Citizen authenticates and attempts to update their profile to disable email notifications. Verify that the API returns a 400 Bad Request error if disabling email notifications is not allowed (based on domain rules stating email is mandatory for registration/login).",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as Citizen via /auth/login."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates that the system enforces email as a mandatory field for registration and login (domain rules)."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them when no reports are assigned.",
+    "api_endpoint": "/offices/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Execute a negative test where the Technical Office Staff Member authenticates and queries the /offices/reports/assigned endpoint when no reports have been assigned to their office. Verify the API returns an empty list or appropriate response indicating no assigned reports.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as Technical Office Staff Member via /auth/login."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the system handles the edge case of no assigned reports gracefully (PT08)."
+  }
+]

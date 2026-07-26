@@ -1,0 +1,180 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/reports-map",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/reports-map without providing any authentication headers or session tokens. Verify that the response contains a list of approved reports (status: Resolved) visible on the map, including their geographic coordinates and basic details.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for unregistered users as per requirement PT28."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}",
+    "http_method": "POST",
+    "prompt": "Ensure an external maintainer user has an active session. Perform a POST request to /reports/{id} with a payload setting the status to 'Resolved' or 'In Progress'. Verify the update is accepted and the report details reflect the new status.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "/auth/session (POST) with external maintainer credentials",
+      "Create or locate the resource referenced by the path parameter."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability of an external maintainer to update their assigned report."
+  },
+  {
+    "requirement_id": "PT07",
+    "requirement_summary": "Citizen can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/reports-map",
+    "http_method": "GET",
+    "prompt": "Authenticate as a 'citizen' user. Perform a GET request to /reports/reports-map. Verify that the response includes approved reports and that the citizen's identity is handled according to domain rules (e.g., anonymous name visible to staff but hidden in public map if applicable, though this endpoint is public).",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "/auth/session (POST) with citizen credentials"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the map view functionality for authenticated citizens, ensuring visibility of approved reports."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{report_id}/external-maintainers",
+    "http_method": "POST",
+    "prompt": "Authenticate as a 'technical office staff member'. Perform a POST request to /reports/{report_id}/external-maintainers with an invalid or non-existent external maintainer ID. Verify that the API returns an appropriate error code (e.g., 404 Not Found) indicating the external maintainer does not exist.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "/auth/session (POST) with technical office staff credentials",
+      "Create or locate the resource referenced by the path parameter."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Tests the system's handling of invalid external maintainer IDs during assignment."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/users",
+    "http_method": "POST",
+    "prompt": "Execute a happy path registration for a citizen. Provide a unique username, valid email, and full name. Ensure the response indicates successful creation or returns the expected status code for duplicate usernames if applicable.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core entry point for new users as per PT01."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/users/municipality-users",
+    "http_method": "POST",
+    "prompt": "Create a new municipality user via the admin endpoint. Ensure the request includes necessary fields for a valid user creation and verify the response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "/auth/session (POST)"
+    ],
+    "cleanup_strategy": "Delete the created municipality user via /users/municipality-users/{id} if it was successfully created, or verify no resource exists if creation failed.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates admin capability to create users per PT02."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/users/municipality-users/roles",
+    "http_method": "POST",
+    "prompt": "Assign a specific role (e.g., 'technical office staff member') to an existing municipality user. Verify the assignment is recorded correctly.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "/users/municipality-users (POST existing user)"
+    ],
+    "cleanup_strategy": "Remove the assigned role from the user via /users/municipality-users/{id}/roles if necessary.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates admin capability to assign roles per PT03."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/auth/verify",
+    "http_method": "POST",
+    "prompt": "Verify the stateful dependency between /email/send-verification and /auth/verify. First, send a verification email (mocked), then immediately attempt to verify with the correct code. Ensure the flow works as expected.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "/email/send-verification"
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the state dependency where verification code must be sent before it can be verified per dependency_edges."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with valid geographic coordinates (lat/lon), a mandatory category from the fixed list, and a detailed description. Ensure the payload includes all required fields for correct classification logic.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "/auth/session (POST) to establish citizen session"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of report creation and classification based on provided details."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of assigned reports.",
+    "api_endpoint": "/reports/municipality-users/{municipalityUserId}",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to a specific technical office staff member using their municipality user ID. Ensure the response includes report summaries and current statuses.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "/auth/session (POST) to establish staff session; POST /users/municipality-users to create a test staff user if not present"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the overview functionality for technical office staff."
+  }
+]

@@ -1,0 +1,250 @@
+{
+  "requirement_id": "PT28",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["viewing approved reports on interactive map", "map visualization for unregistered users"],
+  "rationale": "No OpenAPI endpoint exposes report listing or map visualization functionality. Only Telegram-specific endpoints exist."
+}
+{
+  "requirement_id": "PT24",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["assign reports to external maintainers"],
+  "rationale": "No endpoint for report assignment or user management functionality exists in the contract."
+}
+{
+  "requirement_id": "PT25",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["update report status"],
+  "rationale": "Only GET operations for reports exist. No PUT/PATCH endpoint for updating report status is documented."
+}
+{
+  "requirement_id": "PT26",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/api/messages", "operation_id": null}
+  ],
+  "evidence": ["GET /api/messages - Get messages of a report"],
+  "missing_behaviors": ["POST to create internal comments/messages", "internal coordination workflow"],
+  "rationale": "Can read messages but cannot create internal comments. Missing POST endpoint for message creation."
+}
+{
+  "requirement_id": "PT01",
+  "status": "not_assessable",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["user registration with name/username"],
+  "rationale": "Auth routes exist but operation details are not specified. Cannot determine if registration is covered."
+}
+{
+  "requirement_id": "PT27",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["registration code confirmation"],
+  "rationale": "No verification or email confirmation endpoint is documented in the OpenAPI contract."
+}
+{
+  "requirement_id": "PT02",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["set up municipality users"],
+  "rationale": "No user management or admin endpoint for creating users is documented."
+}
+{
+  "requirement_id": "PT03",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["assign roles to municipality users"],
+  "rationale": "No role management or user assignment endpoint is documented."
+}
+{
+  "requirement_id": "PT04",
+  "status": "not_assessable",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["select location on city map"],
+  "rationale": "Map interaction is UI behavior. No REST endpoint for geolocation selection during report creation."
+}
+{
+  "requirement_id": "PT05",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/api/telegram/reports", "operation_id": null}
+  ],
+  "evidence": ["POST /api/telegram/reports - Create a report via the Telegram bot"],
+  "missing_behaviors": ["standard web interface for report creation", "location selection on map"],
+  "rationale": "Report creation exists only via Telegram bot. No general citizen-facing report creation endpoint."
+}
+{
+  "requirement_id": "PT06",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["review and approve/reject reports"],
+  "rationale": "No endpoint for report approval workflow or status transition exists."
+}
+{
+  "requirement_id": "PT07",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["view approved reports on interactive map"],
+  "rationale": "No endpoint for viewing report list or map visualization exists."
+}
+{
+  "requirement_id": "PT15",
+  "status": "not_assessable",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["anonymous report option"],
+  "rationale": "Cannot determine from contract whether anonymity parameter exists in report creation."
+}
+{
+  "requirement_id": "PT08",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["view list of assigned reports"],
+  "rationale": "No endpoint for viewing assigned reports exists. Only Telegram-specific report endpoints."
+}
+{
+  "requirement_id": "PT09",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["configure account settings"],
+  "rationale": "No user profile or account management endpoint is documented."
+}
+{
+  "requirement_id": "PT30",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["search reports by address"],
+  "rationale": "No search or filter endpoint for reports exists in the contract."
+}
+{
+  "requirement_id": "PT10",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["modify roles to municipality users"],
+  "rationale": "No role modification endpoint is documented."
+}
+{
+  "requirement_id": "PT11",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["update report statuses"],
+  "rationale": "No PUT/PATCH endpoint for updating report status exists."
+}
+{
+  "requirement_id": "PT12",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/api/telegram/reports", "operation_id": null}
+  ],
+  "evidence": ["POST /api/telegram/reports - Create a report via the Telegram bot"],
+  "missing_behaviors": [],
+  "rationale": "Telegram bot report creation endpoint is explicitly documented."
+}
+{
+  "requirement_id": "PT13",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/api/telegram/reports/{id}", "operation_id": null}
+  ],
+  "evidence": ["GET /api/telegram/reports/{id} - Get a single report for a Telegram user"],
+  "missing_behaviors": [],
+  "rationale": "Telegram bot report status check endpoint is explicitly documented."
+}
+{
+  "requirement_id": "PT14",
+  "status": "not_assessable",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["help commands from Telegram bot"],
+  "rationale": "Help commands are UI/bot behavior not exposed in REST contract."
+}
+{
+  "requirement_id": "PT18",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/api/messages", "operation_id": null}
+  ],
+  "evidence": ["GET /api/messages - Get messages of a report"],
+  "missing_behaviors": ["POST to reply to messages"],
+  "rationale": "Can read messages but cannot create replies. Missing POST endpoint for message creation."
+}
+{
+  "requirement_id": "PT16",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["follow reports done by other citizens"],
+  "rationale": "No endpoint for following or subscribing to reports exists."
+}
+{
+  "requirement_id": "PT17",
+  "status": "not_assessable",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["receive real-time push notifications via Telegram bot"],
+  "rationale": "Push notifications are external/bot behavior not exposed in REST contract."
+}
+{
+  "requirement_id": "PT19",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["configure email alerts"],
+  "rationale": "No endpoint for notification or email configuration exists."
+}
+{
+  "requirement_id": "PT20",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["view public statistics about reports"],
+  "rationale": "No statistics or analytics endpoint is documented."
+}
+{
+  "requirement_id": "PT21",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["view detailed private statistics"],
+  "rationale": "No statistics endpoint for administrators is documented."
+}
+{
+  "requirement_id": "PT29",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["configure automatic assignment of reports"],
+  "rationale": "No endpoint for auto-assignment configuration exists."
+}
+{
+  "requirement_id": "PT22",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["browse summary table of reports with filters"],
+  "rationale": "No general report listing or filtering endpoint exists."
+}
+{
+  "requirement_id": "PT23",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["download summary table of reports"],
+  "rationale": "No download or export endpoint for reports exists."
+}

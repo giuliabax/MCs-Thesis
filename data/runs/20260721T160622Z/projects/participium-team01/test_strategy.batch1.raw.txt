@@ -1,0 +1,213 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without any authentication headers. Verify that the response returns a list of report objects containing only public fields (e.g., title, status, location) and excludes sensitive internal comments or user emails.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core requirement that unregistered users can access public data without authentication."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "First, create a report in 'Pending Approval' state. Then, authenticate as a 'technical_office_staff_member'. Execute a PUT request to /reports/{id}/mainteiner with the external maintainer's ID. Verify the response indicates successful assignment and that the report status transitions appropriately (e.g., to 'Assigned').",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a new report via POST /reports with mandatory fields (title, description, category) and valid photos.",
+      "Authenticate as 'technical_office_staff_member' to obtain a session token."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if it was not automatically cleaned up by the system; otherwise, verify no resource exists.",
+    "expected_status_codes": ["200", "403"],
+    "rationale": "Tests the specific workflow of assigning external maintainers as per requirement PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an 'external_maintainer'. Execute a PUT request to /reports/{id}/status with a new status value (e.g., 'In Progress'). Verify the update is successful and that internal comments are not exposed in the response body.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Assign the report to this external maintainer via PUT /reports/{id}/mainteiner (using technical office staff credentials first if necessary, or assuming pre-assignment)."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} after verification.",
+    "expected_status_codes": ["200", "403"],
+    "rationale": "Validates that external maintainers can update status as per PT25, ensuring they have access to Participium."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'municipal_public_relations_officer'. Execute a PUT request to /reports/{id}/status with status 'Resolved' (simulating approval) and include an explanation field. Verify the report is marked as resolved.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal_public_relations_officer",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Assign the report to a technical office or staff member via PUT /reports/{id}/mainteiner."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} after verification.",
+    "expected_status_codes": ["200", "403"],
+    "rationale": "Tests the approval workflow for public relations officers as defined in PT06."
+  },
+  {
+    "requirement_id": "PT07",
+    "requirement_summary": "Citizen can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Authenticate as a 'citizen'. Execute a GET request to /reports/approved. Verify that the response includes approved reports and that the anonymous user's name is hidden in the public map data structure.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Register a new citizen account via POST /citizens/register with email and confirmation code.",
+      "Verify the email address via POST /citizens/verify-email."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates that authenticated citizens can view approved reports as per PT07."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'technical_office_staff_member'. Execute a PUT request to /reports/{id}/status with status 'In Progress'. Verify the update is successful and that the status change is reflected correctly.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Assign the report to a technical office or staff member via PUT /reports/{id}/mainteiner."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} after verification.",
+    "expected_status_codes": ["200", "403"],
+    "rationale": "Tests the ability of technical office staff to update statuses as per PT11."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without authentication. Verify that the response returns a list of report objects containing only public fields (e.g., title, status, location) and excludes sensitive internal comments or user emails.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the edge case where an unregistered user accesses the API without any prior setup, ensuring data privacy constraints are met."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'technical_office_staff_member'. Execute a PUT request to /reports/{id}/mainteiner with an invalid maintainer ID (non-existent user). Verify that the system returns an appropriate error code (e.g., 404 or 400) and does not create an assignment.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a report via POST /reports with mandatory fields."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete the report using DELETE /reports/{id} if it still exists.",
+    "expected_status_codes": ["400", "404"],
+    "rationale": "Tests negative behavior where an invalid maintainer ID is provided, ensuring the system handles errors gracefully."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an 'external_maintainer'. Execute a PUT request to /reports/{id}/status with status 'Resolved' directly from 'Assigned', skipping 'In Progress'. Verify that the system either rejects this transition (if workflow enforces it) or accepts it, depending on domain rules.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Assign the report to this external maintainer via PUT /reports/{id}/mainteiner."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} after verification.",
+    "expected_status_codes": ["200", "403"],
+    "rationale": "Tests the edge case where an external maintainer resolves a report without moving it to 'In Progress' first, as mentioned in domain rules."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'municipal_public_relations_officer'. Execute a PUT request to /reports/{id}/status with status 'Rejected' but omit the required explanation field. Verify that the system returns an error (e.g., 400) because the explanation is mandatory for rejected reports.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "municipal_public_relations_officer",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Assign the report to a technical office or staff member via PUT /reports/{id}/mainteiner."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} after verification.",
+    "expected_status_codes": ["400"],
+    "rationale": "Tests negative behavior where a required field (explanation) is missing for a rejected report, ensuring data integrity."
+  },
+  {
+    "requirement_id": "PT07",
+    "requirement_summary": "Citizen can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Authenticate as a 'citizen'. Execute a GET request to /reports/approved with a filter parameter for a non-existent category. Verify that the system returns an empty list or handles the filter gracefully without crashing.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Register a new citizen account via POST /citizens/register with email and confirmation code.",
+      "Verify the email address via POST /citizens/verify-email."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests edge case handling when filtering by a non-existent category, ensuring robustness of the API."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'technical_office_staff_member'. Execute a PUT request to /reports/{id}/status with status 'Suspended' and then immediately attempt to update it again to 'Resolved' without proper workflow steps. Verify that the system enforces the correct state transitions.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Assign the report to a technical office or staff member via PUT /reports/{id}/mainteiner."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} after verification.",
+    "expected_status_codes": ["200", "403"],
+    "rationale": "Tests stateful workflow where multiple status updates are performed in sequence, ensuring correct state management."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without authentication. Verify that the response returns a list of report objects containing only public fields (e.g., title, status, location) and excludes sensitive internal comments or user emails.",
+    "test_type": "cleanup",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["200"],
+    "rationale": "Ensures that even in cleanup scenarios, the API behaves correctly for unauthenticated users accessing public data."
+  }
+]

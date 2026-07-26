@@ -1,0 +1,159 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/users/register-citizen",
+    "http_method": "POST",
+    "prompt": "Register a new citizen user with a valid email, name, and username. Verify successful registration response includes a confirmation code or session token if applicable.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core registration flow required for all subsequent citizen operations."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registration fails with invalid email format.",
+    "api_endpoint": "/users/register-citizen",
+    "http_method": "POST",
+    "prompt": "Attempt to register a citizen using an invalid email address (e.g., 'notanemail'). Verify the API rejects the request with an appropriate error message.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures input validation prevents malformed data from entering the user database."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member exchanges information and comments on a report.",
+    "api_endpoint": "/reports/{report_id}/comment",
+    "http_method": "POST",
+    "prompt": "Authenticate as a technical office staff member. Create a new comment on an existing report (created in a prior setup step). Verify the comment is created successfully and internal comments are reserved.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a citizen user via /users/register-citizen to generate a valid report_id for testing."
+    ],
+    "cleanup_strategy": "Delete the created comment using DELETE /reports/{report_id}/comment. If the comment creation fails, no cleanup is needed.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the internal communication workflow between staff and external maintainers as per PT26."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "External maintainer attempts to view internal comments but is denied access.",
+    "api_endpoint": "/reports/{report_id}/comments",
+    "http_method": "GET",
+    "prompt": "Authenticate as an external maintainer. Attempt to retrieve the list of comments for a report where internal comments exist. Verify that only non-internal comments are returned or access is restricted according to domain rules.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a report via /reports/upload using a citizen account.",
+      "Add an internal comment via /reports/{report_id}/comment using a technical office staff account."
+    ],
+    "cleanup_strategy": "Delete the created report and any associated comments. If deletion fails due to state, verify no resource was created or delete it if unexpectedly present.",
+    "expected_status_codes": ["200", "403"],
+    "rationale": "Tests the visibility boundary between internal staff notes and public/external views."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/users/admin/create-municipality-user",
+    "http_method": "POST",
+    "prompt": "Authenticate as a system administrator. Create a new municipality user with required fields (email, name). Verify the user is created successfully.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system_administrator",
+    "setup_needed": [],
+    "cleanup_strategy": "Delete the created municipality user if a DELETE endpoint exists for users, or verify no resource was created if creation failed.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the admin capability to provision new staff members."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/users/admin/assign-roles",
+    "http_method": "POST",
+    "prompt": "Authenticate as a system administrator. Assign specific roles (e.g., 'technical_office_staff_member') to an existing municipality user created in a previous step. Verify the role assignment is successful.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system_administrator",
+    "setup_needed": [
+      "Create a municipality user via /users/admin/create-municipality-user."
+    ],
+    "cleanup_strategy": "Revoke the assigned roles or delete the user if a DELETE endpoint exists. If deletion fails, verify no resource was created.",
+    "expected_status_codes": ["200"],
+    "rationale": "Ensures administrators can correctly configure user permissions."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users for flexibility.",
+    "api_endpoint": "/users/edit-user",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a system administrator. Modify the roles of an existing municipality user (e.g., change from 'citizen' to 'technical_office_staff_member'). Verify the modification is applied correctly.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "system_administrator",
+    "setup_needed": [
+      "Create a municipality user via /users/admin/create-municipality-user."
+    ],
+    "cleanup_strategy": "Revert the role changes or delete the user if possible. If deletion fails, verify no resource was created.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the flexibility of role management for staff members."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registration fails when confirmation code expires before use.",
+    "api_endpoint": "/users/register-citizen",
+    "http_method": "POST",
+    "prompt": "Simulate a scenario where the confirmation code for registration is valid for 30 minutes but the user attempts to activate their account after the expiration time. Verify the system rejects the activation or requires re-registration.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Perform a successful registration via /users/register-citizen to obtain a confirmation code."
+    ],
+    "cleanup_strategy": "Delete the created user account if possible. If deletion fails, verify no resource was created.",
+    "expected_status_codes": ["400", "410"],
+    "rationale": "Tests the handling of time-sensitive registration codes as per domain rules."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "External maintainer resolves a report without moving it to 'In Progress' first.",
+    "api_endpoint": "/reports/{report_id}/comment",
+    "http_method": "POST",
+    "prompt": "Authenticate as an external maintainer. Attempt to update a report status directly from 'Assigned' to 'Resolved' without passing through 'In Progress', if the workflow allows it or if it violates domain rules. Verify the system handles this gracefully (e.g., error message or state transition rejection).",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a report via /reports/upload using a citizen account.",
+      "Update the report status to 'Assigned' (if an update endpoint exists) or assume it is in 'Assigned' state."
+    ],
+    "cleanup_strategy": "Delete the created report and any associated comments. If deletion fails, verify no resource was created.",
+    "expected_status_codes": ["400", "200"],
+    "rationale": "Tests adherence to the defined report lifecycle states and workflow constraints."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen follows a report that is later resolved; system stops sending notifications.",
+    "api_endpoint": "/reports/{report_id}/comments",
+    "http_method": "GET",
+    "prompt": "Authenticate as a citizen. Retrieve comments for a report that has been updated to 'Resolved' status. Verify that the system indicates the report is resolved and no further notifications are triggered (simulated by checking response metadata or absence of new comment events).",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a report via /reports/upload using a citizen account.",
+      "Update the report status to 'Resolved' (if an update endpoint exists) or assume it is in 'Resolved' state."
+    ],
+    "cleanup_strategy": "Delete the created report and any associated comments. If deletion fails, verify no resource was created.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates that the system correctly handles post-resolution states for citizen interactions."
+  }
+]

@@ -1,0 +1,191 @@
+[
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/{id}/approve",
+    "http_method": "PATCH",
+    "prompt": "Execute a happy path test where the authenticated municipal public relations officer (role: 'municipal public relations officer') approves a report that is currently in 'Pending Approval' state. Verify the response indicates success and the report status transitions to 'Assigned'.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "POST /login with credentials for a user having role 'municipal public relations officer' to obtain JWT.",
+      "Ensure a report exists in 'Pending Approval' state (can be created via a prior citizen registration and submission if not pre-seeded)."
+    ],
+    "cleanup_strategy": "Verify no resource was modified incorrectly; the approval action is idempotent or state-changing, so ensure subsequent tests use fresh data or verify the specific report ID used.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow for officers to accept reports and move them forward in the pipeline."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/{id}/reject",
+    "http_method": "PATCH",
+    "prompt": "Execute a negative test where the authenticated municipal public relations officer attempts to reject a report without providing a mandatory explanation. Verify the system enforces the requirement that rejected reports require an explanation.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "POST /login with credentials for a user having role 'municipal public relations officer' to obtain JWT.",
+      "Ensure a report exists in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures data integrity and compliance with the domain rule that rejected reports must have an explanation."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them.",
+    "api_endpoint": "/technician/reports",
+    "http_method": "GET",
+    "prompt": "Execute a happy path test where an authenticated technical office staff member retrieves their assigned reports. Verify the response contains a list of reports with status 'Assigned' and that the user's role is correctly identified.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login with credentials for a user having role 'technical office staff member' to obtain JWT.",
+      "Ensure at least one report exists in 'Assigned' state (created via approval flow)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the visibility of assigned work for technical staff."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them.",
+    "api_endpoint": "/technician/reports",
+    "http_method": "GET",
+    "prompt": "Execute an edge case test where a technical office staff member attempts to access the endpoint without being logged in. Verify the system blocks access due to missing authorization.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no session is active (do not call /login)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Confirms that the endpoint strictly requires authentication as per API analysis."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account to manage notifications and virtual presence.",
+    "api_endpoint": "/profile",
+    "http_method": "GET",
+    "prompt": "Execute a happy path test where an authenticated citizen retrieves their profile. Verify that notification preferences (e.g., real-time vs on page refresh) are visible in the response body.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login with credentials for a user having role 'citizen' to obtain JWT."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that the citizen can view their configured notification settings."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/reports/{id}/public-messages",
+    "http_method": "POST",
+    "prompt": "Execute a happy path test where an authenticated citizen posts a reply to a report's public message thread. Verify the response confirms the message was created and includes the new message in the list.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login with credentials for a user having role 'citizen' to obtain JWT.",
+      "Ensure a report exists (ID required in path)."
+    ],
+    "cleanup_strategy": "Verify no resource was created incorrectly; if the endpoint creates a message, ensure subsequent tests use a fresh report ID or verify the specific message ID used.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the communication channel between citizens and operators."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/profile",
+    "http_method": "GET",
+    "prompt": "Execute an edge case test where a citizen's profile is retrieved and the response explicitly shows that email alerts are enabled (or disabled) based on prior configuration. Verify the specific field indicating email alert preference exists.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login with credentials for a user having role 'citizen' to obtain JWT."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures the optional email alert feature is correctly reflected in the profile data."
+  },
+  {
+    "requirement_id": "PT29",
+    "requirement_summary": "Municipal administrator configures automatic assignment of all reports in a certain category.",
+    "api_endpoint": "/admin/technicians/{id}/categories",
+    "http_method": "PUT",
+    "prompt": "Execute a happy path test where an authenticated municipal administrator updates the categories for a technician to enable automatic assignment. Verify the response confirms the update and the specific category mapping is applied.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal administrator",
+    "setup_needed": [
+      "POST /login with credentials for a user having role 'municipal administrator' to obtain JWT.",
+      "Ensure a technician ID exists (can be pre-seeded or created via admin endpoints if available)."
+    ],
+    "cleanup_strategy": "Verify no resource was modified incorrectly; ensure subsequent tests use fresh data or verify the specific technician ID used.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the administrative capability to configure automatic assignment rules."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/reports/{id}/public-messages",
+    "http_method": "POST",
+    "prompt": "Execute a negative test where an authenticated citizen attempts to reply to a report that is in 'Resolved' or 'Rejected' state. Verify the system prevents following or interacting with closed reports.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login with credentials for a user having role 'citizen' to obtain JWT.",
+      "Ensure a report exists in 'Resolved' or 'Rejected' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Enforces the domain rule that users cannot follow or interact with closed reports."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/{id}/approve",
+    "http_method": "PATCH",
+    "prompt": "Execute a stateful workflow test where an officer attempts to approve a report that has already been approved. Verify the system handles this gracefully (e.g., idempotency or error indicating state change is not possible).",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "POST /login with credentials for a user having role 'municipal public relations officer' to obtain JWT.",
+      "Ensure a report exists in 'Pending Approval' state.",
+      "Execute the happy path approval test (from item 1) on this same report ID to transition it to 'Assigned'."
+    ],
+    "cleanup_strategy": "Verify no resource was modified incorrectly; ensure subsequent tests use fresh data or verify the specific report ID used.",
+    "expected_status_codes": [
+      "400",
+      "200"
+    ],
+    "rationale": "Tests the state transition logic to ensure idempotency or proper error handling when re-applying an action."
+  }
+]

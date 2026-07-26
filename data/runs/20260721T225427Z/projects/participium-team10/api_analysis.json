@@ -1,0 +1,787 @@
+{
+  "summary": "API for managing citizen reports, user authentication (citizens and municipality staff), external maintenance companies, department roles, and internal communication flows.",
+  "operations": [
+    {
+      "path": "/api/sessions",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Login",
+        "Login endpoint creates session; requires LoginRequest body",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/sessions/current",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /api/sessions: Current user endpoint requires active session from login.",
+        "/api/sessions"
+      ],
+      "notes": [
+        "Get current user",
+        "Returns authenticated user data; requires active session",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/sessions/current",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/sessions"
+      ],
+      "notes": [
+        "Logout",
+        "Logout endpoint destroys session; requires active session",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/sessions/verify",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /api/users: Verification requires a registered but unverified account.",
+        "/api/users"
+      ],
+      "notes": [
+        "Verify email with confirmation code",
+        "Verifies email with 6-digit code; requires prior registration via POST /api/users",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/sessions/resend-code",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/api/users"
+      ],
+      "notes": [
+        "Resend verification code",
+        "Resends OTP code; requires registered but unverified account",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 404, 409"
+      ]
+    },
+    {
+      "path": "/api/companies",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Create a new external maintenance company",
+        "Creates external maintenance company; requires admin role",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 409, 500"
+      ]
+    },
+    {
+      "path": "/api/companies",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/companies"
+      ],
+      "notes": [
+        "Get all companies",
+        "Lists all companies; requires admin role",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/departments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get municipality departments",
+        "Returns municipality departments; requires admin role",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/departments/roles/mapping",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/departments"
+      ],
+      "notes": [
+        "Get all department roles mapping",
+        "Returns department-role mappings; requires admin role",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/api/departments/{id}/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/departments"
+      ],
+      "notes": [
+        "Get roles by department",
+        "Returns roles for specific department; requires admin role",
+        "Parameters: id",
+        "Documented responses: 200, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/proxy/address",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get address from latitude and longitude",
+        "Geocoding proxy: converts lat/lng to address; no auth required",
+        "Parameters: lat, lng",
+        "Documented responses: 200, 400"
+      ]
+    },
+    {
+      "path": "/api/proxy/coordinates",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get geographic coordinates from an address",
+        "Geocoding proxy: converts address to lat/lng; no auth required",
+        "Parameters: address",
+        "Documented responses: 200, 400, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/municipality/users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "GET /api/departments/roles/mapping: User creation requires valid department_role_ids from mapping endpoint.",
+        "/api/departments/roles/mapping"
+      ],
+      "notes": [
+        "Create new municipality user with multiple roles",
+        "Creates municipality user with roles; requires admin role and valid department_role_ids",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 404, 401, 403, 500, 409"
+      ]
+    },
+    {
+      "path": "/api/municipality/users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/municipality/users"
+      ],
+      "notes": [
+        "List all municipality users",
+        "Lists all municipality users; requires admin role",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/municipality/users/department-roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/departments/roles/mapping"
+      ],
+      "notes": [
+        "Get all department roles",
+        "Returns all department-role combinations; requires admin role",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/municipality/users/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/municipality/users"
+      ],
+      "notes": [
+        "Get municipality user by ID",
+        "Gets user by ID; requires admin role",
+        "Parameters: id",
+        "Documented responses: 200, 404, 401, 400, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/municipality/users/{id}",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/municipality/users"
+      ],
+      "notes": [
+        "Update municipality user",
+        "Updates user info/roles; replaces all roles if department_role_ids provided",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 404, 401, 400, 403, 409, 500"
+      ]
+    },
+    {
+      "path": "/api/municipality/users/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/municipality/users"
+      ],
+      "notes": [
+        "Delete municipality user",
+        "Deletes user; requires admin role",
+        "Parameters: id",
+        "Documented responses: 204, 404, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/municipality/users/{id}/role",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/municipality/users"
+      ],
+      "notes": [
+        "Add a single role to municipality user",
+        "Adds single role without removing existing ones",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/municipality/users/{id}/roles",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/municipality/users"
+      ],
+      "notes": [
+        "Replace all roles for municipality user",
+        "Replaces all roles with new list",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/municipality/users/{id}/roles/{roleId}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/municipality/users"
+      ],
+      "notes": [
+        "Remove a single role from municipality user",
+        "Removes single role; requires at least one role remaining",
+        "Parameters: id, roleId",
+        "Documented responses: 200, 400, 404, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Create a new geolocated report",
+        "Creates geolocated report; requires Citizen role",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/reports"
+      ],
+      "notes": [
+        "Get all reports",
+        "Lists all reports; public access without auth",
+        "Parameters: status, category",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/search",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/api/proxy/coordinates"
+      ],
+      "notes": [
+        "Search reports by address",
+        "Searches reports by address; geocodes address internally",
+        "Parameters: address, zoom, category",
+        "Documented responses: 200, 400, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get all available report categories",
+        "Lists valid report categories; public access",
+        "Documented responses: 200, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/statuses",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get all available report statuses",
+        "Lists valid report statuses; public access",
+        "Documented responses: 200, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/assigned/me",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/reports"
+      ],
+      "notes": [
+        "Get reports assigned to the current user",
+        "Gets reports assigned to current user; requires staff role",
+        "Parameters: status",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/{id}/status",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /api/reports: Status update requires existing report resource.",
+        "/api/reports"
+      ],
+      "notes": [
+        "Update report status",
+        "Updates report status; role-based transitions required",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/{id}/assign-external",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /api/companies: External maintainer assignment requires existing company with matching category.",
+        "/api/companies",
+        "/api/users/external-maintainers"
+      ],
+      "notes": [
+        "Assign report to external maintainer",
+        "Assigns report to external maintainer; requires Assigned status and valid company match",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/assigned/external/{externalMaintainerId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/users/external-maintainers"
+      ],
+      "notes": [
+        "Get reports assigned to a specific external maintainer",
+        "Gets reports assigned to specific external maintainer",
+        "Parameters: externalMaintainerId, status",
+        "Documented responses: 200, 400, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/map",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/api/proxy/coordinates"
+      ],
+      "notes": [
+        "Get approved reports for interactive map visualization",
+        "Returns approved reports for map; public access",
+        "Parameters: zoom, minLat, maxLat, minLng, maxLng, category",
+        "Documented responses: 200, 400, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/{id}/internal-comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/reports"
+      ],
+      "notes": [
+        "Get internal comments for a report",
+        "Gets internal comments; staff/external maintainer access only",
+        "Parameters: id",
+        "Documented responses: 200, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/{id}/internal-comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/reports"
+      ],
+      "notes": [
+        "Add an internal comment to a report",
+        "Adds internal comment; staff/external maintainer access only",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/{reportId}/internal-comments/{commentId}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/reports"
+      ],
+      "notes": [
+        "Delete an internal comment from a report",
+        "Deletes internal comment; only author can delete",
+        "Parameters: reportId, commentId",
+        "Documented responses: 204, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/{id}/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/reports"
+      ],
+      "notes": [
+        "Get messages for a report",
+        "Gets messages for report; staff and reporter access only",
+        "Parameters: id",
+        "Documented responses: 200, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/{id}/messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/reports"
+      ],
+      "notes": [
+        "Send a message about a report",
+        "Sends message to reporter; staff access only",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/reports"
+      ],
+      "notes": [
+        "Get a specific report by ID",
+        "Gets specific report by ID; requires auth",
+        "Parameters: id",
+        "Documented responses: 200, 404, 401"
+      ]
+    },
+    {
+      "path": "/api/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "List municipality roles",
+        "Lists municipality roles; requires admin role",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Register new citizen",
+        "Registers new citizen; requires RegisterRequest body",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 409, 500"
+      ]
+    },
+    {
+      "path": "/api/users/me",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/sessions"
+      ],
+      "notes": [
+        "Update current user profile settings",
+        "Updates citizen profile; requires active session",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/users/me/password",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/sessions"
+      ],
+      "notes": [
+        "Update password",
+        "Updates password; requires active session",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401"
+      ]
+    },
+    {
+      "path": "/api/users/external-maintainers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/companies"
+      ],
+      "notes": [
+        "Get external maintainers by category",
+        "Gets external maintainers by category; requires staff role",
+        "Parameters: category",
+        "Documented responses: 200, 400, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/api/users/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/reports"
+      ],
+      "notes": [
+        "Get notifications for current user",
+        "Gets notifications; triggered by status changes or messages",
+        "Parameters: is_read",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/users/notifications/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/users/notifications"
+      ],
+      "notes": [
+        "Mark notification as read/unread",
+        "Marks notification as read/unread; only owner can update",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/users/username/{username}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Find user by username",
+        "Finds user by username; public access",
+        "Parameters: username",
+        "Documented responses: 200, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/users/telegram-link-code",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/users/me"
+      ],
+      "notes": [
+        "Generate Telegram link code",
+        "Generates Telegram link code; requires active session",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/users/telegram-status",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/users/me"
+      ],
+      "notes": [
+        "Get Telegram link status",
+        "Checks Telegram link status; requires active session",
+        "Documented responses: 200, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/users/telegram-confirm",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/users/telegram-link-code"
+      ],
+      "notes": [
+        "Confirm Telegram link",
+        "Confirms Telegram link after user acknowledgment",
+        "Documented responses: 200, 400"
+      ]
+    },
+    {
+      "path": "/api/users/telegram-unlink",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/api/users/me"
+      ],
+      "notes": [
+        "Unlink Telegram account",
+        "Removes Telegram link; requires active session",
+        "Documented responses: 200, 400, 401"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "POST /api/sessions initiates login and creates session.",
+    "GET /api/sessions/current and DELETE /api/sessions/current manage session lifecycle.",
+    "POST /api/users registers citizen without auth; POST /api/sessions/verify activates account after email verification.",
+    "Most endpoints require authentication via active session created by POST /api/sessions.",
+    "Admin-only endpoints include POST /api/companies, GET /api/departments, and user management operations.",
+    "Citizen endpoints (e.g., PATCH /api/users/me) require authenticated citizen session.",
+    "Operations marked auth_required need an authenticated session during test setup."
+  ],
+  "dependencies": [
+    "POST /api/users must precede POST /api/sessions/verify for account activation.",
+    "POST /api/companies must precede PATCH /api/reports/{id}/assign-external to ensure valid external maintainer assignment.",
+    "GET /api/departments/roles/mapping is prerequisite for POST /api/municipality/users to assign roles.",
+    "POST /api/sessions must precede all authenticated endpoints requiring session state.",
+    "PATCH /api/reports/{id}/status depends on prior report creation via POST /api/reports.",
+    "POST /api/users -> POST /api/sessions/verify: Verification requires a registered but unverified account.",
+    "GET /api/departments/roles/mapping -> POST /api/municipality/users: User creation requires valid department_role_ids from mapping endpoint.",
+    "POST /api/companies -> PATCH /api/reports/{id}/assign-external: External maintainer assignment requires existing company with matching category.",
+    "POST /api/sessions -> GET /api/sessions/current: Current user endpoint requires active session from login.",
+    "POST /api/reports -> PUT /api/reports/{id}/status: Status update requires existing report resource."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/users",
+      "dependent_method": "POST",
+      "dependent_path": "/api/sessions/verify",
+      "dependency_type": "state",
+      "reason": "Verification requires a registered but unverified account."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/api/departments/roles/mapping",
+      "dependent_method": "POST",
+      "dependent_path": "/api/municipality/users",
+      "dependency_type": "resource",
+      "reason": "User creation requires valid department_role_ids from mapping endpoint."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/companies",
+      "dependent_method": "PATCH",
+      "dependent_path": "/api/reports/{id}/assign-external",
+      "dependency_type": "authorization",
+      "reason": "External maintainer assignment requires existing company with matching category."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/sessions",
+      "dependent_method": "GET",
+      "dependent_path": "/api/sessions/current",
+      "dependency_type": "state",
+      "reason": "Current user endpoint requires active session from login."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/api/reports/{id}/status",
+      "dependency_type": "resource",
+      "reason": "Status update requires existing report resource."
+    }
+  ],
+  "risks": [
+    "Ambiguity in role-based access control for report status transitions.",
+    "Potential race conditions during email verification code expiration.",
+    "Lack of explicit error handling for concurrent session management.",
+    "Unclear behavior when multiple roles are assigned via PUT /api/municipality/users/{id}."
+  ]
+}

@@ -1,0 +1,282 @@
+{
+  "requirement_id": "PT28",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/approved", "operation_id": null}
+  ],
+  "evidence": ["GET /reports/approved retrieves approved reports without auth"],
+  "missing_behaviors": ["Interactive map visualization is UI-only functionality not exposed in REST contract"],
+  "rationale": "Data endpoint exists but map rendering is UI functionality, not REST evidence"
+}
+{
+  "requirement_id": "PT24",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/reports/assignExternal", "operation_id": null}
+  ],
+  "evidence": ["POST /reports/assignExternal assigns report to external office"],
+  "missing_behaviors": [],
+  "rationale": "Endpoint explicitly documents assigning reports to external offices"
+}
+{
+  "requirement_id": "PT25",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PATCH", "path": "/reports/external-maintainer/:id", "operation_id": null}
+  ],
+  "evidence": ["PATCH /reports/external-maintainer/:id updates status of report assigned to external maintainer"],
+  "missing_behaviors": [],
+  "rationale": "Endpoint explicitly documents updating report status for external maintainers"
+}
+{
+  "requirement_id": "PT26",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Internal comments/note exchange functionality not documented in OpenAPI contract"],
+  "rationale": "No endpoint exists for internal communication/comments on reports"
+}
+{
+  "requirement_id": "PT01",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/temporary", "operation_id": null},
+    {"method": "POST", "path": "/session", "operation_id": null}
+  ],
+  "evidence": ["POST /users/temporary creates temporary user, POST /session performs login"],
+  "missing_behaviors": ["Full registration with name/username not explicitly documented; only temporary user flow shown"],
+  "rationale": "Registration endpoints exist but full citizen registration with username/name not clearly exposed"
+}
+{
+  "requirement_id": "PT27",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/otp/resend", "operation_id": null},
+    {"method": "POST", "path": "/users/temporary/verify", "operation_id": null}
+  ],
+  "evidence": ["POST /otp/resend resends OTP email, POST /users/temporary/verify verifies OTP and creates user"],
+  "missing_behaviors": [],
+  "rationale": "OTP verification flow is fully documented with resend and verify endpoints"
+}
+{
+  "requirement_id": "PT02",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/employees", "operation_id": null},
+    {"method": "GET", "path": "/offices", "operation_id": null}
+  ],
+  "evidence": ["POST /employees creates new employee, GET /offices retrieves all offices"],
+  "missing_behaviors": [],
+  "rationale": "Employee creation and office management endpoints support municipality user setup"
+}
+{
+  "requirement_id": "PT03",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/roles", "operation_id": null}
+  ],
+  "evidence": ["GET /roles retrieves all roles"],
+  "missing_behaviors": ["No endpoint for assigning roles to users is documented"],
+  "rationale": "Role retrieval exists but role assignment functionality not exposed in contract"
+}
+{
+  "requirement_id": "PT04",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for geolocation/map selection when creating report is documented"],
+  "rationale": "Report creation endpoint exists but no geolocation parameter or map selection functionality exposed"
+}
+{
+  "requirement_id": "PT05",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/reports", "operation_id": null}
+  ],
+  "evidence": ["POST /users/reports creates new report"],
+  "missing_behaviors": ["Classification parameters not explicitly documented in endpoint summary"],
+  "rationale": "Report creation endpoint exists but classification details not visible in contract"
+}
+{
+  "requirement_id": "PT06",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/approved", "operation_id": null},
+    {"method": "POST", "path": "/reports/reject", "operation_id": null}
+  ],
+  "evidence": ["GET /reports/approved retrieves approved reports, POST /reports/reject rejects a report"],
+  "missing_behaviors": ["No explicit approve endpoint documented for review workflow"],
+  "rationale": "Reject exists but approve action not explicitly exposed in contract"
+}
+{
+  "requirement_id": "PT07",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/approved", "operation_id": null}
+  ],
+  "evidence": ["GET /reports/approved retrieves approved reports without auth"],
+  "missing_behaviors": ["Interactive map visualization is UI-only functionality not exposed in REST contract"],
+  "rationale": "Data endpoint exists but map rendering is UI functionality, not REST evidence"
+}
+{
+  "requirement_id": "PT15",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/reports", "operation_id": null}
+  ],
+  "evidence": ["POST /users/reports creates new report"],
+  "missing_behaviors": ["Anonymity parameter not explicitly documented in endpoint summary"],
+  "rationale": "Report creation endpoint exists but anonymity setting not visible in contract"
+}
+{
+  "requirement_id": "PT08",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/assigned", "operation_id": null},
+    {"method": "GET", "path": "/reports/officers/{officerId}/office/{officeId}", "operation_id": null}
+  ],
+  "evidence": ["GET /reports/assigned retrieves assigned reports, GET /reports/officers/{officerId}/office/{officeId} retrieves reports for specific officer"],
+  "missing_behaviors": [],
+  "rationale": "Endpoints explicitly document retrieving assigned reports for technical office staff"
+}
+{
+  "requirement_id": "PT09",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "PUT", "path": "/api/user/profile", "operation_id": null},
+    {"method": "POST", "path": "/notifications", "operation_id": null}
+  ],
+  "evidence": ["PUT /api/user/profile updates user profile, POST /notifications creates new notification"],
+  "missing_behaviors": ["Notification management configuration not fully documented; virtual presence settings unclear"],
+  "rationale": "Profile update and notification creation exist but full account configuration not exposed"
+}
+{
+  "requirement_id": "PT30",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No search endpoint with address/location parameter is documented"],
+  "rationale": "No search functionality for reports by area/address exposed in contract"
+}
+{
+  "requirement_id": "PT10",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/roles", "operation_id": null}
+  ],
+  "evidence": ["GET /roles retrieves all roles"],
+  "missing_behaviors": ["No endpoint for modifying/updating user roles is documented"],
+  "rationale": "Role retrieval exists but role modification functionality not exposed in contract"
+}
+{
+  "requirement_id": "PT11",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PATCH", "path": "/reports/{reportID}", "operation_id": null},
+    {"method": "POST", "path": "/reports/reassign", "operation_id": null}
+  ],
+  "evidence": ["PATCH /reports/{reportID} updates report status, POST /reports/reassign reassigns report"],
+  "missing_behaviors": [],
+  "rationale": "Endpoints explicitly document updating and managing report statuses"
+}
+{
+  "requirement_id": "PT12",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/reports", "operation_id": null},
+    {"method": "POST", "path": "/bot/verify/username", "operation_id": null}
+  ],
+  "evidence": ["POST /users/reports creates new report, POST /bot/verify/username verifies Telegram username"],
+  "missing_behaviors": ["No explicit endpoint for creating reports via Telegram bot is documented"],
+  "rationale": "Report creation and bot verification exist but direct bot-to-report-creation flow not exposed"
+}
+{
+  "requirement_id": "PT13",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for checking report status via Telegram bot is documented"],
+  "rationale": "Bot verification endpoints exist but no status check functionality exposed"
+}
+{
+  "requirement_id": "PT14",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for help/assistance commands from Telegram bot is documented"],
+  "rationale": "Bot verification endpoints exist but no help command functionality exposed"
+}
+{
+  "requirement_id": "PT18",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for replying to messages from municipal operators is documented"],
+  "rationale": "Notification creation exists but reply functionality not exposed in contract"
+}
+{
+  "requirement_id": "PT16",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for following reports by other citizens is documented"],
+  "rationale": "No follow functionality exposed in contract"
+}
+{
+  "requirement_id": "PT17",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for push notifications via Telegram bot is documented"],
+  "rationale": "Notification creation exists but push notification delivery not exposed in contract"
+}
+{
+  "requirement_id": "PT19",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for configuring email alerts is documented"],
+  "rationale": "Notification creation exists but email alert configuration not exposed in contract"
+}
+{
+  "requirement_id": "PT20",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for public statistics about reports is documented"],
+  "rationale": "No statistics functionality exposed in contract"
+}
+{
+  "requirement_id": "PT21",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for detailed private statistics is documented"],
+  "rationale": "No statistics functionality exposed in contract"
+}
+{
+  "requirement_id": "PT29",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for configuring automatic assignment of reports is documented"],
+  "rationale": "Report assignment endpoints exist but auto-assignment configuration not exposed in contract"
+}
+{
+  "requirement_id": "PT22",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/approved", "operation_id": null}
+  ],
+  "evidence": ["GET /reports/approved retrieves approved reports"],
+  "missing_behaviors": ["Filtering functionality not explicitly documented in endpoint summary"],
+  "rationale": "Report retrieval exists but filtering capabilities not exposed in contract"
+}
+{
+  "requirement_id": "PT23",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for downloading summary table of reports is documented"],
+  "rationale": "Report retrieval exists but download functionality not exposed in contract"
+}

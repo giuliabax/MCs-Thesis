@@ -1,0 +1,156 @@
+[
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/verify-code",
+    "http_method": "POST",
+    "prompt": "Send a POST request to /verify-code with the confirmation code received during registration. Assert that the response indicates successful verification and the user session is now active.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core user onboarding flow defined in PT27."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen attempts to verify registration with an expired confirmation code.",
+    "api_endpoint": "/verify-code",
+    "http_method": "POST",
+    "prompt": "Send a POST request to /verify-code using a code that is older than 30 minutes. Assert that the system rejects the verification attempt, preventing account activation until re-registration or admin intervention.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Simulate a time delta of >30 minutes between code generation and verification request."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the specific edge case regarding expired confirmation codes mentioned in domain rules."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Unauthenticated user attempts to verify registration code.",
+    "api_endpoint": "/verify-code",
+    "http_method": "POST",
+    "prompt": "Send a POST request to /verify-code without providing any authentication headers or session tokens. Assert that the endpoint accepts the request (as per auth_notes) and processes the verification logic correctly.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Verifies that the /verify-code endpoint correctly handles unauthenticated requests as specified in API analysis authentication notes."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up a new municipality user.",
+    "api_endpoint": "/operator-registrations",
+    "http_method": "POST",
+    "prompt": "First, retrieve the list of available roles via GET /roles. Then, send a POST request to /operator-registrations with a payload containing a valid role_id from the previous step and user details. Assert that the new operator is created successfully.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute GET /roles to obtain a valid role_id for the payload."
+    ],
+    "cleanup_strategy": "Delete the newly created operator via DELETE /operators/{operatorId} if it was not intended to persist, or verify no resource was created if the test failed.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates PT02 while respecting the dependency on role data defined in dependency_edges."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to an existing municipality user.",
+    "api_endpoint": "/operators/{operatorId}/roles",
+    "http_method": "PATCH",
+    "prompt": "Send a PATCH request to /operators/{operatorId}/roles with a payload specifying the desired role assignments for the operator. Assert that the roles are updated successfully on the target user.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an existing operator ID is available (created via PT02 or pre-existing)."
+    ],
+    "cleanup_strategy": "Revert the role changes by sending a PATCH request with an empty roles array or null, restoring the user to their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the core functionality of PT03 for assigning roles."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to a municipality user.",
+    "api_endpoint": "/operators/{operatorId}/roles",
+    "http_method": "PATCH",
+    "prompt": "Send a PATCH request to /operators/{operatorId}/roles with a payload that removes specific roles or changes the role set. Assert that the modification is applied correctly and the user's current roles reflect the change.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an existing operator with specific roles exists."
+    ],
+    "cleanup_strategy": "Restore the original role set by sending a PATCH request with the initial role configuration.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates PT10, focusing on the modification aspect of role management."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator attempts to assign a non-existent role to a user.",
+    "api_endpoint": "/operators/{operatorId}/roles",
+    "http_method": "PATCH",
+    "prompt": "Send a PATCH request to /operators/{operatorId}/roles with a payload containing a role_id that does not exist in the system (verified via GET /roles). Assert that the request fails with an appropriate error code indicating invalid input.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute GET /roles to confirm a list of valid role_ids."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests error handling when invalid data is provided for PT03."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator attempts to modify roles without authentication.",
+    "api_endpoint": "/operators/{operatorId}/roles",
+    "http_method": "PATCH",
+    "prompt": "Send a PATCH request to /operators/{operatorId}/roles without providing valid authentication headers. Assert that the request is rejected due to lack of authorization.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that protected endpoints (PT10) enforce authentication constraints."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator attempts to register an operator with a null role_id.",
+    "api_endpoint": "/operator-registrations",
+    "http_method": "POST",
+    "prompt": "Send a POST request to /operator-registrations with a payload where the role_id field is null or missing. Assert that the system rejects the registration attempt.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests input validation for the operator registration endpoint in PT02."
+  }
+]

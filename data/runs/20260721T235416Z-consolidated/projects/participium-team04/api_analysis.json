@@ -1,0 +1,159 @@
+{
+  "summary": "API supporting NextAuth authentication, Telegram bot integration for user registration and report submission, report retrieval, and static file serving.",
+  "operations": [
+    {
+      "path": "/api/auth/{nextauth}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "NextAuth GET routes",
+        "Handles NextAuth GET endpoints: session, csrf, providers, signin, signout, callback.",
+        "Parameters: nextauth",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/api/auth/{nextauth}",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "NextAuth POST routes",
+        "Handles NextAuth POST endpoints: callback/credentials (login), signout. Requires identifier and password.",
+        "Parameters: nextauth",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/api/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get messages of a report",
+        "Requires reportId query parameter to fetch messages for a specific report.",
+        "Parameters: reportId",
+        "Documented responses: 200, 400, 404, 500"
+      ]
+    },
+    {
+      "path": "/api/telegram/isAuthenticated",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Check whether a Telegram chat is linked to a registered user",
+        "Checks if a Telegram chat is linked to a registered user. Requires chatId.",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 500"
+      ]
+    },
+    {
+      "path": "/api/telegram/registration",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Link a Telegram account to a Participium user via auth token",
+        "Links Telegram account to Participium user. Requires authToken and chatId.",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 500"
+      ]
+    },
+    {
+      "path": "/api/telegram/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get reports for a Telegram user",
+        "Fetches reports for a Telegram user. Requires chatId query parameter.",
+        "Parameters: chatId",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/api/telegram/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /api/auth/{nextauth}: Report creation returns 401, implying prior authentication is required."
+      ],
+      "notes": [
+        "Create a report via the Telegram bot",
+        "Creates a report via Telegram bot. Requires title, description, latitude, longitude, category, chatId.",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 500"
+      ]
+    },
+    {
+      "path": "/api/telegram/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /api/telegram/registration: User must be registered to access their reports."
+      ],
+      "notes": [
+        "Get a single report for a Telegram user",
+        "Fetches a single report. Requires id (path) and chatId (query).",
+        "Parameters: id, chatId",
+        "Documented responses: 200, 400, 500"
+      ]
+    },
+    {
+      "path": "/api/uploads/{filename}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Serve an uploaded image file",
+        "Serves an uploaded image file. Requires filename (path).",
+        "Parameters: filename",
+        "Documented responses: 200, 403, 404"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "NextAuth endpoints at /api/auth/{nextauth} handle session management and login callbacks but do not enforce auth_required in the schema.",
+    "Telegram report creation (/api/telegram/reports POST) returns 401, suggesting authentication may be enforced at runtime despite auth_required being null."
+  ],
+  "dependencies": [
+    "User must register Telegram account via /api/telegram/registration before using /api/telegram/isAuthenticated or fetching reports.",
+    "Report creation (/api/telegram/reports POST) likely depends on prior user registration and potentially authentication (indicated by 401 response).",
+    "POST /api/telegram/registration -> GET /api/telegram/reports/{id}: User must be registered to access their reports.",
+    "POST /api/auth/{nextauth} -> POST /api/telegram/reports: Report creation returns 401, implying prior authentication is required."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/telegram/registration",
+      "dependent_method": "GET",
+      "dependent_path": "/api/telegram/reports/{id}",
+      "dependency_type": "state",
+      "reason": "User must be registered to access their reports."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/auth/{nextauth}",
+      "dependent_method": "POST",
+      "dependent_path": "/api/telegram/reports",
+      "dependency_type": "authorization",
+      "reason": "Report creation returns 401, implying prior authentication is required."
+    }
+  ],
+  "risks": [
+    "auth_required field is null for all operations, but some (e.g., report creation) return 401, creating ambiguity about when auth is actually enforced.",
+    "NextAuth endpoints are catch-all routes; specific behavior depends on the path segment (e.g., session vs callback), which is not explicitly detailed beyond generic descriptions."
+  ]
+}

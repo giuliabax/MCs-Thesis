@@ -1,0 +1,115 @@
+{
+  "summary": "API supporting NextAuth authentication, Telegram bot integration for user registration and report creation/retrieval, and static file serving.",
+  "operations": [
+    {
+      "path": "/api/auth/{nextauth}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Handles NextAuth GET endpoints: session, csrf, providers, signin, signout, callback."]
+    },
+    {
+      "path": "/api/auth/{nextauth}",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Handles NextAuth POST endpoints: callback/credentials (login), signout. Expects identifier and password."]
+    },
+    {
+      "path": "/api/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Requires reportId query parameter to fetch messages for a specific report."]
+    },
+    {
+      "path": "/api/telegram/isAuthenticated",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Checks if a Telegram chat is linked to a registered user. Requires chatId."]
+    },
+    {
+      "path": "/api/telegram/registration",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Links Telegram account to Participium user. Requires authToken and chatId."]
+    },
+    {
+      "path": "/api/telegram/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Fetches reports for a Telegram user. Requires chatId query parameter."]
+    },
+    {
+      "path": "/api/telegram/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Creates a report via Telegram bot. Requires title, description, latitude, longitude, category, chatId."]
+    },
+    {
+      "path": "/api/telegram/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Fetches a single report. Requires id (path) and chatId (query)."]
+    },
+    {
+      "path": "/api/uploads/{filename}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": ["Serves an uploaded image file. Requires filename (path)."]
+    }
+  ],
+  "authentication_notes": [
+    "NextAuth endpoints at /api/auth/{nextauth} handle session management and login callbacks but do not enforce auth_required in the schema.",
+    "Telegram report creation (/api/telegram/reports POST) returns 401, implying authentication may be enforced at runtime despite auth_required being null."
+  ],
+  "dependencies": [
+    "User must register Telegram account via /api/telegram/registration before fetching or creating reports for that chat.",
+    "Report creation (/api/telegram/reports POST) likely depends on prior registration to establish chatId linkage."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/telegram/registration",
+      "dependent_method": "GET",
+      "dependent_path": "/api/telegram/reports/{id}",
+      "dependency_type": "state",
+      "reason": "Report retrieval requires the chat to be registered and linked to a user."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/telegram/registration",
+      "dependent_method": "GET",
+      "dependent_path": "/api/telegram/reports",
+      "dependency_type": "state",
+      "reason": "Listing reports requires the chat to be registered."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/api/telegram/registration",
+      "dependent_method": "POST",
+      "dependent_path": "/api/telegram/reports",
+      "dependency_type": "state",
+      "reason": "Creating a report requires the chat to be registered."
+    }
+  ],
+  "risks": [
+    "auth_required is null for all operations, but 401 responses exist on some endpoints (e.g., /api/telegram/reports POST), creating ambiguity about when authentication is actually enforced.",
+    "/api/messages GET requires reportId but does not specify if the user must own or be associated with that report."
+  ]
+}

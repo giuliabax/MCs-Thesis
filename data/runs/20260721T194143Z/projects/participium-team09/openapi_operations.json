@@ -1,0 +1,827 @@
+[
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/register",
+    "summary": "Register a new citizen",
+    "description": "This api allow a user to sign up as a citizen in the system",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/UserRegister"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "409"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/register-request",
+    "summary": "Request citizen registration with email verification",
+    "description": "Submits a registration request that stores user data temporarily in Redis with a 6-digit confirmation code. The data expires after 1800 seconds (30 minutes). If the user submits the same email again before expiration, the previous record is replaced with the new one. If different credentials are used, a new record is created and old records expire naturally.\n",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/UserRegister"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "409"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/verify-registration",
+    "summary": "Verify OTP and complete citizen registration",
+    "description": "Verifies the 6-digit confirmation code sent during registration request. If the code matches the one stored in Redis for the given email, the user is created in the database and automatically logged in. The temporary registration data in Redis is deleted after successful verification.\n",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/VerifyRegistrationRequest"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "404",
+      "409"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/login",
+    "summary": "Login for citizens or staff and start a session",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/UserLogin"
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/logout",
+    "summary": "Close the authenticated user's session",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "204"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/auth/session",
+    "summary": "Returns the authenticated session status",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/me",
+    "summary": "Get logged in user's profile",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/users/me",
+    "summary": "Update logged in user's profile",
+    "description": "Citizens can upload a personal photo, add their Telegram username and switch off/on email notifications in the configuration panel.",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/UserProfileUpdate"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "404"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports",
+    "summary": "Citizen submits a new report",
+    "description": "Allows an authenticated citizen to file a new report with full classification details.",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ReportCreate"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports",
+    "summary": "Retrieve all reports",
+    "description": "Returns the complete list of reports stored in the platform, ordered by creation date.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/user/{userId}",
+    "summary": "Retrieve reports created by a specific user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "userId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/assigned",
+    "summary": "(Citizen) Get all Assigned reports",
+    "description": "Allows a citizen to retrieve all reports with status 'Assigned'.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{reportId}",
+    "summary": "Retrieve a single report by id",
+    "description": "Provides the full details of a single report.",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "404"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/municipal/reports/{reportId}/category",
+    "summary": "(Municipal Staff) Change report category",
+    "description": "Allows Public Relations Officers to change the report category if it was incorrectly classified.",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ReportCategoryUpdate"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Municipal"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/municipal/reports/{reportId}",
+    "summary": "(URP) Review a report (Accept/Reject)",
+    "description": "Allows the URP officer to accept a report (automatically assigning it to the technical staff via load balancing) or reject it.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": "Unique ID of the report"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ReportReview"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409"
+    ],
+    "tags": [
+      "Municipal"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/upload/photo",
+    "summary": "Upload a single photo for a report",
+    "description": "Allows an authenticated user to upload a single photo file. The photo will be stored on the server and a URL will be returned.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "photo"
+      ],
+      "properties": {
+        "photo": {
+          "type": "string",
+          "format": "binary",
+          "description": "Image file (JPEG, PNG, GIF, or WebP). Maximum size 5MB."
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Upload"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/upload/photos",
+    "summary": "Upload multiple photos for a report",
+    "description": "Allows an authenticated user to upload up to 3 photo files. The photos will be stored on the server and URLs will be returned.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "photos"
+      ],
+      "properties": {
+        "photos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "binary"
+          },
+          "description": "Image files (JPEG, PNG, GIF, or WebP). Maximum 3 files, 5MB each."
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Upload"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/admin/users",
+    "summary": "(Admin) Retrieves all users in the system and their details.",
+    "description": "Retrieves a comprehensive list of users including their N:M roles, technical offices, company details, and reports.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/admin/users",
+    "summary": "(Admin) Create a new municipal/staff member user",
+    "description": "This api allow an admin to register a new municipal or staff member user. It is necessary to pass a valid roleId and technicalOfficeId.",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/AdminUserCreate"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "409"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/admin/users/{userId}/roles",
+    "summary": "(Admin) Update user roles with associations",
+    "description": "Allows an admin to update the roles assigned to a user with their associated offices and companies. This endpoint replaces all existing roles and their associations with the provided data. The relationship between User and Role is many-to-many, and roles can have associations with technical offices (for technical_staff) or companies (for external_maintainer). The same roleId can be assigned multiple times if it has different associations (e.g., technical_staff for different offices).\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "userId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": "Unique identifier of the user whose roles are to be updated"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/UserRoleUpdate"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/admin/roles",
+    "summary": "(Admin) Ottiene la lista di tutti i ruoli disponibili",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "403"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/admin/companies",
+    "summary": "(Admin) Get all companies",
+    "description": "Allows an admin to retrieve a list of all external companies in the system. This is used for assigning external_maintainer roles to users.\n",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/admin/users/{userId}",
+    "summary": "(Admin) Delete a municipality user",
+    "description": "Allows an admin to delete a specific municipality or staff user.  Requires Admin privileges. Cannot delete Citizens or own account.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "userId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": "The ID of the user to delete"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "204",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/municipal/reports/pending",
+    "summary": "(Municipal Public Relations Officer) Retrieve all reports in 'Pending Approval' status",
+    "description": "Returns the complete list of reports requiring approval, visible only to authorized staff.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Municipal"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/statistics/public",
+    "summary": "Get public statistics",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Statistics"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/statistics/private",
+    "summary": "Get private statistics (Admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "403"
+    ],
+    "tags": [
+      "Statistics"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/offices",
+    "summary": "(Admin) Get the list of all technical offices",
+    "description": "Returns a list of all technical offices, showing only their ID and Name.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Technical Offices"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/offices/reports/assigned",
+    "summary": "(Technical Staff) Retrieve reports assigned to me",
+    "description": "Allows a technical staff member to view all reports assigned to them personally.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Technical Offices"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/offices/reports/{reportId}/status",
+    "summary": "(Technical Staff or External Maintainer) Update report status",
+    "description": "Allows a technical staff member or external maintainer to update the status of a report assigned to them. The allowed statuses are: 'In Progress', 'Resolved', 'Suspended'. The user must be either the technical officer or external maintainer assigned to the report.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": "Unique ID of the report to update"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ReportStatusUpdate"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Technical Offices"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/offices/reports/{reportId}/assign-external",
+    "summary": "(Technical Staff) Assign a report to an external maintainer",
+    "description": "Allows a technical staff member to assign a report to an external maintainer from a specific company. The system uses load balancing to automatically select the external maintainer with the fewest active reports within the specified company. Only reports in 'Assigned' or 'In Progress' status can be assigned to external maintainers.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": "Unique ID of the report to assign"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ExternalMaintainerAssignment"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409"
+    ],
+    "tags": [
+      "Technical Offices"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/offices/reports/{reportId}/companies",
+    "summary": "(Technical Staff) Get eligible companies for a report",
+    "description": "Retrieves the list of external maintainer companies capable of handling a specific report based on its category.",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": "Unique ID of the report."
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Technical Offices"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/external-maintainer/reports/{reportId}/status",
+    "summary": "(External Maintainer) Update report status",
+    "description": "Allows an external maintainer to update the status of a report assigned to them. The allowed statuses are: 'In Progress', 'Resolved', 'Suspended'. The external maintainer must be assigned to the report.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": "Unique ID of the report to update"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ReportStatusUpdate"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "External Maintainer"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/messages/reports/{reportId}",
+    "summary": "Create a new message for a report",
+    "description": "Allows a technical officer or external maintainer assigned to a report to create a new message. The user must be either the technicalOfficerId or externalMaintainerId of the specified report. The userId is automatically taken from the authenticated session.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": "Unique ID of the report."
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/MessageCreate"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Messages"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/messages/reports/{reportId}",
+    "summary": "Retrieve all messages for a report",
+    "description": "Get the internal chat history for a specific report. Access is restricted: - Citizens cannot access this endpoint. - Admins can access all reports. - Technical Officers and External Maintainers can access only if assigned to the specific report.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": "Unique ID of the report."
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Messages"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/notifications",
+    "summary": "Retrieve user notifications",
+    "description": "Fetches a list of notifications for the logged-in user, ordered by date (newest first). Includes associated report details if applicable.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  }
+]

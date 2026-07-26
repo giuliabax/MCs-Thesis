@@ -1,0 +1,141 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Execute a happy path registration. Provide a valid JSON body with 'name', 'username', and 'email'. Expect a success response indicating account creation pending verification.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core entry point for new users as per PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/citizens/verify-email",
+    "http_method": "POST",
+    "prompt": "Execute the happy path for email verification. First, call /citizens/verification-code (auth_required: true) to generate a valid code. Then, call /citizens/verify-email with that code in the body. Expect account activation.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Call POST /citizens/verification-code to obtain a valid verification code."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the stateful workflow required by PT27 and domain rules regarding confirmation codes."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal comments on a report.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Execute the happy path for adding an internal comment. Use an authenticated session with role 'technical_office_staff'. Provide a JSON body with 'content' and optionally 'author_id'. Expect success.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure an existing report ID is available (e.g., create a dummy report or use a known ID)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the internal communication channel defined in PT26."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/citizens/verify-email",
+    "http_method": "POST",
+    "prompt": "Execute an edge case where the verification code has expired. Call POST /citizens/verification-code, wait 31 minutes (simulate delay), then call POST /citizens/verify-email with the old code. Expect failure.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Call POST /citizens/verification-code to obtain a valid verification code."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests the domain rule that confirmation codes are valid for 30 minutes (edge case)."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Execute a negative test for registration. Send a POST request to /registration with missing mandatory fields (e.g., omit 'email'). Expect validation error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Validates that mandatory fields (email) are enforced as per domain rules."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal comments on a report.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Execute a negative test for internal comments. Attempt to POST to /reports/{id}/internal-comments using an unauthenticated session or a 'citizen' role instead of 'technical_office_staff'. Expect access denied.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an existing report ID is available."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Validates that internal comments are restricted to authorized staff as per PT26 and domain rules."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a stateful workflow for messaging. First, ensure an authenticated citizen session exists. Then, POST a message to /reports/{id}/messages with 'sender_id' (operator) and 'content'. Verify the message is created.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an existing report ID is available.",
+      "Ensure an authenticated citizen session exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the chat functionality defined in PT18 and API analysis for message creation."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Execute a negative test for user creation. Attempt to POST to /admin/createuser without providing the required 'role' or 'email' fields, or with an invalid role string. Expect validation error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system_administrator",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Validates input validation for admin user creation defined in PT02."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a cleanup test for messaging. Attempt to POST a message to /reports/{id}/messages using an unauthenticated session or a 'citizen' role when the endpoint requires elevated privileges (e.g., if the report is locked). If the operation succeeds unexpectedly, delete the created message resource.",
+    "test_type": "cleanup",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure an existing report ID is available."
+    ],
+    "cleanup_strategy": "Delete the created message resource if it exists; verify no unauthorized messages were left behind.",
+    "expected_status_codes": ["403", "201"],
+    "rationale": "Ensures that unauthorized access attempts to create messages do not leave orphaned resources."
+  }
+]

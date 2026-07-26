@@ -1,0 +1,143 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/users/signup",
+    "http_method": "POST",
+    "prompt": "Execute a user registration flow. Send a POST request to /users/signup with valid JSON containing 'name', 'username', and 'email'. Verify the response indicates successful registration (e.g., 201 Created or similar success code) and that the account is now active for login.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [201],
+    "rationale": "Validates the core entry point for new users as per PT01."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen attempts to register without providing an email address.",
+    "api_endpoint": "/users/signup",
+    "http_method": "POST",
+    "prompt": "Execute a user registration flow with missing mandatory fields. Send a POST request to /users/signup containing only 'name' and 'username', omitting the 'email' field. Verify the system rejects the request due to validation failure.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [400],
+    "rationale": "Validates that the system enforces the mandatory email field requirement from PT01."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates report status to 'Resolved'.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Execute a status update flow for an external maintainer. First, ensure a valid session exists for the 'external_maintainer' role (setup_needed). Then, send a PUT request to /reports/{id}/status with the payload {'status': 'Resolved'}. Verify the status changes successfully.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Authenticate as 'external_maintainer' role to obtain a valid session token."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., if status update logic creates audit logs or side effects).",
+    "expected_status_codes": [200],
+    "rationale": "Validates the core workflow for external maintainers to resolve reports as per PT25."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{id}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Execute a report assignment flow. First, ensure a valid session exists for the 'technical_office_staff' role and verify that at least one external maintainer exists (using GET /users/maintainers). Then, send a PUT request to /reports/{id}/assign-external with the payload containing the valid 'maintainerId'. Verify the assignment succeeds.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Authenticate as 'technical_office_staff' role.",
+      "Verify existence of at least one external maintainer via GET /users/maintainers."
+    ],
+    "cleanup_strategy": "Reset the report status back to 'Pending Approval' or delete the report if the system allows deletion for testing purposes; otherwise, verify no unintended side effects occurred.",
+    "expected_status_codes": [200],
+    "rationale": "Validates the dependency between maintainer existence and assignment capability as per PT24 and API analysis."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer attempts to update a report status without being assigned or having permission.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Execute an unauthorized access flow. Authenticate as 'external_maintainer' role. Send a PUT request to /reports/{id}/status with payload {'status': 'Resolved'} for a report ID that is NOT assigned to this maintainer (or not accessible). Verify the system rejects the request.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Authenticate as 'external_maintainer' role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [403],
+    "rationale": "Validates that external maintainers cannot modify reports they do not own or have access to, ensuring data integrity."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff attempts to assign a report to a non-existent external maintainer.",
+    "api_endpoint": "/reports/{id}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Execute an invalid resource reference flow. Authenticate as 'technical_office_staff' role. Send a PUT request to /reports/{id}/assign-external with a payload containing a 'maintainerId' that does not exist in the system (e.g., '99999'). Verify the system rejects the request.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Authenticate as 'technical_office_staff' role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [400],
+    "rationale": "Validates that the system handles invalid maintainer IDs gracefully and prevents assignment to non-existent entities."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report status to 'Rejected'.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Execute a status update flow for rejection. Authenticate as 'technical_office_staff' role. Send a PUT request to /reports/{id}/status with payload {'status': 'Rejected', 'explanation': 'Invalid report details'} (as per domain rules requiring explanation). Verify the status changes and the explanation is stored.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Authenticate as 'technical_office_staff' role."
+    ],
+    "cleanup_strategy": "Reset the report status back to 'Pending Approval' or delete the report if allowed.",
+    "expected_status_codes": [200],
+    "rationale": "Validates the ability of technical office staff to reject reports with mandatory explanations as per PT11 and domain rules."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews a report.",
+    "api_endpoint": "/reports/{id}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Execute an unauthorized assignment flow. Authenticate as 'municipal_public_relations_officer' role. Attempt to send a PUT request to /reports/{id}/assign-external (an operation reserved for technical office staff). Verify the system rejects the request due to insufficient privileges.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal_public_relations_officer",
+    "setup_needed": [
+      "Authenticate as 'municipal_public_relations_officer' role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [403],
+    "rationale": "Validates role-based access control (RBAC) ensuring PR officers cannot perform staff-specific actions like external assignment."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer attempts to resolve a report in Case 2 (no access scenario).",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Execute an edge case flow for Case 2. Authenticate as 'external_maintainer' role. Send a PUT request to /reports/{id}/status with payload {'status': 'Resolved'} for a report where the maintainer has no access (Case 2 scenario). Verify the system rejects the resolution attempt, forcing technical office intervention.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Authenticate as 'external_maintainer' role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [403],
+    "rationale": "Validates the specific domain rule for Case 2 where external maintainers cannot resolve reports without technical office intervention."
+  }
+]

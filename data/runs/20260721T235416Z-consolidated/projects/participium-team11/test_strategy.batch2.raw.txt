@@ -1,0 +1,171 @@
+[
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "As a system administrator I want to assign roles to municipality users",
+    "api_endpoint": "/sessions/{id}/role",
+    "http_method": "PATCH",
+    "prompt": "Assign a single role (e.g., 'municipal public relations officer') to the authenticated user session. Use a valid role ID retrieved from /roles.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator via /sessions/login or /sessions/telegram/verify.",
+      "Fetch available roles via GET /roles to obtain valid role IDs."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality of assigning a single role to a user session as per PT03."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "As a system administrator I want to modify roles to municipality users",
+    "api_endpoint": "/sessions/{id}/roles",
+    "http_method": "PUT",
+    "prompt": "Replace the current set of roles for the authenticated user session with a new list containing at least one role ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator via /sessions/login or /sessions/telegram/verify.",
+      "Fetch available roles via GET /roles to obtain valid role IDs."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability to modify (replace) user roles as per PT10."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "As a citizen I want to provide details for my report So that the the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with valid details including a categoryId, description, and location. Ensure the user is authenticated as a citizen.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen via /sessions/login or /sessions/telegram/verify.",
+      "Fetch available categories via GET /categories to obtain a valid categoryId."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (citizens cannot modify/delete, so admin must handle cleanup).",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core workflow of a citizen submitting a report with classification details as per PT05."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "As a municipal public relations officer I want to review and approve or reject reports So that only valid reports are processed further.",
+    "api_endpoint": "/reports/{id}/review",
+    "http_method": "PATCH",
+    "prompt": "Review a report in 'Pending Approval' state. Approve it by setting status to 'Accepted'. Ensure the user is authenticated as a municipal public relations officer.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Authenticate as municipal public relations officer via /sessions/login or /sessions/telegram/verify.",
+      "Ensure a report exists in 'Pending Approval' state (created by citizen)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the approval workflow for reports as per PT06."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "As a citizen I want to provide details for my report So that the the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to create a report without providing a categoryId. This should fail because categories are required for classification.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen via /sessions/login or /sessions/telegram/verify."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the edge case where a required field (categoryId) is missing, ensuring proper classification logic."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "As a municipal public relations officer I want to review and approve or reject reports So that only valid reports are processed further.",
+    "api_endpoint": "/reports/{id}/review",
+    "http_method": "PATCH",
+    "prompt": "Attempt to reject a report without providing an explanation. This should fail because rejected reports require a mandatory explanation.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Authenticate as municipal public relations officer via /sessions/login or /sessions/telegram/verify.",
+      "Ensure a report exists in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the edge case where a mandatory explanation is missing for a rejected report."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "As a citizen I want to provide details for my report So that the the problem is classified correctly.",
+    "api_endpoint": "/reports/{id}",
+    "http_method": "PATCH",
+    "prompt": "Attempt to modify an existing report submitted by the citizen. This should fail because citizens cannot modify their own reports after submission.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen via /sessions/login or /sessions/telegram/verify.",
+      "Ensure a report exists in 'Assigned' or later state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Tests the negative case where a citizen attempts to modify a submitted report, which is forbidden by domain rules."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "As a technical office staff member I want to see the list of reports assigned to me So that I can get an overview of the maintenance to be done",
+    "api_endpoint": "/reports/technician/{userId}",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to the authenticated technical office staff member. Ensure the user has the appropriate role.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via /sessions/login or /sessions/telegram/verify."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality of viewing assigned reports for technical office staff as per PT08."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "As a system administrator I want to assign roles to municipality users",
+    "api_endpoint": "/sessions/{id}/role",
+    "http_method": "PATCH",
+    "prompt": "Attempt to assign a role that does not exist (e.g., 'nonexistent_role') to the authenticated user session.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator via /sessions/login or /sessions/telegram/verify.",
+      "Fetch available roles via GET /roles to confirm the role ID is invalid."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the negative case where an invalid role ID is provided during assignment."
+  }
+]

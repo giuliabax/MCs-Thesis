@@ -1,0 +1,190 @@
+[
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{reportId}/assignExternal",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to assign an existing report to an external maintainer. Ensure the user is authenticated as 'technical office staff member'. Verify that the assignment succeeds and the report status updates or metadata reflects the new assignee.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /reports to create a valid report in 'Pending Approval' state.",
+      "Ensure an external maintainer account exists in the system (via admin setup or prior registration)."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow for requirement PT24, ensuring staff can delegate reports to external parties."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{reportId}/updateStatus",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a report currently in 'Assigned' state. Authenticate as an 'external maintainer'. Attempt to transition the status to 'In Progress'. Verify the response confirms the status change.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /reports to create a report and assign it to an external maintainer (using the endpoint from PT24).",
+      "Ensure the current user session is authenticated as 'external maintainer'."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow for requirement PT25, ensuring external maintainers can progress assigned reports."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange internal comments on a report.",
+    "api_endpoint": "/reports/{reportId}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to add an internal comment/message to a specific report. Authenticate as 'technical office staff member'. Ensure the message body contains sensitive internal notes. Verify that the message is created successfully.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /reports to create a valid report in 'Assigned' state.",
+      "Ensure an external maintainer account exists."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core workflow for requirement PT26, ensuring internal communication channels function correctly."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{reportId}/assignExternal",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to assign a report to an external maintainer. Authenticate as 'technical office staff member'. Attempt to assign the report to a non-existent or invalid external maintainer ID (e.g., empty string or null). Verify that the system rejects this operation with an appropriate error code.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /reports to create a valid report in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400",
+      "404"
+    ],
+    "rationale": "Tests negative behavior for PT24 by attempting to assign a report to an invalid target, ensuring data integrity."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{reportId}/updateStatus",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a report. Authenticate as an 'external maintainer'. Attempt to transition a report that is currently in 'Pending Approval' state directly to 'Resolved', bypassing the 'Assigned' and 'In Progress' states. Verify that the system rejects this invalid state transition.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /reports to create a report in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests negative behavior for PT25 by attempting an invalid state transition, ensuring business logic constraints are enforced."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange internal comments on a report.",
+    "api_endpoint": "/reports/{reportId}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to add an internal comment. Authenticate as 'technical office staff member'. Attempt to post a message containing PII (Personally Identifiable Information) or sensitive data that should not be logged in plain text, depending on system configuration. Verify the response behavior regarding sensitive data handling.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /reports to create a valid report in 'Assigned' state."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201",
+      "400"
+    ],
+    "rationale": "Tests edge case behavior for PT26 regarding data sensitivity in internal comments."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{reportId}/assignExternal",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to assign a report. Authenticate as 'technical office staff member'. Attempt to assign the same report to multiple different external maintainers in rapid succession without waiting for state updates. Verify that the system handles concurrent assignment attempts correctly (e.g., last write wins or error on conflict).",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /reports to create a valid report in 'Pending Approval' state.",
+      "Ensure at least two external maintainer accounts exist."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200",
+      "409"
+    ],
+    "rationale": "Tests stateful behavior for PT24 by simulating concurrent assignments to ensure data consistency."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{reportId}/updateStatus",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status. Authenticate as an 'external maintainer'. Attempt to update the status of a report that is currently in 'Rejected' state. Verify that the system prevents further status updates on a rejected report unless it has been re-submitted (if applicable) or returns an error.",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /reports to create a report and assign it.",
+      "PATCH /reports/{reportId}/updateStatus to set the status to 'Rejected'."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests stateful behavior for PT25 by attempting to modify a report in a terminal 'Rejected' state."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange internal comments on a report.",
+    "api_endpoint": "/reports/{reportId}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to add an internal comment. Authenticate as 'technical office staff member'. Attempt to post a message without providing the required 'content' or 'author' fields in the payload. Verify that the system rejects the request with a validation error.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /reports to create a valid report in 'Assigned' state."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests negative behavior for PT26 by attempting to create a message with missing required fields."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{reportId}/updateStatus",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status. Authenticate as an 'external maintainer'. Attempt to update the status of a report that is currently in 'Pending Approval' state (not yet assigned). Verify that the system rejects this operation because the report is not in the 'Assigned' state.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /reports to create a report in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "DELETE /reports/{reportId} if the resource was successfully created/updated; otherwise verify no new resource was created and delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests negative behavior for PT25 by attempting to update a report that is not yet assigned."
+  }
+]

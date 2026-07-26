@@ -1,0 +1,294 @@
+[
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/api/auth/{nextauth}",
+    "summary": "NextAuth GET routes",
+    "description": "Catch-all NextAuth route (`/api/auth/[...nextauth]`). Handles the standard\nNextAuth GET endpoints such as `session`, `csrf`, `providers`, `signin`,\n`signout` and `callback`.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "nextauth",
+        "required": true,
+        "description": "NextAuth action segment(s), e.g. `session`, `providers`, `callback/credentials`.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/api/auth/{nextauth}",
+    "summary": "NextAuth POST routes",
+    "description": "Catch-all NextAuth route (`/api/auth/[...nextauth]`). Handles the standard\nNextAuth POST endpoints such as `callback/credentials` (login) and `signout`.\nThe Credentials provider expects `identifier` (username or email) and `password`.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "nextauth",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "description": "Username or email"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        },
+        "csrfToken": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/api/messages",
+    "summary": "Get messages of a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "query",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Report identifier"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Messages"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/api/telegram/isAuthenticated",
+    "summary": "Check whether a Telegram chat is linked to a registered user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "chatId"
+      ],
+      "properties": {
+        "chatId": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "500"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/api/telegram/registration",
+    "summary": "Link a Telegram account to a Participium user via auth token",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "authToken",
+        "chatId"
+      ],
+      "properties": {
+        "authToken": {
+          "type": "string"
+        },
+        "chatId": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "500"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/api/telegram/reports",
+    "summary": "Get reports for a Telegram user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "query",
+        "name": "chatId",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Telegram chat id of the citizen"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/api/telegram/reports",
+    "summary": "Create a report via the Telegram bot",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "latitude",
+        "longitude",
+        "category",
+        "chatId"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "latitude": {
+          "type": "string"
+        },
+        "longitude": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "chatId": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/api/telegram/reports/{id}",
+    "summary": "Get a single report for a Telegram user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "in": "query",
+        "name": "chatId",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "500"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/api/uploads/{filename}",
+    "summary": "Serve an uploaded image file",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "filename",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Uploads"
+    ],
+    "auth_required": null
+  }
+]

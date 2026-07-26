@@ -1,0 +1,169 @@
+[
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Citizen/unregistered user searches for reports in a specific area by typing an address.",
+    "api_endpoint": "/reports/anonymous",
+    "http_method": "GET",
+    "prompt": "Execute a search query for reports using a valid street address string (e.g., 'Via Roma 10'). Verify that the response includes a list of reports located near or matching the address, excluding 'Pending Approval' reports as per domain rules. Ensure pagination or grouping logic is applied if the result set is large.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core functionality for unregistered users to explore existing reports in a specific area."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "System hides 'Pending Approval' reports from public view when searching by address.",
+    "api_endpoint": "/reports/anonymous",
+    "http_method": "GET",
+    "prompt": "Execute a search query for reports in an area known to contain reports in 'Pending Approval' state. Verify that the returned list does not include any reports with the status 'Pending Approval', adhering to the domain rule that only approved or assigned reports are visible to the public.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a report via authenticated user and set its status to 'Pending Approval'."
+    ],
+    "cleanup_strategy": "Delete the created report or wait for it to be processed by the system.",
+    "expected_status_codes": ["200"],
+    "rationale": "Ensures data privacy and compliance with the rule that unapproved reports are hidden from public view."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "System handles an empty or invalid address string gracefully.",
+    "api_endpoint": "/reports/anonymous",
+    "http_method": "GET",
+    "prompt": "Execute a search query using an empty string or a completely non-existent location name. Verify that the system returns an appropriate error message (e.g., 400 Bad Request) or an empty list with a descriptive message, rather than crashing or returning sensitive data.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400", "200"],
+    "rationale": "Tests robustness against invalid input and ensures the system does not expose internal errors."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Citizen creates a new report through a Telegram bot.",
+    "api_endpoint": "/telegram/webhook",
+    "http_method": "POST",
+    "prompt": "Simulate a Telegram webhook payload containing a new report creation request (including location, description, and photos). Verify that the system successfully processes the request, creates the report in 'Pending Approval' state, and returns a success response with the new report ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure the Telegram bot token is configured on the server side."
+    ],
+    "cleanup_strategy": "Verify that the created report exists and can be viewed by staff; no deletion needed as it enters the workflow.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the primary use case for citizens to quickly notify administration via Telegram."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "System blocks report submission if user attempts to submit without completing registration.",
+    "api_endpoint": "/telegram/webhook",
+    "http_method": "POST",
+    "prompt": "Simulate a webhook payload where the sender is identified as an unregistered user (no email or confirmation code). Verify that the system rejects the request with an error message indicating that registration and confirmation are required before submission.",
+    "test_type": "edge_case",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no valid session or registered user context is present for this specific test."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403", "400"],
+    "rationale": "Enforces the domain rule that users must register and confirm before submitting reports."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "System handles a Telegram webhook payload with a non-existent report ID reference (if applicable in payload structure).",
+    "api_endpoint": "/telegram/webhook",
+    "http_method": "POST",
+    "prompt": "Send a malformed or invalid webhook payload that references a non-existent report ID or contains invalid data types. Verify that the system returns an appropriate error response (e.g., 400 Bad Request) without crashing.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures the webhook endpoint is resilient to malformed inputs from external sources."
+  },
+  {
+    "requirement_id": "PT14",
+    "requirement_summary": "Citizen accesses quick assistance and help commands from the Telegram bot.",
+    "api_endpoint": "/telegram/info",
+    "http_method": "GET",
+    "prompt": "Invoke the Telegram info endpoint to retrieve help commands and usage instructions. Verify that the response contains a list of available commands (e.g., /help, /start) and useful contacts as expected by the requirement.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates that users can discover how to use the system and find contacts via the bot."
+  },
+  {
+    "requirement_id": "PT14",
+    "requirement_summary": "System returns an error when accessing Telegram info without authentication.",
+    "api_endpoint": "/telegram/info",
+    "http_method": "GET",
+    "prompt": "Attempt to access the /telegram/info endpoint without providing valid authentication credentials. Verify that the system returns a 401 Unauthorized or 403 Forbidden response, as this endpoint is marked as auth_required.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["401", "403"],
+    "rationale": "Ensures that sensitive help information or internal bot status is protected from unauthorized access."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Send a POST request to /reports/{id}/messages with a valid authenticated citizen session and a message body. Verify that the system successfully creates the reply, associates it with the report, and returns a 201 Created status.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a report in 'Pending Approval' or 'Assigned' state.",
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": "Delete the created message if it causes issues, or leave it as part of the conversation history. If the report is later resolved, ensure messages are archived appropriately.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the core communication feature allowing citizens to interact directly with operators."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "System denies a citizen from replying to a report they do not own or are not authorized for.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Attempt to POST a message to /reports/{id}/messages using an authenticated citizen session, but targeting a report ID that belongs to another user or is in a state where the citizen cannot interact (e.g., resolved). Verify that the system returns a 403 Forbidden or 404 Not Found.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a report under a different user account."
+    ],
+    "cleanup_strategy": "Delete the created report if it was not intended for this test scenario.",
+    "expected_status_codes": ["403", "404"],
+    "rationale": "Ensures data isolation and prevents unauthorized communication on reports not owned by the user."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "System handles a reply to a resolved or rejected report gracefully.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Attempt to POST a message to /reports/{id}/messages where the report status is 'Resolved' or 'Rejected'. Verify that the system either rejects the action with an appropriate error (e.g., 400 Bad Request) or logs it as invalid, preventing further communication on closed cases.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a report and transition its status to 'Resolved' or 'Rejected'."
+    ],
+    "cleanup_strategy": "Delete the created report after verification.",
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures that communication channels are closed appropriately when a case is finalized, preventing noise in resolved cases."
+  }
+]

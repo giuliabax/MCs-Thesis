@@ -1,0 +1,162 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/sessions/signup",
+    "http_method": "POST",
+    "prompt": "Execute a happy path registration for a new citizen user. Provide a unique username, valid email, and full name. Verify the response indicates successful creation and returns a session token or confirmation ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the entry point for all citizen interactions and ensures user creation logic works correctly."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate their account.",
+    "api_endpoint": "/sessions/current/verify_email",
+    "http_method": "POST",
+    "prompt": "Execute the happy path for email verification. Use the token/code returned from the signup response (or a valid mock code) and the authenticated session ID. Verify the account status changes to 'verified' or active.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /sessions/signup to obtain a valid user token and verification code."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Ensures the account activation workflow functions as intended before allowing further interactions."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/assign_external",
+    "http_method": "PATCH",
+    "prompt": "Execute a happy path assignment. First, ensure a report exists in 'Pending Approval' or 'Assigned' state (mock ID). Authenticate as 'technical office staff member'. Send a PATCH request with the external maintainer's ID (obtained from /sessions/available_staff) to assign the report.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Retrieve a list of available external maintainers via GET /sessions/available_staff to get a valid maintainer ID."
+    ],
+    "cleanup_strategy": "Verify the report assignment is persisted. If the test fails or needs reset, ensure the report remains in its new state for subsequent tests; no deletion required as reports are immutable by citizens.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core workflow of delegating work to external parties."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/external/start",
+    "http_method": "PATCH",
+    "prompt": "Execute a happy path status update. Authenticate as 'external maintainer'. Send a PATCH request to start work on an assigned report (ID from setup). Verify the status transitions correctly.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer.",
+      "Ensure a report is in 'Assigned' state (can be mocked or created via staff workflow)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the external maintainer's ability to progress the intervention lifecycle."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Staff and external maintainers exchange internal comments on a report.",
+    "api_endpoint": "/conversations/{conversationId}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a happy path message exchange. First, retrieve the conversation ID associated with the report (GET /conversations). Authenticate as 'technical office staff member'. POST a new message to the conversation.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Retrieve conversation ID via GET /conversations (or mock a valid conversationId if the endpoint supports direct creation, otherwise assume existing context)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["201", "200"],
+    "rationale": "Validates internal communication channels and ensures comments are stored correctly."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen attempts to register with an existing username.",
+    "api_endpoint": "/sessions/signup",
+    "http_method": "POST",
+    "prompt": "Execute a negative test for duplicate registration. Attempt to POST /sessions/signup using a username that already exists in the system (from previous happy path tests). Verify the API rejects the request with an appropriate error code.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["409", "400"],
+    "rationale": "Ensures data integrity by preventing duplicate user accounts."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen attempts to verify email with an expired code.",
+    "api_endpoint": "/sessions/current/verify_email",
+    "http_method": "POST",
+    "prompt": "Execute a negative test for expired verification. Simulate a scenario where the verification code has expired (e.g., >30 mins). Attempt to POST /sessions/current/verify_email with an old/expired code. Verify the system rejects the action.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform a signup (POST /sessions/signup) to get a token and code."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400", "410"],
+    "rationale": "Validates security constraints regarding time-sensitive verification codes."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer attempts to update a report not assigned to them.",
+    "api_endpoint": "/reports/{id}/external/start",
+    "http_method": "PATCH",
+    "prompt": "Execute a negative test for unauthorized access. Authenticate as 'external maintainer'. Attempt to PATCH /reports/{id}/external/start on a report that is either not assigned or assigned to a different external maintainer. Verify the API denies the action.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403", "404"],
+    "rationale": "Ensures strict access control on report lifecycle operations."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "External maintainer attempts to view internal comments without access rights (Case 2 scenario).",
+    "api_endpoint": "/conversations/{conversationId}/messages",
+    "http_method": "GET",
+    "prompt": "Execute an edge case test for restricted visibility. Authenticate as 'external maintainer' who does not have internal comment access rights (per Case 2 domain rule). Attempt to GET /conversations/{conversationId}/messages. Verify that internal notes are either hidden or the response structure excludes them, while still allowing status updates.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer without specific internal comment access flags."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the domain rule regarding visibility of internal notes based on user role and access configuration."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators.",
+    "api_endpoint": "/conversations/{conversationId}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a stateful workflow test. First, authenticate as 'citizen' and ensure they are registered (PT01/PT27). Then, simulate receiving a message from an operator (mocked via GET /conversations/{conversationId}/messages). Finally, POST a reply message to the same conversation ID.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform user registration (POST /sessions/signup) and verification (POST /sessions/current/verify_email).",
+      "Retrieve a valid conversation ID associated with the citizen's report."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the two-way communication flow between citizens and operators, which is critical for the platform's purpose."
+  }
+]

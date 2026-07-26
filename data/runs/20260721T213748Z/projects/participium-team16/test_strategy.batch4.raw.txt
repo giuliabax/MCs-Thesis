@@ -1,0 +1,201 @@
+[
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/officers/reviewdocs/{id_doc}",
+    "http_method": "PATCH",
+    "prompt": "Execute a review workflow. First, ensure a report exists in 'Pending Approval' state (via assignment). Then, as the Public Relations Officer role, send a PATCH request to approve the report. Verify the response indicates success and the status transitions to 'Assigned'.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Ensure a report is in 'Pending Approval' state by assigning it via /officers/assign-report."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core happy path of the approval workflow defined in PT06 and domain rules."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/officers/reviewdocs/{id_doc}",
+    "http_method": "PATCH",
+    "prompt": "Execute a rejection workflow. As the Public Relations Officer role, send a PATCH request to reject the report with a mandatory explanation field populated. Verify the response indicates success and the status transitions to 'Rejected'.",
+    "test_type": "edge_case",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Ensure a report is in 'Pending Approval' state by assigning it via /officers/assign-report."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the rejection path and ensures the mandatory explanation requirement from domain rules is enforced."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/officers/reviewdocs/{id_doc}",
+    "http_method": "PATCH",
+    "prompt": "Attempt to approve a report that is already in 'Assigned' state (not 'Pending Approval'). Verify the system denies the action with an appropriate error code, as domain rules state reports must be in 'Pending Approval' for this step.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Ensure a report is already in 'Assigned' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests state transition constraints defined in domain rules to prevent invalid workflow progression."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them.",
+    "api_endpoint": "/officers/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to the current user. Verify that the response contains a list of report objects where the assignee matches the authenticated technical office staff member's ID or role.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Assign at least one report to a technical office staff member via /officers/assign-report."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality of viewing assigned reports for maintenance overview (PT08)."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them.",
+    "api_endpoint": "/officers/assigned",
+    "http_method": "GET",
+    "prompt": "Attempt to retrieve assigned reports while authenticated as a citizen (non-staff) role. Verify that the system denies access or returns an empty list based on RBAC, ensuring only staff see their specific assignments.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure at least one report exists in the system."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Validates role-based access control ensuring citizens cannot view internal staff assignments."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account (notifications and virtual presence).",
+    "api_endpoint": "/users/me",
+    "http_method": "PATCH",
+    "prompt": "Update the current user's profile to enable push notifications and set a specific display name. Verify the response confirms the update and returns the updated user object with the new settings.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure the citizen is authenticated."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability for a citizen to manage their account settings as per PT09."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account (notifications and virtual presence).",
+    "api_endpoint": "/users/me",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update the user's profile with an invalid email address (e.g., 'not-an-email'). Verify that the system rejects the request with a validation error, as email is a mandatory field for registration and login.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure the citizen is authenticated."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests input validation for mandatory fields defined in domain rules."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Citizen checks their report status through a Telegram bot.",
+    "api_endpoint": "/telegram/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports via the Telegram bot endpoint. Verify that the response contains the expected report statuses for the authenticated citizen, allowing them to quickly get updates as per PT13.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a report exists and is associated with the citizen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the Telegram integration for status checking (PT13)."
+  },
+  {
+    "requirement_id": "PT17",
+    "requirement_summary": "Citizen receives real-time push notifications via the Telegram bot.",
+    "api_endpoint": "/notifications",
+    "http_method": "GET",
+    "prompt": "Simulate a status change on a report (e.g., from 'In Progress' to 'Resolved') by updating it. Immediately retrieve notifications for the citizen. Verify that the response includes a notification object corresponding to the status change, enabling real-time updates as per PT17.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a report exists and is in 'In Progress' state.",
+      "Ensure the citizen has push notifications enabled in their profile."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the notification delivery mechanism triggered by state changes (PT17)."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/users/me",
+    "http_method": "PATCH",
+    "prompt": "Update the user's profile to enable email alerts. Verify that the response confirms the setting change and that the user object now reflects the enabled email alert preference, supporting optional email alerts as per PT19.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure the citizen is authenticated."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the configuration of optional email alerts (PT19)."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Citizen checks their report status through a Telegram bot.",
+    "api_endpoint": "/telegram/reports",
+    "http_method": "GET",
+    "prompt": "Attempt to retrieve reports via the Telegram bot endpoint while authenticated as an unregistered user (guest). Verify that the system either blocks access or returns a restricted view, adhering to the rule that only authenticated users could view reports initially.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no valid authentication token is present for the request."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Tests access control constraints regarding authenticated vs. unauthenticated users (domain rules)."
+  }
+]

@@ -1,0 +1,866 @@
+[
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/admin/internal-users",
+    "summary": "Fetch all internal users",
+    "description": "Retrieves all internal users from the database.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/admin/internal-users",
+    "summary": "Add a new internal user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/RegisterInternalUserRequestDTO"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "409"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/admin/internal-users/{id}",
+    "summary": "Update an internal user",
+    "description": "Updates internal user data.\nRoles are provided as a full array and will overwrite existing ones.\nCancellation of a role is achieved by omitting it from the array.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "schema": {
+          "type": "integer"
+        },
+        "required": true,
+        "description": "Internal user ID"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "roleIds": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "Full list of role IDs assigned to the user.\nThis array overwrites existing roles.\n"
+        },
+        "companyId": {
+          "type": "integer",
+          "nullable": true,
+          "description": "Company ID.\nRequired if roleIds contains External Maintainer (id = 28).\nMust be omitted or null otherwise.\n"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "404",
+      "409"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/admin/internal-users/{id}",
+    "summary": "Disable an internal user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "schema": {
+          "type": "integer"
+        },
+        "required": true,
+        "description": "Internal user ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "204",
+      "400",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/citizens/login",
+    "summary": "Authenticate a citizen",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/LoginRequestDTO"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/internal/login",
+    "summary": "Authenticate an internal user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/LoginRequestDTO"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/logout",
+    "summary": "Logout current authenticated user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/auth/me",
+    "summary": "Return the authenticated profile",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/categories",
+    "summary": "Get all categories",
+    "description": "Returns the full list of predefined categories.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Categories"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/citizens/register",
+    "summary": "Register a new citizen",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/RegisterCitizenRequestDTO"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "409"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/citizens/me",
+    "summary": "Get current authenticated citizen's profile",
+    "description": "Returns the profile information of the logged-in citizen, including presigned URL for profile photo.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "404"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/citizens/me",
+    "summary": "Update profile of the logged-in citizen",
+    "description": "Allows the authenticated citizen to update their profile information.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "nullable": true,
+          "example": "user@example.com"
+        },
+        "username": {
+          "type": "string",
+          "nullable": true,
+          "example": "newusername"
+        },
+        "firstName": {
+          "type": "string",
+          "nullable": true,
+          "example": "John"
+        },
+        "lastName": {
+          "type": "string",
+          "nullable": true,
+          "example": "Doe"
+        },
+        "telegramUsername": {
+          "type": "string",
+          "nullable": true,
+          "example": "mytelegram"
+        },
+        "emailNotificationsEnabled": {
+          "type": "boolean",
+          "example": true
+        },
+        "accountPhoto": {
+          "type": "string",
+          "nullable": true,
+          "example": "temp/1b4b98e7/photo.png",
+          "description": "Temporary file path returned from /files/upload"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "404"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/companies",
+    "summary": "Retrieve a list of all companies {id, name}",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Companies"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/companies/category/{categoryId}",
+    "summary": "Retrieve companies by category ID {id, name}",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "categoryId",
+        "schema": {
+          "type": "integer"
+        },
+        "required": true,
+        "description": "The category ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Companies"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/email-verification/verify",
+    "summary": "Verify email with code",
+    "description": "Verify a citizen's email address using the 6-digit code sent to their email. Code is valid for 30 minutes. Rate limited to 3 attempts per 15 minutes.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "email",
+        "code"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "user@example.com"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^\\d{6}$",
+          "example": "123456",
+          "description": "6-digit verification code"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "404"
+    ],
+    "tags": [
+      "Email Verification"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/email-verification/resend",
+    "summary": "Resend verification code",
+    "description": "Request a new verification code to be sent to the email address. Rate limited to 3 requests per hour.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "email"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "user@example.com"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "404"
+    ],
+    "tags": [
+      "Email Verification"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/files/upload",
+    "summary": "Upload a file to temporary storage",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "file"
+      ],
+      "properties": {
+        "file": {
+          "type": "string",
+          "format": "binary",
+          "description": "Image file (JPEG/PNG/GIF/WebP) up to 5MB"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "report",
+            "profile"
+          ],
+          "description": "File category (optional, defaults to \"report\" for backward compatibility)",
+          "example": "report"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Files"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/files/temp/{fileId}",
+    "summary": "Delete a temporary file",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "fileId",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "required": true,
+        "description": "Temporary file ID obtained from the upload endpoint"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "204",
+      "400",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Files"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/internal/reports",
+    "summary": "Get reports for review",
+    "description": "Retrieve reports for PR officers (pending reports) or technical officers (assigned reports).",
+    "parameters": [
+      {
+        "in": "query",
+        "name": "status",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter by report status",
+        "example": "Pending Approval"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Internal"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/internal/reports/{id}",
+    "summary": "Update report status",
+    "description": "Update the status of a report. Different users have different permissions:\n\n**PR Officers:**\n- Can approve pending reports (set to \"Assigned\")\n- Can reject pending reports (set to \"Rejected\")\n- Can optionally correct the category before approval\n\n**Technical Staff (Municipality):**\n- Can update assigned reports to \"In Progress\"\n- Can delegate reports to external companies\n- Can suspend or resolve reports they are working on\n\n**External Maintainers:**\n- Can update delegated reports assigned to them\n- Can set status to \"In Progress\", \"Suspended\", or \"Resolved\"\n- Cannot change the report category\n\n**Valid Status Transitions:**\n| From | To | Who |\n|------|-----|-----|\n| Pending Approval | Assigned | PR Officer |\n| Pending Approval | Rejected | PR Officer |\n| Assigned | In Progress | Assigned Staff |\n| Assigned | Delegated | Assigned Staff (via delegate endpoint) |\n| Delegated | In Progress | External Maintainer |\n| In Progress | Suspended | Assigned User |\n| In Progress | Resolved | Assigned User |\n| Suspended | In Progress | Assigned User |\n| Suspended | Resolved | Assigned User |\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "schema": {
+          "type": "integer"
+        },
+        "required": true,
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "status",
+        "explanation"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "Pending Approval",
+            "Assigned",
+            "In Progress",
+            "Suspended",
+            "Rejected",
+            "Resolved",
+            "Delegated"
+          ],
+          "example": "In Progress",
+          "description": "The new status for the report. Must be a valid transition from the current status.\n"
+        },
+        "categoryId": {
+          "type": "integer",
+          "description": "Optional corrected category ID. Only PR Officers can change this.\nExternal maintainers cannot modify the category.\n",
+          "example": 3
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Explanation for the status change (captured for audit trail)",
+          "example": "Starting work on this report."
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Internal"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/internal/reports/{id}/delegate",
+    "summary": "Delegate a report to an external company",
+    "description": "Allows technical officers to delegate a report assigned to them whenever they are not able to process it. They choose a company that handles the category of the report from a list.",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "schema": {
+          "type": "integer"
+        },
+        "required": true,
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "companyId"
+      ],
+      "properties": {
+        "companyId": {
+          "type": "integer",
+          "example": 5,
+          "description": "ID of the external company to delegate the report to"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "404",
+      "403",
+      "400"
+    ],
+    "tags": [
+      "Internal"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/internal/reports/assigned",
+    "summary": "Get reports assigned to the authenticated user",
+    "description": "Returns reports assigned to the current user.\nWorks for both **technical staff** and **external maintainers**.\n\n**For Technical Staff:**\n- Returns reports with status: Assigned, In Progress, Suspended, Delegated\n- Includes reports they have delegated (until reassigned)\n\n**For External Maintainers:**\n- Returns reports delegated to them (status: Delegated, In Progress, Suspended)\n- These are reports that municipality staff delegated to their company\n\nUse the optional `status` query parameter to filter by specific status.\n",
+    "parameters": [
+      {
+        "in": "query",
+        "name": "status",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "Assigned",
+            "In Progress",
+            "Suspended",
+            "Delegated",
+            "Resolved"
+          ]
+        },
+        "required": false,
+        "description": "Optional filter by report status.\nCommon filters:\n- \"Delegated\" - External maintainers: see newly delegated reports\n- \"In Progress\" - See reports currently being worked on\n- \"Suspended\" - See paused reports\n",
+        "example": "Delegated"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Internal"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/internal/reports/by-office",
+    "summary": "Get all reports related to the internal user's office",
+    "description": "Technical officers can retrieve all reports belonging to their assigned office.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Internal"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/internal/reports/{id}/comments",
+    "summary": "Get comments for a report (internal only)",
+    "description": "Returns all comments associated with a report. Only internal users can access this endpoint.",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "schema": {
+          "type": "integer"
+        },
+        "required": true,
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Internal"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/internal/reports/{id}/comments",
+    "summary": "Create a comment on a report (internal only)",
+    "description": "Allows internal users to add a comment to a report. The comment is associated with the authenticated user.",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "schema": {
+          "type": "integer"
+        },
+        "required": true,
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "comment"
+      ],
+      "properties": {
+        "comment": {
+          "type": "string",
+          "description": "The comment text",
+          "example": "This issue has been reviewed and assigned to the maintenance team."
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Internal"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/internal/delegated-reports",
+    "summary": "Get all reports delegated by the authenticated user",
+    "description": "Retrieve all reports that were delegated by the authenticated technical officer. Returns reports with all report fields plus a delegatedAt timestamp indicating when the delegation occurred. Only technical officers can access this endpoint.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Internal Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/map",
+    "summary": "Get public summary of reports within specified map area",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/GetAssignedReportsForMapRequestDTO"
+    },
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Public Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/getById/{id}",
+    "summary": "Get public report by ID",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "example": 1
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "404"
+    ],
+    "tags": [
+      "Public Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/citizens/report",
+    "summary": "Create a new report",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/CreateReportRequestDTO"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/citizens/reports/myReports",
+    "summary": "Get all reports created by the authenticated citizen",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/admin/roles",
+    "summary": "Fetch all internal user roles",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  }
+]

@@ -1,0 +1,798 @@
+{
+  "summary": "A multi-role citizen reporting and maintenance management API. It supports user registration/login, report creation by citizens, officer review/approval/rejection, technician assignment and external company delegation, admin user/role/category management, and public report viewing.",
+  "operations": [
+    {
+      "path": "/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Register a new citizen",
+        "Initial user creation; no auth required",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400"
+      ]
+    },
+    {
+      "path": "/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/register"
+      ],
+      "notes": [
+        "Log in and obtain a JWT",
+        "Obtains JWT for subsequent authenticated endpoints",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "List all users",
+        "Public list of users; may expose sensitive data without auth",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/users/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /register: User must be registered before updating their profile",
+        "/register"
+      ],
+      "notes": [
+        "Update a user",
+        "Update user; requires valid ID from registration",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/users/{id}/verify",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /register: User must exist to generate verification code",
+        "/register"
+      ],
+      "notes": [
+        "Generate and send a verification code for a user",
+        "Verification flow step 1: generate code",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/users/{id}/verify/check",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /users/{id}/verify: Verification code must be generated before it can be checked",
+        "/users/{id}/verify"
+      ],
+      "notes": [
+        "Check a user's verification code",
+        "Verification flow step 2: validate code",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/users/{id}/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/register"
+      ],
+      "notes": [
+        "Get reports created by a citizen",
+        "List reports created by a specific citizen",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/profile",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login is required to access authenticated profile",
+        "/login"
+      ],
+      "notes": [
+        "Get the authenticated user's profile",
+        "Requires JWT; returns current user profile",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login is required to create a report",
+        "/login"
+      ],
+      "notes": [
+        "Create a new report",
+        "Create new report; requires auth",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login is required to list reports",
+        "/login"
+      ],
+      "notes": [
+        "List all reports",
+        "List all reports; requires auth",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/pending",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "List pending reports",
+        "List pending reports for review; requires auth",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/active",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "List active reports (public; auth optional)",
+        "Public endpoint to view active reports",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login is required to fetch a specific report",
+        "/login"
+      ],
+      "notes": [
+        "Get a report by id",
+        "Get specific report; requires auth",
+        "Parameters: id",
+        "Documented responses: 200, 404"
+      ]
+    },
+    {
+      "path": "/reports/{id}/status",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login is required to update report status",
+        "POST /login: Report must exist (created via POST /reports) before status can be updated",
+        "/login",
+        "/reports"
+      ],
+      "notes": [
+        "Update a report status (technician or external maintainer)",
+        "Update report status; requires auth",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 403"
+      ]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Get messages of a report",
+        "Get messages for a report; requires auth",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/{id}/comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Get internal comments of a report",
+        "Get internal comments; requires auth",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/{id}/comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Add an internal comment to a report",
+        "Add internal comment; requires auth",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201"
+      ]
+    },
+    {
+      "path": "/reports/{id}/public-messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Send a public message on a report",
+        "Send public message; requires auth",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201"
+      ]
+    },
+    {
+      "path": "/reports/{id}/internal-messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Send an internal message on a report",
+        "Send internal message; requires auth",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201"
+      ]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Get unread notifications of the authenticated user",
+        "Get unread notifications; requires auth",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/notifications/{id}/read",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Mark a notification as read",
+        "Mark notification as read; requires auth",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/report/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Get a report by id (officer)",
+        "Officer-specific report retrieval; requires auth",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/status/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Update a report status (officer)",
+        "Officer status update; requires auth",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/{id}/approve",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login is required to approve a report",
+        "/login"
+      ],
+      "notes": [
+        "Approve a report (officer)",
+        "Officer approval action; requires auth",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/{id}/reject",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login is required to reject a report",
+        "/login"
+      ],
+      "notes": [
+        "Reject a report (officer)",
+        "Officer rejection action; requires auth",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "List all categories",
+        "Public list of categories",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/technician/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login is required to view technician-assigned reports",
+        "/login"
+      ],
+      "notes": [
+        "Get reports assigned to the technician",
+        "Technician view of assigned reports; requires auth",
+        "Parameters: status",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/technician/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Get categories assigned to the technician",
+        "Technician view of assigned categories; requires auth",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/technician/reports/{id}/external",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login is required to assign report to external company",
+        "/login"
+      ],
+      "notes": [
+        "Assign a report to an external company/office",
+        "Assign report to external company; requires auth",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/admin/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Create a user (admin)",
+        "Admin creates users; requires admin auth",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201"
+      ]
+    },
+    {
+      "path": "/admin/register-technician",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Create a technician (admin)",
+        "Admin creates technician; requires admin auth",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201"
+      ]
+    },
+    {
+      "path": "/admin/register-external-maintainer",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Create an external maintainer (admin)",
+        "Admin creates external maintainer; requires admin auth",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201"
+      ]
+    },
+    {
+      "path": "/admin/users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login must represent an admin to list users",
+        "/login"
+      ],
+      "notes": [
+        "List all users with roles (admin)",
+        "Admin list users with roles; requires admin auth",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/admin/users/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Get a user by id (admin)",
+        "Admin get user by id; requires admin auth",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/admin/users/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login must represent an admin to delete a user",
+        "/login"
+      ],
+      "notes": [
+        "Delete a user (admin)",
+        "Admin delete user; requires admin auth",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/admin/users/{id}/role",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login must represent an admin to assign a role",
+        "/login"
+      ],
+      "notes": [
+        "Assign or update a user's role (admin)",
+        "Admin assign/update user role; requires admin auth",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/admin/technicians/{id}/categories",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /login: JWT from login must represent an admin to assign categories",
+        "/login"
+      ],
+      "notes": [
+        "Replace a technician's categories (admin)",
+        "Admin replace technician categories; requires admin auth",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/admin/technicians/{id}/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/login"
+      ],
+      "notes": [
+        "Get a technician's categories (admin)",
+        "Admin get technician categories; requires admin auth",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/external-company",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "List all external companies",
+        "Public list of external companies",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/external-company/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get an external company by id",
+        "Public get external company by id",
+        "Parameters: id",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/external-company/category/{categoryId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "List external companies by category",
+        "Public list external companies by category",
+        "Parameters: categoryId",
+        "Documented responses: 200"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "/login returns JWT used for all auth_required endpoints; /register and /users are public but may leak sensitive data without auth; admin endpoints require elevated role verification",
+    "Operations marked auth_required need an authenticated session during test setup."
+  ],
+  "dependencies": [
+    "POST /register must precede any user-specific operations (PATCH /users/{id}, POST /users/{id}/verify, etc.)",
+    "POST /login must precede all authenticated operations (GET /profile, POST /reports, GET /reports, etc.)",
+    "POST /admin/register and related admin endpoints require an existing admin session (POST /login with admin credentials)",
+    "PATCH /technician/reports/{id}/external depends on the existence of a report created via POST /reports",
+    "PUT /admin/users/{id}/role and PUT /admin/technicians/{id}/categories depend on prior user/technician creation via admin endpoints",
+    "POST /register -> PATCH /users/{id}: User must be registered before updating their profile",
+    "POST /register -> POST /users/{id}/verify: User must exist to generate verification code",
+    "POST /users/{id}/verify -> POST /users/{id}/verify/check: Verification code must be generated before it can be checked",
+    "POST /login -> GET /profile: JWT from login is required to access authenticated profile",
+    "POST /login -> POST /reports: JWT from login is required to create a report",
+    "POST /login -> GET /reports: JWT from login is required to list reports",
+    "POST /login -> PATCH /reports/{id}/status: JWT from login is required to update report status",
+    "POST /login -> GET /reports/{id}: JWT from login is required to fetch a specific report",
+    "POST /login -> PATCH /reports/{id}/approve: JWT from login is required to approve a report",
+    "POST /login -> PATCH /reports/{id}/reject: JWT from login is required to reject a report",
+    "POST /login -> GET /technician/reports: JWT from login is required to view technician-assigned reports",
+    "POST /login -> PATCH /technician/reports/{id}/external: JWT from login is required to assign report to external company",
+    "POST /login -> GET /admin/users: JWT from login must represent an admin to list users",
+    "POST /login -> DELETE /admin/users/{id}: JWT from login must represent an admin to delete a user",
+    "POST /login -> PUT /admin/users/{id}/role: JWT from login must represent an admin to assign a role",
+    "POST /login -> PUT /admin/technicians/{id}/categories: JWT from login must represent an admin to assign categories",
+    "POST /login -> PATCH /reports/{id}/status: Report must exist (created via POST /reports) before status can be updated"
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/register",
+      "dependent_method": "PATCH",
+      "dependent_path": "/users/{id}",
+      "dependency_type": "resource",
+      "reason": "User must be registered before updating their profile"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/register",
+      "dependent_method": "POST",
+      "dependent_path": "/users/{id}/verify",
+      "dependency_type": "resource",
+      "reason": "User must exist to generate verification code"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/{id}/verify",
+      "dependent_method": "POST",
+      "dependent_path": "/users/{id}/verify/check",
+      "dependency_type": "state",
+      "reason": "Verification code must be generated before it can be checked"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "GET",
+      "dependent_path": "/profile",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to access authenticated profile"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "POST",
+      "dependent_path": "/reports",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to create a report"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "GET",
+      "dependent_path": "/reports",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to list reports"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{id}/status",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to update report status"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{id}",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to fetch a specific report"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{id}/approve",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to approve a report"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{id}/reject",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to reject a report"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "GET",
+      "dependent_path": "/technician/reports",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to view technician-assigned reports"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PATCH",
+      "dependent_path": "/technician/reports/{id}/external",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to assign report to external company"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "GET",
+      "dependent_path": "/admin/users",
+      "dependency_type": "authorization",
+      "reason": "JWT from login must represent an admin to list users"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "DELETE",
+      "dependent_path": "/admin/users/{id}",
+      "dependency_type": "authorization",
+      "reason": "JWT from login must represent an admin to delete a user"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PUT",
+      "dependent_path": "/admin/users/{id}/role",
+      "dependency_type": "authorization",
+      "reason": "JWT from login must represent an admin to assign a role"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PUT",
+      "dependent_path": "/admin/technicians/{id}/categories",
+      "dependency_type": "authorization",
+      "reason": "JWT from login must represent an admin to assign categories"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{id}/status",
+      "dependency_type": "state",
+      "reason": "Report must exist (created via POST /reports) before status can be updated"
+    }
+  ],
+  "risks": [
+    "Public endpoints (/users, /reports/active, /categories, /external-company*) may expose sensitive user or company data without authentication.",
+    "Verification flow lacks explicit error handling for expired codes or multiple attempts in documentation.",
+    "Admin endpoints do not specify required role claims beyond 'auth_required', risking privilege escalation if JWT validation is weak.",
+    "Technician and Officer endpoints share similar paths but different tags; client must enforce role-based routing to prevent unauthorized access.",
+    "External company assignment (/technician/reports/{id}/external) lacks documentation on external maintainer verification or approval workflow."
+  ]
+}

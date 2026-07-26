@@ -1,0 +1,187 @@
+[
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen can configure account notifications and virtual presence.",
+    "api_endpoint": "/sessions/{id}/config",
+    "http_method": "PATCH",
+    "prompt": "Update the authenticated citizen's session configuration to enable real-time notifications and set virtual presence to 'online'. Verify the response reflects these changes.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user via /sessions/login or /sessions/telegram/verify to obtain a valid session ID."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality of requirement PT09 for a standard user interaction."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member can update report statuses.",
+    "api_endpoint": "/reports/{id}/start",
+    "http_method": "PATCH",
+    "prompt": "Simulate a technical office staff member starting the preliminary verification phase for an existing report. Ensure the status transitions correctly to 'Pending Approval' or equivalent start state.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member.",
+      "Ensure an existing report exists in the system."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the primary workflow for PT11 regarding status updates by technical office staff."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen can receive optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/sessions/{id}/config",
+    "http_method": "PATCH",
+    "prompt": "Update the citizen's configuration to enable 'email_alerts' set to true while keeping other settings default. Verify the system accepts this preference for optional email alerts.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the specific feature requested in PT19 regarding optional email alerts."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen can configure account notifications and virtual presence.",
+    "api_endpoint": "/sessions/{id}/config",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update the citizen's configuration with an invalid 'virtual_presence' value (e.g., 'invisible') which is not in the allowed set. Expect the system to reject this change.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests input validation for the configuration endpoint to ensure only valid presence states are accepted."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member can update report statuses.",
+    "api_endpoint": "/reports/{id}/finish",
+    "http_method": "PATCH",
+    "prompt": "Attempt to finish a report that is currently in 'Pending Approval' state without first completing the preliminary verification or assigning it. This should be blocked as per domain rules.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member.",
+      "Ensure a report exists in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates domain rule enforcement preventing premature status transitions for PT11 workflows."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen can configure account notifications and virtual presence.",
+    "api_endpoint": "/sessions/{id}/config",
+    "http_method": "PATCH",
+    "prompt": "Attempt to modify the configuration of a report that has already been submitted by a citizen. The endpoint should deny modification of existing reports as per domain rules.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user.",
+      "Ensure a report exists in the system."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Tests the domain rule that citizens cannot modify or delete submitted reports via configuration endpoints."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen can receive optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/sessions/{id}/config",
+    "http_method": "PATCH",
+    "prompt": "Attempt to enable email alerts for a user who has not completed registration or lacks a valid session. The system should block this action as it requires an authenticated citizen account.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no valid authentication token is provided."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Verifies that email alert configuration requires a properly authenticated citizen session."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member can update report statuses.",
+    "api_endpoint": "/reports/{id}/suspend",
+    "http_method": "PATCH",
+    "prompt": "Attempt to suspend a report that is currently in 'Pending Approval' state. According to domain rules, reports must be in 'Pending Approval' until verification; suspending might be invalid or require specific conditions not met here.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member.",
+      "Ensure a report exists in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests edge case behavior where suspension logic conflicts with the mandatory 'Pending Approval' state requirement."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen can configure account notifications and virtual presence.",
+    "api_endpoint": "/sessions/{id}/config",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update the configuration of a report that has already been submitted by a citizen. The endpoint should deny modification of existing reports as per domain rules.",
+    "test_type": "cleanup",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user.",
+      "Ensure a report exists in the system."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (though this endpoint modifies config, not resources, ensure session token is invalidated after test).",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Ensures that any unintended side effects or resource creation attempts during configuration updates are handled correctly."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen can receive optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/sessions/{id}/config",
+    "http_method": "PATCH",
+    "prompt": "Attempt to disable all notification types (including email and platform) for a citizen user. Verify that the system allows disabling notifications but maintains the ability to re-enable them later.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the edge case of completely disabling notifications to ensure system flexibility and state recovery."
+  }
+]

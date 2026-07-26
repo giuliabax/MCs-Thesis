@@ -1,0 +1,160 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/api/telegram/registration",
+    "http_method": "POST",
+    "prompt": "Execute user registration via Telegram bot. Provide a valid citizen name, username, and email address as per domain rules (email mandatory). Verify successful registration response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core entry point for citizens to join the system as defined in PT01."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Citizen creates a new report through a Telegram bot.",
+    "api_endpoint": "/api/telegram/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report via the Telegram bot endpoint. Ensure the request includes valid authentication tokens (implied by 401 error on unauthenticated calls) and necessary report data fields.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /api/telegram/registration to obtain a valid session token for the citizen user."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["201"],
+    "rationale": "Tests the primary workflow for citizens to submit issues, requiring prior setup per dependency edges."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Citizen checks their report status through a Telegram bot.",
+    "api_endpoint": "/api/telegram/reports/{id}",
+    "http_method": "GET",
+    "prompt": "Retrieve the status of a specific report by ID using the Telegram bot endpoint. Use an ID generated from a previously created report in this batch or a known valid ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Execute POST /api/telegram/registration to establish a citizen session.",
+      "Execute POST /api/telegram/reports to create a report and capture its ID."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the read-back capability for citizens to track their submissions as per PT13."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/api/telegram/registration",
+    "http_method": "POST",
+    "prompt": "Attempt user registration without providing an email address. Verify that the system rejects the request because email is a mandatory field for registration.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests the specific domain rule that email is mandatory for registration."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Citizen creates a new report through a Telegram bot.",
+    "api_endpoint": "/api/telegram/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to create a report without including the required authentication token or session data in the request headers. Verify that the system returns a 401 Unauthorized error, indicating that authentication is enforced at runtime.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["401"],
+    "rationale": "Validates the security constraint that report creation requires authentication despite the schema suggesting otherwise."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member exchanges information and comments on the report internally.",
+    "api_endpoint": "/api/messages",
+    "http_method": "GET",
+    "prompt": "Retrieve internal messages or comments associated with a specific report. Ensure the request is made by a user with the 'technical office staff member' role to verify access control for internal notes.",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member (role: 'technical office staff member') using the NextAuth endpoint or session management.",
+      "Ensure a report exists in the system to which messages can be attached."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the internal communication workflow for staff members, ensuring they can access reserved comments without exposing them to citizens."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Citizen checks their report status through a Telegram bot.",
+    "api_endpoint": "/api/telegram/reports/{id}",
+    "http_method": "GET",
+    "prompt": "Attempt to retrieve a report using an invalid or non-existent ID. Verify that the system returns an appropriate error code (e.g., 404 Not Found) for missing resources.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Execute POST /api/telegram/registration to establish a citizen session."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["404"],
+    "rationale": "Tests error handling for invalid resource identifiers in the report retrieval workflow."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member exchanges information and comments on the report internally.",
+    "api_endpoint": "/api/messages",
+    "http_method": "GET",
+    "prompt": "Attempt to retrieve internal messages associated with a report while acting as a citizen user. Verify that the system denies access (e.g., 403 Forbidden) because internal notes are reserved and not visible to citizens.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user using the NextAuth endpoint or session management."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Validates that internal communication channels are strictly isolated from public citizen views."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Citizen creates a new report through a Telegram bot.",
+    "api_endpoint": "/api/telegram/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to create a duplicate report with identical data to an existing one, if the system enforces uniqueness constraints. Verify that the system handles duplicates appropriately (e.g., 409 Conflict or rejection).",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Execute POST /api/telegram/registration to establish a citizen session.",
+      "Create an initial report via POST /api/telegram/reports to have a valid ID for comparison."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["409", "201"],
+    "rationale": "Tests system behavior regarding duplicate report submissions, which is an edge case in data integrity."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member exchanges information and comments on the report internally.",
+    "api_endpoint": "/api/messages",
+    "http_method": "GET",
+    "prompt": "Verify that a technical office staff member can access messages for multiple reports simultaneously, leveraging their ability to have multiple roles as per domain rules.",
+    "test_type": "stateful",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member with multiple roles assigned.",
+      "Create two distinct reports via POST /api/telegram/reports to test multi-report access."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the capability of staff members to manage communications across multiple reports due to their multi-role nature."
+  }
+]

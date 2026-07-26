@@ -1,0 +1,308 @@
+{
+  "requirement_id": "PT28",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["interactive map visualization for approved reports"],
+  "rationale": "OpenAPI has /reports/approved endpoint but does not expose interactive map behavior required by story"
+}
+{
+  "requirement_id": "PT24",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PUT", "path": "/reports/{id}/assign-external", "operation_id": null}
+  ],
+  "evidence": ["Assign a report to an external maintainer endpoint exists for technical office staff"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes assign-external endpoint matching the requirement"
+}
+{
+  "requirement_id": "PT25",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PUT", "path": "/reports/{id}/status", "operation_id": null},
+    {"method": "GET", "path": "/reports/external/assigned", "operation_id": null}
+  ],
+  "evidence": ["Update report status endpoint for external maintainers and get assigned reports"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes status update and assigned reports endpoints for external maintainers"
+}
+{
+  "requirement_id": "PT26",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/comment/{id}/comments", "operation_id": null},
+    {"method": "GET", "path": "/comment/{id}/comments", "operation_id": null}
+  ],
+  "evidence": ["Add and get internal comments endpoints for report coordination"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes internal comment endpoints for staff/maintainer communication"
+}
+{
+  "requirement_id": "PT01",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users", "operation_id": null}
+  ],
+  "evidence": ["Register a new user endpoint for citizen registration"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes user registration endpoint matching the requirement"
+}
+{
+  "requirement_id": "PT27",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/confirm", "operation_id": null},
+    {"method": "POST", "path": "/users/resend-confirmation", "operation_id": null}
+  ],
+  "evidence": ["Confirm user registration with code and resend confirmation endpoints"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes confirmation endpoints matching the requirement"
+}
+{
+  "requirement_id": "PT02",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/admin", "operation_id": null},
+    {"method": "GET", "path": "/users/municipality", "operation_id": null}
+  ],
+  "evidence": ["Create admin user and list municipality users endpoints"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes admin user creation and listing endpoints"
+}
+{
+  "requirement_id": "PT03",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/{id}/assign-role", "operation_id": null},
+    {"method": "GET", "path": "/users/roles", "operation_id": null}
+  ],
+  "evidence": ["Assign role to municipality user and get allowed roles endpoints"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes role assignment endpoints for administrators"
+}
+{
+  "requirement_id": "PT04",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/streets", "operation_id": null},
+    {"method": "GET", "path": "/streets/{name}/reports", "operation_id": null}
+  ],
+  "evidence": ["Street autocomplete and street-specific reports endpoints exist"],
+  "missing_behaviors": ["Direct latitude/longitude selection on interactive map not exposed in REST contract"],
+  "rationale": "OpenAPI has street search but lacks explicit geolocation/map selection endpoint"
+}
+{
+  "requirement_id": "PT05",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/reports", "operation_id": null},
+    {"method": "POST", "path": "/reports/anonymous", "operation_id": null}
+  ],
+  "evidence": ["Add new report endpoint with photos upload capability"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes report creation endpoints for citizen details"
+}
+{
+  "requirement_id": "PT06",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/pending", "operation_id": null},
+    {"method": "PUT", "path": "/reports/{id}/review", "operation_id": null}
+  ],
+  "evidence": ["List pending reports and review/accept-reject endpoints"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes review and approval endpoints for public relations officer"
+}
+{
+  "requirement_id": "PT07",
+  "status": "not_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/approved", "operation_id": null},
+    {"method": "GET", "path": "/reports/citizen", "operation_id": null}
+  ],
+  "evidence": ["Get approved reports and citizen-visible reports endpoints exist"],
+  "missing_behaviors": ["Interactive map visualization behavior not exposed in REST contract"],
+  "rationale": "OpenAPI has report listing but does not expose interactive map functionality"
+}
+{
+  "requirement_id": "PT15",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/reports", "operation_id": null},
+    {"method": "POST", "path": "/reports/anonymous", "operation_id": null}
+  ],
+  "evidence": ["Regular report and anonymous report endpoints with different auth requirements"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes both regular and anonymous report creation endpoints"
+}
+{
+  "requirement_id": "PT08",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/assigned", "operation_id": null}
+  ],
+  "evidence": ["Get reports assigned to logged-in technical office staff member endpoint"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes assigned reports endpoint for technical office staff"
+}
+{
+  "requirement_id": "PT09",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PUT", "path": "/users/{id}/update", "operation_id": null},
+    {"method": "GET", "path": "/notifications", "operation_id": null},
+    {"method": "GET", "path": "/notifications/unread", "operation_id": null}
+  ],
+  "evidence": ["Update user profile and notification management endpoints"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes user profile update and notification configuration endpoints"
+}
+{
+  "requirement_id": "PT30",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/streets", "operation_id": null},
+    {"method": "GET", "path": "/streets/{name}/reports", "operation_id": null}
+  ],
+  "evidence": ["Street autocomplete and street-specific reports endpoints exist"],
+  "missing_behaviors": ["Direct address-based report search not explicitly exposed in REST contract"],
+  "rationale": "OpenAPI has street search but lacks explicit address-to-reports search endpoint"
+}
+{
+  "requirement_id": "PT10",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/{id}/assign-role", "operation_id": null},
+    {"method": "DELETE", "path": "/users/{id}/remove-role", "operation_id": null}
+  ],
+  "evidence": ["Assign and remove role endpoints for municipality users"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes role modification endpoints for administrators"
+}
+{
+  "requirement_id": "PT11",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PUT", "path": "/reports/{id}/status", "operation_id": null}
+  ],
+  "evidence": ["Update report status endpoint for external maintainers"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes status update endpoint matching the requirement"
+}
+{
+  "requirement_id": "PT12",
+  "status": "not_implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/telegram/webhook", "operation_id": null}
+  ],
+  "evidence": ["Telegram webhook endpoint exists but only for receiving webhooks"],
+  "missing_behaviors": ["Report creation through Telegram bot integration not exposed in REST contract"],
+  "rationale": "OpenAPI has Telegram webhook but no endpoint for creating reports via Telegram bot"
+}
+{
+  "requirement_id": "PT13",
+  "status": "not_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/telegram/info", "operation_id": null}
+  ],
+  "evidence": ["Telegram info endpoint exists but only for bot information"],
+  "missing_behaviors": ["Report status checking through Telegram bot not exposed in REST contract"],
+  "rationale": "OpenAPI has Telegram info but no endpoint for checking report status via Telegram"
+}
+{
+  "requirement_id": "PT14",
+  "status": "not_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/telegram/info", "operation_id": null}
+  ],
+  "evidence": ["Telegram info endpoint exists but only for bot information"],
+  "missing_behaviors": ["Help commands and assistance through Telegram bot not exposed in REST contract"],
+  "rationale": "OpenAPI has Telegram info but no endpoint for help commands via Telegram"
+}
+{
+  "requirement_id": "PT18",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/{id}/messages", "operation_id": null},
+    {"method": "POST", "path": "/reports/{id}/messages", "operation_id": null}
+  ],
+  "evidence": ["Get chat and send message endpoints for report communication"],
+  "missing_behaviors": [],
+  "rationale": "OpenAPI exposes message endpoints for replying to municipal operators"
+}
+{
+  "requirement_id": "PT16",
+  "status": "not_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/citizen", "operation_id": null}
+  ],
+  "evidence": ["Get reports visible to citizens endpoint exists"],
+  "missing_behaviors": ["Follow/subscribe to other citizens' reports functionality not exposed in REST contract"],
+  "rationale": "OpenAPI has citizen-visible reports but no follow/subscribe endpoint"
+}
+{
+  "requirement_id": "PT17",
+  "status": "not_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/notifications", "operation_id": null},
+    {"method": "POST", "path": "/telegram/webhook", "operation_id": null}
+  ],
+  "evidence": ["Notifications and Telegram webhook endpoints exist"],
+  "missing_behaviors": ["Real-time push notifications via Telegram bot not exposed in REST contract"],
+  "rationale": "OpenAPI has notifications but no endpoint for configuring Telegram push notifications"
+}
+{
+  "requirement_id": "PT19",
+  "status": "not_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/notifications", "operation_id": null}
+  ],
+  "evidence": ["Notifications endpoint exists for platform notifications"],
+  "missing_behaviors": ["Email alert configuration not exposed in REST contract"],
+  "rationale": "OpenAPI has notifications but no endpoint for configuring email alerts"
+}
+{
+  "requirement_id": "PT20",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Public statistics about reports not exposed in REST contract"],
+  "rationale": "No statistics or analytics endpoints exist in OpenAPI contract"
+}
+{
+  "requirement_id": "PT21",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Detailed private statistics not exposed in REST contract"],
+  "rationale": "No statistics or analytics endpoints exist in OpenAPI contract"
+}
+{
+  "requirement_id": "PT29",
+  "status": "not_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/api/categories", "operation_id": null}
+  ],
+  "evidence": ["Get report categories endpoint exists"],
+  "missing_behaviors": ["Configure automatic assignment rules for categories not exposed in REST contract"],
+  "rationale": "OpenAPI has categories but no endpoint for configuring auto-assignment rules"
+}
+{
+  "requirement_id": "PT22",
+  "status": "not_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/citizen", "operation_id": null}
+  ],
+  "evidence": ["Get reports visible to citizens endpoint exists"],
+  "missing_behaviors": ["Summary table with filters functionality not exposed in REST contract"],
+  "rationale": "OpenAPI has report listing but no filtering/export endpoints for summary table"
+}
+{
+  "requirement_id": "PT23",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Download/export summary table functionality not exposed in REST contract"],
+  "rationale": "No export or download endpoints exist for reports in OpenAPI contract"
+}

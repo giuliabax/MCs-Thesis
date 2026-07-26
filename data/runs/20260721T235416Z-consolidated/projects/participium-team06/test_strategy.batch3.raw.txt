@@ -1,0 +1,188 @@
+[
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member can see the list of reports assigned to them.",
+    "api_endpoint": "/tech/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as a technical office staff member. Ensure the user is logged in and has the appropriate role. Verify that the response contains a list of reports where the 'assigned_to' field matches the current user's ID or the specific technical office they belong to.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /login with valid credentials for a technical office staff member",
+      "Ensure at least one report exists in the system with status 'Assigned' and assigned to this user/office"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for staff members to view their workload as per PT08."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen can configure their account (notifications, virtual presence).",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute as a citizen. Ensure the user is logged in. Update the profile to change notification preferences (e.g., set 'real_time' to false) and add a Telegram username. Verify the response reflects these changes.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login with valid citizen credentials",
+      "Ensure the user has an existing profile to update"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the ability of a citizen to manage their account settings as defined in PT09."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user can browse a summary table of reports with filters.",
+    "api_endpoint": "/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as an unauthenticated user (or authenticated citizen). Call the endpoint without authentication headers. Verify that the response returns a list of reports in 'Pending Approval' or 'Resolved' states, excluding internal details like reserved comments. Apply query parameters for filters if supported.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure at least one report exists with status 'Pending Approval' or 'Resolved'"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates public access to reports as per PT22 and the domain rule about unregistered users viewing reports."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen attempts to modify an existing report.",
+    "api_endpoint": "/users/reports",
+    "http_method": "PUT",
+    "prompt": "Execute as a citizen. First, create a report (POST /users/reports) or use an existing one. Attempt to update the description or status of that specific report using PUT /users/me or a direct report update endpoint if available. Expect failure.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login with valid citizen credentials",
+      "POST /users/reports to create a dummy report (or ensure one exists)"
+    ],
+    "cleanup_strategy": "DELETE the created report if it was successfully created during setup, or verify no resource was modified.",
+    "expected_status_codes": [
+      "403",
+      "405"
+    ],
+    "rationale": "Tests the domain rule: 'Once a report has been inserted, it cannot be modified or deleted by the citizen.'"
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member views reports assigned to them with no assignments.",
+    "api_endpoint": "/tech/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as a technical office staff member. Ensure the user is logged in but there are currently zero reports assigned to this specific user or office. Verify that the response returns an empty list (or appropriate empty state) rather than an error.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /login with valid credentials for a technical office staff member",
+      "Ensure no reports exist in the system assigned to this user/office"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the edge case where the list is empty but the endpoint remains functional."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures account with an invalid Telegram username format.",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute as a citizen. Ensure the user is logged in. Attempt to update the profile with a malformed Telegram username (e.g., containing spaces or special characters not allowed). Verify that the system rejects the invalid input.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login with valid citizen credentials"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests input validation for profile configuration fields."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Unregistered user attempts to view internal comments on a report.",
+    "api_endpoint": "/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as an unauthenticated user. Call the public reports list endpoint for a report that has internal comments (reserved). Verify that the response does not include the 'comments' field or any reserved information.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure at least one report exists with internal comments (requires admin/tech-lead setup)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the domain rule regarding visibility of reserved comments to anonymous users."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member views assigned reports after a new assignment.",
+    "api_endpoint": "/tech/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as a technical office staff member. First, use the tech-lead endpoint to assign a new report to this user (PUT /tech-lead/report/{reportId}). Immediately call GET /tech/reports/list. Verify that the newly assigned report appears in the list.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /login with valid credentials for a technical office staff member",
+      "Ensure a report exists that can be assigned"
+    ],
+    "cleanup_strategy": "DELETE the report if it was created during setup, or verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the stateful dependency where assignment creates a resource visible in the list."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen attempts to update profile without being logged in.",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute as an unauthenticated user. Attempt to call PUT /users/me with a JSON body containing profile updates. Verify that the system returns an authentication error.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no active session exists for this user"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Tests that protected endpoints require authentication."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Unregistered user views reports with a filter for 'Pending Approval' status.",
+    "api_endpoint": "/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as an unauthenticated user. Call GET /reports/list with a query parameter filtering by status='Pending Approval'. Verify that the response includes only reports matching this criteria and excludes 'Resolved' or internal-only reports.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure at least one report exists with status 'Pending Approval'"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the filtering capability of the public reports list endpoint."
+  }
+]

@@ -1,0 +1,185 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without any authentication headers. Verify that the response returns a list of report objects containing only public fields (e.g., title, status, location) and excludes sensitive internal comments or user emails.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core requirement that unregistered users can access public data without authentication."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without authentication. Verify that the response returns a list of report objects containing only public fields (e.g., title, status, location) and excludes sensitive internal comments or user emails.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the edge case where an unregistered user accesses the API without any prior setup, ensuring data privacy constraints are met."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'technical_office_staff_member'. Execute a PUT request to /reports/{id}/mainteiner with an invalid maintainer ID (non-existent user). Verify that the system returns an appropriate error code (e.g., 404 or 400) and does not create an assignment.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Authenticate as technical_office_staff_member.",
+      "Create a report via POST /reports with mandatory fields."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete the report using DELETE /reports/{id} if it still exists.",
+    "expected_status_codes": [
+      "400",
+      "404"
+    ],
+    "rationale": "Tests negative behavior where an invalid maintainer ID is provided, ensuring the system handles errors gracefully."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'technical_office_staff_member'. Execute a PUT request to /reports/{id}/status with status 'Suspended' and then immediately attempt to update it again to 'Resolved' without proper workflow steps. Verify that the system enforces the correct state transitions.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Authenticate as technical_office_staff_member.",
+      "Create a report via POST /reports.",
+      "Assign the report to a technical office or staff member via PUT /reports/{id}/mainteiner."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} after verification.",
+    "expected_status_codes": [
+      "200",
+      "403"
+    ],
+    "rationale": "Tests stateful workflow where multiple status updates are performed in sequence, ensuring correct state management."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Execute a happy path registration. Provide a valid JSON body with 'name', 'username', and 'email'. Expect a success response indicating account creation pending verification.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core entry point for new users as per PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/citizens/verify-email",
+    "http_method": "POST",
+    "prompt": "Execute the happy path for email verification. First, call /citizens/verification-code (auth_required: true) to generate a valid code. Then, call /citizens/verify-email with that code in the body. Expect account activation.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen.",
+      "Call POST /citizens/verification-code to obtain a valid verification code."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the stateful workflow required by PT27 and domain rules regarding confirmation codes."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal comments on a report.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Execute the happy path for adding an internal comment. Use an authenticated session with role 'technical_office_staff'. Provide a JSON body with 'content' and optionally 'author_id'. Expect success.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Authenticate as technical_office_staff.",
+      "Ensure an existing report ID is available (e.g., create a dummy report or use a known ID)."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the internal communication channel defined in PT26."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a stateful workflow for messaging. First, ensure an authenticated citizen session exists. Then, POST a message to /reports/{id}/messages with 'sender_id' (operator) and 'content'. Verify the message is created.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an existing report ID is available.",
+      "Ensure an authenticated citizen session exists."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the chat functionality defined in PT18 and API analysis for message creation."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Create a new municipality user with a specific role assigned (e.g., 'technical_office_staff') using the admin session. Ensure the payload includes valid email and password fields required for registration.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator to obtain a valid session token."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of creating users with roles, which is a prerequisite for other admin operations like assigning categories or modifying roles."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update an existing municipality user's role from 'citizen' to 'technical_office_staff' using the admin session. Include all necessary fields for a successful update.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator.",
+      "Create a test user via POST /admin/createuser to have an ID to modify."
+    ],
+    "cleanup_strategy": "Delete the created test user via DELETE /citizens/{id} if it was not intended to persist, or verify no resource was created if the update failed unexpectedly.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the ability of administrators to flexibly modify user roles as per requirement PT10."
+  }
+]

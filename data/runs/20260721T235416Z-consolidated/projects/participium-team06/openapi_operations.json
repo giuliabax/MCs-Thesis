@@ -1,0 +1,749 @@
+[
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/register",
+    "summary": "Register a new citizen and send a verification code",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "email",
+        "password",
+        "first_name",
+        "last_name"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/verify",
+    "summary": "Verify a citizen account with a code",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "code"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/login",
+    "summary": "Log in a user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/logout",
+    "summary": "Log out the current user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/session",
+    "summary": "Get the current session user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/reports",
+    "summary": "Create a new report (authenticated user)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "longitude",
+        "latitude",
+        "title",
+        "description",
+        "categoryId",
+        "photos",
+        "anonymous"
+      ],
+      "properties": {
+        "longitude": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "categoryId": {
+          "type": "integer"
+        },
+        "photos": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "anonymous": {
+          "type": "boolean"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/reports/images/upload",
+    "summary": "Upload report images (max 3)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "images": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/reports/categories",
+    "summary": "List all report categories",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/users/me",
+    "summary": "Update the authenticated user's profile",
+    "description": "Accepts either application/json or multipart/form-data (with a `photo` file).",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "telegram_id": {
+          "type": "string"
+        },
+        "flag_email": {
+          "type": "boolean"
+        },
+        "photo": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/{username}/my-reports",
+    "summary": "Get reports created by a user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "username",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/uploads/{filename}",
+    "summary": "Serve an uploaded report image (static)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "filename",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "404"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/reports/{id}/status",
+    "summary": "Update the status of a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "newStatus"
+      ],
+      "properties": {
+        "newStatus": {
+          "$ref": "#/components/schemas/StatusType"
+        },
+        "explanation": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/list",
+    "summary": "List all reports",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/list/accepted",
+    "summary": "List all accepted reports",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/admin/accounts/register",
+    "summary": "Create a municipality officer account (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "email",
+        "password",
+        "first_name",
+        "last_name",
+        "external"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "external": {
+          "type": "boolean"
+        }
+      }
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/admin/accounts/list",
+    "summary": "List all municipality officers (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/admin/accounts/assign",
+    "summary": "Assign roles to a municipality officer (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "rolesTitle",
+        "external"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "rolesTitle": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "external": {
+          "type": "boolean"
+        },
+        "companyName": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/admin/roles/list",
+    "summary": "List all available roles (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/tech-lead/report/{reportId}",
+    "summary": "Assign a tech agent to a report (tech lead only)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "officerUsername"
+      ],
+      "properties": {
+        "officerUsername": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Tech Lead"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/tech-lead/agents",
+    "summary": "List tech agents managed by the authenticated tech lead",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Tech Lead"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/tech-lead/reports/list",
+    "summary": "List reports for the authenticated tech lead",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Tech Lead"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/tech/reports/list",
+    "summary": "List reports assigned to the authenticated tech agent",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Tech Agent"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/messages/{chatId}",
+    "summary": "Send a message in a chat",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "chatId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Messages"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/messages/{reportId}/officer-user",
+    "summary": "Get officer-user chat messages for a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Messages"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/messages/{reportId}/lead-external",
+    "summary": "Get lead-external chat messages for a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Messages"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/notifications",
+    "summary": "Get notifications for the authenticated user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/notifications/{id}",
+    "summary": "Delete a notification for the authenticated user",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/notifications/{id}/read",
+    "summary": "Mark a notification as read",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  }
+]

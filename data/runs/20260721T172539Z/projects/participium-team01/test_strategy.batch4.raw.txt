@@ -1,0 +1,188 @@
+[
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "As a citizen I want to configure my account So that I can better manage notifications and my virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update the authenticated citizen's profile to change notification preferences (e.g., set 'real-time' or 'on page refresh') and update virtual presence settings. Verify the response reflects the updated configuration.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration to create a citizen account with valid email and confirmation code.",
+      "POST /sessions to obtain an authenticated session token."
+    ],
+    "cleanup_strategy": "DELETE the created report if any were created during setup; verify no resource was created by this specific test. If the PUT endpoint creates side effects, reset the profile to default values or delete the user account via admin tools.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates core functionality for requirement PT09 regarding account configuration and notification management."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "As a citizen I want to receive optional email alerts in addition to platform notifications So that I can choose the best way to stay updated.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update the authenticated citizen's profile to enable 'email_alerts' set to true while keeping other settings unchanged. Verify the response confirms email alerts are enabled.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration to create a citizen account.",
+      "POST /sessions to obtain an authenticated session token."
+    ],
+    "cleanup_strategy": "Reset the 'email_alerts' field back to false or remove it in a subsequent PUT request to restore default state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the specific edge case of enabling optional email alerts as per PT19, ensuring partial updates work correctly."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "As a citizen/unregistered user I want to browse a summary table of reports with filters So that I can easily explore and analyze existing reports.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports. Apply a filter parameter (e.g., 'category' or 'status') to the query string. Verify the response contains only the filtered subset of reports and includes summary data.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen/unregistered user",
+    "setup_needed": [
+      "POST /reports to create a sample report with a specific category and status (e.g., 'Pending Approval')."
+    ],
+    "cleanup_strategy": "DELETE the created sample report if it exists. If the DELETE fails due to state constraints, verify no resource was created by this test or use admin tools to remove it.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability to browse and filter reports as described in PT22, covering both citizen and unregistered user access levels."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "As a citizen I want to configure my account So that I can better manage notifications and my virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Attempt to update the authenticated citizen's profile with an invalid 'virtual_presence' value (e.g., a non-existent enum value like 'invisible'). Verify that the system rejects this request with an appropriate error code.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration to create a citizen account.",
+      "POST /sessions to obtain an authenticated session token."
+    ],
+    "cleanup_strategy": "No cleanup needed as no resource was created. If the test inadvertently creates a side effect, verify and reset the profile state.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests negative behavior for PT09 by attempting to set an invalid configuration value, ensuring input validation works."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "As a citizen/unregistered user I want to browse a summary table of reports with filters So that I can easily explore and analyze existing reports.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Attempt to view reports before they have been approved (status 'Pending Approval') as an unregistered user. Verify that the system hides these reports from the public view or returns a filtered list excluding them.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "unregistered user",
+    "setup_needed": [
+      "POST /reports to create a sample report with status 'Pending Approval'."
+    ],
+    "cleanup_strategy": "DELETE the created sample report if it exists. If the DELETE fails due to state constraints, verify no resource was created by this test or use admin tools to remove it.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the edge case where unregistered users cannot see pending reports, as per domain rules and PT22 context."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "As a citizen I want to configure my account So that I can better manage notifications and my virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Attempt to update the profile of an unauthenticated user by omitting the session token or using an expired token. Verify that the system denies access with a 401 Unauthorized error.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "POST /registration to create a citizen account (for context)."
+    ],
+    "cleanup_strategy": "No cleanup needed as no resource was created. If the test inadvertently creates a side effect, verify and reset the profile state.",
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Tests negative behavior for PT09 by attempting to access protected endpoints without authentication."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "As a citizen/unregistered user I want to browse a summary table of reports with filters So that I can easily explore and analyze existing reports.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Attempt to filter the report list by a non-existent category value. Verify that the system handles this gracefully, either returning an empty list or an appropriate error message indicating the invalid filter.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /reports to create a sample report with a valid category."
+    ],
+    "cleanup_strategy": "DELETE the created sample report if it exists. If the DELETE fails due to state constraints, verify no resource was created by this test or use admin tools to remove it.",
+    "expected_status_codes": [
+      "200",
+      "400"
+    ],
+    "rationale": "Tests negative behavior for PT22 by attempting to filter with invalid data, ensuring robustness against bad input."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "As a citizen I want to configure my account So that I can better manage notifications and my virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update the authenticated citizen's profile to change notification preferences (e.g., set 'real-time' or 'on page refresh') and update virtual presence settings. Verify the response reflects the updated configuration.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration to create a citizen account with valid email and confirmation code.",
+      "POST /sessions to obtain an authenticated session token."
+    ],
+    "cleanup_strategy": "DELETE the created report if any were created during setup; verify no resource was created by this specific test. If the PUT endpoint creates side effects, reset the profile to default values or delete the user account via admin tools.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates core functionality for requirement PT09 regarding account configuration and notification management."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "As a citizen I want to receive optional email alerts in addition to platform notifications So that I can choose the best way to stay updated.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update the authenticated citizen's profile to enable 'email_alerts' set to true while keeping other settings unchanged. Verify the response confirms email alerts are enabled.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration to create a citizen account.",
+      "POST /sessions to obtain an authenticated session token."
+    ],
+    "cleanup_strategy": "Reset the 'email_alerts' field back to false or remove it in a subsequent PUT request to restore default state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the specific edge case of enabling optional email alerts as per PT19, ensuring partial updates work correctly."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "As a citizen/unregistered user I want to browse a summary table of reports with filters So that I can easily explore and analyze existing reports.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports. Apply a filter parameter (e.g., 'category' or 'status') to the query string. Verify the response contains only the filtered subset of reports and includes summary data.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen/unregistered user",
+    "setup_needed": [
+      "POST /reports to create a sample report with a specific category and status (e.g., 'Pending Approval')."
+    ],
+    "cleanup_strategy": "DELETE the created sample report if it exists. If the DELETE fails due to state constraints, verify no resource was created by this test or use admin tools to remove it.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability to browse and filter reports as described in PT22, covering both citizen and unregistered user access levels."
+  }
+]

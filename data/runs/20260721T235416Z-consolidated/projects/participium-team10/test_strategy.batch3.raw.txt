@@ -1,0 +1,219 @@
+[
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/api/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request containing valid latitude and longitude coordinates derived from a user interaction with the city map. Ensure the payload includes required fields for location, category, and description.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen role via POST /api/sessions",
+      "Ensure active session exists for authenticated requests"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of geolocating a report using map coordinates as specified in PT04."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/api/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request with a detailed description and select a valid category from the fixed list (e.g., Water Supply, Architectural Barriers). Verify that the system accepts the classification details.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen role via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Ensures that report details and classification are correctly processed upon submission."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous so that their name is not shown in the public list of reports.",
+    "api_endpoint": "/api/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request with an 'anonymous' flag set to true. Verify that the system accepts this setting and stores it appropriately without exposing the user's name in public views.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen role via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the anonymous reporting feature to ensure user privacy is respected."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them for maintenance overview.",
+    "api_endpoint": "/api/reports/assigned/me",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to the current user. Ensure that only reports with status 'Assigned' and where the user is the assignee are returned.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Confirms that assigned reports are correctly filtered and displayed to the technical office staff member."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account to better manage notifications and virtual presence.",
+    "api_endpoint": "/api/users/me",
+    "http_method": "PATCH",
+    "prompt": "Update the current user's notification preferences by sending a PATCH request with valid fields such as 'notifications_enabled' or 'virtual_presence_settings'. Verify that the changes are applied successfully.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen role via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability of a citizen to update their account settings for notifications and presence."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/api/users/notifications",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of notification preferences for the current user. Verify that email alert settings are included and can be toggled independently of platform notifications.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen role via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures that email alert preferences are correctly retrieved and managed alongside platform notifications."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/api/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request with invalid latitude or longitude values (e.g., out of range coordinates). Verify that the system rejects the request with an appropriate error message.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen role via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the system's handling of invalid geolocation data to ensure robustness."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/api/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request with an invalid category value (e.g., 'InvalidCategory'). Verify that the system rejects the request and returns an error indicating the invalid input.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen role via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures that invalid category inputs are properly rejected to maintain data integrity."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous so that their name is not shown in the public list of reports.",
+    "api_endpoint": "/api/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report request without setting the 'anonymous' flag. Verify that the system accepts the request but does not store any anonymous preference, ensuring the user's name is visible in public views.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen role via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Confirms that the system correctly handles the absence of an anonymous flag."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them for maintenance overview.",
+    "api_endpoint": "/api/reports/assigned/me",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to a user who has no assigned reports. Verify that an empty list is returned with a 200 status code.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the system's behavior when no reports are assigned to the user."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account to better manage notifications and virtual presence.",
+    "api_endpoint": "/api/users/me",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update the current user's notification preferences with an invalid field name (e.g., 'invalid_field'). Verify that the system rejects the request with a 400 status code and an appropriate error message.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen role via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures that invalid fields in the PATCH request are properly rejected."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/api/users/notifications",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of notification preferences for a user who has disabled all email alerts. Verify that the response reflects the disabled state correctly.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen role via POST /api/sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the system's handling of disabled email alert preferences."
+  }
+]

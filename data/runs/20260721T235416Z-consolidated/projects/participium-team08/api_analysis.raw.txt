@@ -1,0 +1,486 @@
+{
+  "summary": "A multi-role citizen reporting and maintenance management API. It supports user registration/login, report creation by citizens, officer review/approval/rejection, technician assignment and external company delegation, admin user/role/category management, and public report viewing.",
+  "operations": [
+    {
+      "path": "/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Initial user creation; no auth required"]
+    },
+    {
+      "path": "/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/register"],
+      "notes": ["Obtains JWT for subsequent authenticated endpoints"]
+    },
+    {
+      "path": "/users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public list of users; may expose sensitive data without auth"]
+    },
+    {
+      "path": "/users/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/register"],
+      "notes": ["Update user; requires valid ID from registration"]
+    },
+    {
+      "path": "/users/{id}/verify",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/register"],
+      "notes": ["Verification flow step 1: generate code"]
+    },
+    {
+      "path": "/users/{id}/verify/check",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/users/{id}/verify"],
+      "notes": ["Verification flow step 2: validate code"]
+    },
+    {
+      "path": "/users/{id}/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/register"],
+      "notes": ["List reports created by a specific citizen"]
+    },
+    {
+      "path": "/profile",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Requires JWT; returns current user profile"]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Create new report; requires auth"]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["List all reports; requires auth"]
+    },
+    {
+      "path": "/reports/pending",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["List pending reports for review; requires auth"]
+    },
+    {
+      "path": "/reports/active",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public endpoint to view active reports"]
+    },
+    {
+      "path": "/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Get specific report; requires auth"]
+    },
+    {
+      "path": "/reports/{id}/status",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login", "/reports"],
+      "notes": ["Update report status; requires auth"]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Get messages for a report; requires auth"]
+    },
+    {
+      "path": "/reports/{id}/comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Get internal comments; requires auth"]
+    },
+    {
+      "path": "/reports/{id}/comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Add internal comment; requires auth"]
+    },
+    {
+      "path": "/reports/{id}/public-messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Send public message; requires auth"]
+    },
+    {
+      "path": "/reports/{id}/internal-messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Send internal message; requires auth"]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Get unread notifications; requires auth"]
+    },
+    {
+      "path": "/notifications/{id}/read",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Mark notification as read; requires auth"]
+    },
+    {
+      "path": "/report/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Officer-specific report retrieval; requires auth"]
+    },
+    {
+      "path": "/status/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Officer status update; requires auth"]
+    },
+    {
+      "path": "/reports/{id}/approve",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Officer approval action; requires auth"]
+    },
+    {
+      "path": "/reports/{id}/reject",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Officer rejection action; requires auth"]
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public list of categories"]
+    },
+    {
+      "path": "/technician/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Technician view of assigned reports; requires auth"]
+    },
+    {
+      "path": "/technician/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Technician view of assigned categories; requires auth"]
+    },
+    {
+      "path": "/technician/reports/{id}/external",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Assign report to external company; requires auth"]
+    },
+    {
+      "path": "/admin/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Admin creates users; requires admin auth"]
+    },
+    {
+      "path": "/admin/register-technician",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Admin creates technician; requires admin auth"]
+    },
+    {
+      "path": "/admin/register-external-maintainer",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Admin creates external maintainer; requires admin auth"]
+    },
+    {
+      "path": "/admin/users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Admin list users with roles; requires admin auth"]
+    },
+    {
+      "path": "/admin/users/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Admin get user by id; requires admin auth"]
+    },
+    {
+      "path": "/admin/users/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Admin delete user; requires admin auth"]
+    },
+    {
+      "path": "/admin/users/{id}/role",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Admin assign/update user role; requires admin auth"]
+    },
+    {
+      "path": "/admin/technicians/{id}/categories",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Admin replace technician categories; requires admin auth"]
+    },
+    {
+      "path": "/admin/technicians/{id}/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Admin get technician categories; requires admin auth"]
+    },
+    {
+      "path": "/external-company",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public list of external companies"]
+    },
+    {
+      "path": "/external-company/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public get external company by id"]
+    },
+    {
+      "path": "/external-company/category/{categoryId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public list external companies by category"]
+    }
+  ],
+  "authentication_notes": ["/login returns JWT used for all auth_required endpoints; /register and /users are public but may leak sensitive data without auth; admin endpoints require elevated role verification"],
+  "dependencies": [
+    "POST /register must precede any user-specific operations (PATCH /users/{id}, POST /users/{id}/verify, etc.)",
+    "POST /login must precede all authenticated operations (GET /profile, POST /reports, GET /reports, etc.)",
+    "POST /admin/register and related admin endpoints require an existing admin session (POST /login with admin credentials)",
+    "PATCH /technician/reports/{id}/external depends on the existence of a report created via POST /reports",
+    "PUT /admin/users/{id}/role and PUT /admin/technicians/{id}/categories depend on prior user/technician creation via admin endpoints"
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/register",
+      "dependent_method": "PATCH",
+      "dependent_path": "/users/{id}",
+      "dependency_type": "resource",
+      "reason": "User must be registered before updating their profile"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/register",
+      "dependent_method": "POST",
+      "dependent_path": "/users/{id}/verify",
+      "dependency_type": "resource",
+      "reason": "User must exist to generate verification code"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/{id}/verify",
+      "dependent_method": "POST",
+      "dependent_path": "/users/{id}/verify/check",
+      "dependency_type": "state",
+      "reason": "Verification code must be generated before it can be checked"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "GET",
+      "dependent_path": "/profile",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to access authenticated profile"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "POST",
+      "dependent_path": "/reports",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to create a report"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "GET",
+      "dependent_path": "/reports",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to list reports"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{id}/status",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to update report status"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{id}",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to fetch a specific report"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{id}/approve",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to approve a report"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{id}/reject",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to reject a report"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "GET",
+      "dependent_path": "/technician/reports",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to view technician-assigned reports"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PATCH",
+      "dependent_path": "/technician/reports/{id}/external",
+      "dependency_type": "authorization",
+      "reason": "JWT from login is required to assign report to external company"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "GET",
+      "dependent_path": "/admin/users",
+      "dependency_type": "authorization",
+      "reason": "JWT from login must represent an admin to list users"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "DELETE",
+      "dependent_path": "/admin/users/{id}",
+      "dependency_type": "authorization",
+      "reason": "JWT from login must represent an admin to delete a user"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PUT",
+      "dependent_path": "/admin/users/{id}/role",
+      "dependency_type": "authorization",
+      "reason": "JWT from login must represent an admin to assign a role"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PUT",
+      "dependent_path": "/admin/technicians/{id}/categories",
+      "dependency_type": "authorization",
+      "reason": "JWT from login must represent an admin to assign categories"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{id}/status",
+      "dependency_type": "state",
+      "reason": "Report must exist (created via POST /reports) before status can be updated"
+    }
+  ],
+  "risks": [
+    "Public endpoints (/users, /reports/active, /categories, /external-company*) may expose sensitive user or company data without authentication.",
+    "Verification flow lacks explicit error handling for expired codes or multiple attempts in documentation.",
+    "Admin endpoints do not specify required role claims beyond 'auth_required', risking privilege escalation if JWT validation is weak.",
+    "Technician and Officer endpoints share similar paths but different tags; client must enforce role-based routing to prevent unauthorized access.",
+    "External company assignment (/technician/reports/{id}/external) lacks documentation on external maintainer verification or approval workflow."
+  ]
+}

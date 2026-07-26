@@ -1,0 +1,169 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Execute a happy path registration. Provide a unique username, valid email, and password. Verify response indicates successful registration or returns a session token if immediate login is implied by the API design (though auth_required is null, check for 201/200). Ensure no duplicate username error occurs.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200", "201"],
+    "rationale": "Core functionality for user onboarding; must succeed with valid inputs."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/citizens/verification-code",
+    "http_method": "POST",
+    "prompt": "Execute the verification flow. First, trigger code generation (if separate) or assume code is provided in body/header based on auth_required=true. Submit a valid 6-digit code within the 30-minute window. Verify account status updates to 'verified' and access is granted.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /registration first to create an unverified user session."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Critical security step; must handle valid code submission correctly."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal comments on a report.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "As a technical office staff member, add an internal comment to an existing report. Verify the comment is stored and accessible via GET /reports/{id}/internal-comments but not visible to public endpoints or citizen roles.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a report via POST /reports with any valid data."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if it was not already deleted by another test; ensure no orphaned comments remain.",
+    "expected_status_codes": ["201", "403"],
+    "rationale": "Validates internal communication channel isolation from public view."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "As a citizen, send a reply message to an existing report. Verify the message appears in the conversation thread accessible via GET /reports/{id}/messages and is attributed to the citizen.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a report via POST /reports.",
+      "Post an initial message from an operator role to establish context."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} after verifying message history is cleared or archived appropriately.",
+    "expected_status_codes": ["201"],
+    "rationale": "Ensures two-way communication flow between citizens and operators."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users with specific roles.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "As a system administrator, create a new user account with a specific role (e.g., 'technical office staff member' or 'external maintainer'). Verify the user is created successfully and can be authenticated.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [],
+    "cleanup_strategy": "Delete the created user account using an appropriate admin endpoint (e.g., DELETE /admin/users/{id}) if available, or verify no duplicate users exist.",
+    "expected_status_codes": ["201"],
+    "rationale": "Essential for role-based access control setup and external maintainer onboarding."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registration fails due to duplicate username.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Attempt to register a citizen using a username that already exists in the system. Verify the API returns an appropriate error code (e.g., 409 Conflict or 400 Bad Request) indicating the duplicate username.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["409", "400"],
+    "rationale": "Prevents system integrity issues caused by duplicate user accounts."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Verification code submission fails with an invalid or expired code.",
+    "api_endpoint": "/citizens/verification-code",
+    "http_method": "POST",
+    "prompt": "Submit a verification code that is either incorrect, malformed, or outside the 30-minute validity window. Verify the API rejects the request with an appropriate error message (e.g., 400 Bad Request).",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /registration to create an unverified user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures security by preventing unauthorized account activation with invalid codes."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Internal comments are added to a non-existent report.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Attempt to add an internal comment to a report ID that does not exist. Verify the API returns a 404 Not Found error, indicating the resource dependency is missing.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["404"],
+    "rationale": "Validates proper handling of missing resource dependencies."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to a message on a report they do not own or are not authorized for.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "As a citizen, attempt to post a reply to a report that is either anonymous (where name is hidden) or belongs to another user without permission. Verify the API returns a 403 Forbidden error.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a report via POST /reports with a different user context or ensure the target report is not accessible to the current citizen."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if it was created during setup.",
+    "expected_status_codes": ["403"],
+    "rationale": "Ensures data isolation and prevents unauthorized communication on other reports."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Internal comments workflow: Add comment, verify visibility, then clean up.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Execute a stateful workflow: 1) Create a report. 2) Add an internal comment as staff. 3) Verify the comment is visible to staff via GET /reports/{id}/internal-comments. 4) Verify the comment is NOT visible to a citizen role attempting to access the same endpoint.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a report via POST /reports."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} to remove all associated comments and ensure no orphaned data remains.",
+    "expected_status_codes": ["201", "200", "403"],
+    "rationale": "Validates the complete lifecycle of internal comments, including state transitions and role-based visibility."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator creates a user with an invalid role string.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Attempt to create a user by providing a role value that is not in the allowed list (e.g., 'invalid_role'). Verify the API rejects the request with a 400 Bad Request error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures data integrity by preventing invalid role assignments."
+  }
+]

@@ -1,0 +1,264 @@
+{
+  "requirement_id": "PT28",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports", "operation_id": null}
+  ],
+  "evidence": ["GET /reports lists reports filtered by status"],
+  "missing_behaviors": ["Interactive map visualization not exposed via REST", "Location-based filtering for map view not documented"],
+  "rationale": "Reports can be listed but interactive map viewing and geolocation-based filtering are not explicitly documented in the OpenAPI contract."
+}
+{
+  "requirement_id": "PT24",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PUT", "path": "/reports/{id}/assign-external", "operation_id": null}
+  ],
+  "evidence": ["PUT /reports/{id}/assign-external assigns report to external maintainer (Technical Staff member)"],
+  "missing_behaviors": [],
+  "rationale": "The endpoint explicitly documents assigning reports to external maintainers, covering the complete REST-facing behavior."
+}
+{
+  "requirement_id": "PT25",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PUT", "path": "/reports/{id}/status", "operation_id": null}
+  ],
+  "evidence": ["PUT /reports/{id}/status changes report status (public relations officer)"],
+  "missing_behaviors": [],
+  "rationale": "Status update endpoint exists for external maintainers to update assigned reports."
+}
+{
+  "requirement_id": "PT26",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Internal comments/exchange functionality not exposed via REST"],
+  "rationale": "No endpoint documents internal comment exchange or coordination between staff/maintainers without exposing to citizens."
+}
+{
+  "requirement_id": "PT01",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/signup", "operation_id": null}
+  ],
+  "evidence": ["POST /users/signup registers a new user"],
+  "missing_behaviors": [],
+  "rationale": "User registration endpoint documents the complete REST-facing behavior for citizen registration."
+}
+{
+  "requirement_id": "PT27",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Email/code confirmation flow not documented"],
+  "rationale": "Registration exists but no endpoint documents account confirmation with code for valid account activation."
+}
+{
+  "requirement_id": "PT02",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/employees", "operation_id": null}
+  ],
+  "evidence": ["POST /users/employees creates a municipality employee (admin only)"],
+  "missing_behaviors": [],
+  "rationale": "Endpoint documents creating municipality users for system administrators."
+}
+{
+  "requirement_id": "PT03",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Role assignment to municipality users not documented"],
+  "rationale": "User creation exists but no endpoint documents assigning roles to municipality users."
+}
+{
+  "requirement_id": "PT04",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/reports", "operation_id": null}
+  ],
+  "evidence": ["POST /reports creates a report (citizen only)"],
+  "missing_behaviors": ["Geolocation parameters not explicitly documented in request schema"],
+  "rationale": "Report creation endpoint exists but latitude/longitude selection via map is not explicitly documented."
+}
+{
+  "requirement_id": "PT05",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/reports", "operation_id": null}
+  ],
+  "evidence": ["POST /reports creates a report (citizen only)"],
+  "missing_behaviors": [],
+  "rationale": "Report creation endpoint documents providing details for reports."
+}
+{
+  "requirement_id": "PT06",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PUT", "path": "/reports/{id}/status", "operation_id": null}
+  ],
+  "evidence": ["PUT /reports/{id}/status changes report status (public relations officer)"],
+  "missing_behaviors": [],
+  "rationale": "Status change endpoint documents approve/reject functionality for public relations officers."
+}
+{
+  "requirement_id": "PT07",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports", "operation_id": null}
+  ],
+  "evidence": ["GET /reports lists reports filtered by status"],
+  "missing_behaviors": ["Interactive map visualization not exposed via REST", "Location-based filtering for map view not documented"],
+  "rationale": "Reports can be listed but interactive map viewing and geolocation-based filtering are not explicitly documented."
+}
+{
+  "requirement_id": "PT15",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Anonymous report flag parameter not documented"],
+  "rationale": "No endpoint documents anonymity configuration for reports in the OpenAPI contract."
+}
+{
+  "requirement_id": "PT08",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports", "operation_id": null}
+  ],
+  "evidence": ["GET /reports lists reports filtered by status"],
+  "missing_behaviors": ["Filtering by assigned maintainer not documented"],
+  "rationale": "Reports can be listed but assignment-based filtering for technical office staff is not explicitly documented."
+}
+{
+  "requirement_id": "PT09",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Account configuration/notification management endpoints not documented"],
+  "rationale": "POST /users/me returns current user but no endpoint documents configuring account settings or notification preferences."
+}
+{
+  "requirement_id": "PT30",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Address-based search/filtering for reports not documented"],
+  "rationale": "GET /reports exists but lacks address/location-based search parameters for area-specific exploration."
+}
+{
+  "requirement_id": "PT10",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Role modification endpoint not documented"],
+  "rationale": "User creation exists but no endpoint documents modifying roles for municipality users."
+}
+{
+  "requirement_id": "PT11",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PUT", "path": "/reports/{id}/status", "operation_id": null}
+  ],
+  "evidence": ["PUT /reports/{id}/status changes report status (public relations officer)"],
+  "missing_behaviors": [],
+  "rationale": "Status update endpoint documents updating report statuses for technical office staff."
+}
+{
+  "requirement_id": "PT12",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Telegram bot integration endpoints not documented"],
+  "rationale": "Report creation exists but no dedicated endpoint documents Telegram bot integration for report submission."
+}
+{
+  "requirement_id": "PT13",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Telegram bot status check endpoints not documented"],
+  "rationale": "Report status exists but no dedicated endpoint documents Telegram bot integration for status checking."
+}
+{
+  "requirement_id": "PT14",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Telegram bot help/assistance endpoints not documented"],
+  "rationale": "No endpoint documents Telegram bot integration for help commands or assistance."
+}
+{
+  "requirement_id": "PT18",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Messaging/communication endpoints not documented"],
+  "rationale": "No endpoint documents replying to messages from municipal operators or platform messaging."
+}
+{
+  "requirement_id": "PT16",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Report following/subscription endpoints not documented"],
+  "rationale": "No endpoint documents following reports done by other citizens for updates."
+}
+{
+  "requirement_id": "PT17",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Push notification/Telegram bot integration endpoints not documented"],
+  "rationale": "No endpoint documents real-time push notifications via Telegram bot for status changes."
+}
+{
+  "requirement_id": "PT19",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Email alert configuration endpoints not documented"],
+  "rationale": "No endpoint documents optional email alerts or notification preference configuration."
+}
+{
+  "requirement_id": "PT20",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Public statistics/analytics endpoints not documented"],
+  "rationale": "No endpoint documents public statistics about reports or trends in city issues."
+}
+{
+  "requirement_id": "PT21",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Private statistics/analytics endpoints not documented"],
+  "rationale": "No endpoint documents detailed private statistics for municipal administrators."
+}
+{
+  "requirement_id": "PT29",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Automatic assignment configuration endpoints not documented"],
+  "rationale": "No endpoint documents configuring automatic assignment rules for reports by category."
+}
+{
+  "requirement_id": "PT22",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports", "operation_id": null}
+  ],
+  "evidence": ["GET /reports lists reports filtered by status"],
+  "missing_behaviors": ["Comprehensive filtering parameters for summary table not documented"],
+  "rationale": "Reports can be listed but advanced filtering for summary table browsing is not explicitly documented."
+}
+{
+  "requirement_id": "PT23",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Export/download endpoint for reports not documented"],
+  "rationale": "No endpoint documents downloading summary table of reports."
+}

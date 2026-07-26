@@ -1,0 +1,518 @@
+{
+  "summary": "A municipal reporting API supporting user registration, verification, authentication sessions, report creation and lifecycle management (status changes, assignments), internal commenting, and administrative user management.",
+  "operations": [
+    {
+      "path": "/auth/session",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Login",
+        "Initial login to establish session",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401"
+      ]
+    },
+    {
+      "path": "/auth/session",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/session (POST)"
+      ],
+      "notes": [
+        "Verify authentication",
+        "Verifies active session state",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/auth/session",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/session (GET)"
+      ],
+      "notes": [
+        "Logout",
+        "Terminates active session state",
+        "Documented responses: 204, 401"
+      ]
+    },
+    {
+      "path": "/auth/verify",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /email/send-verification: Verification code must be sent before it can be verified.",
+        "/email/send-verification (POST)"
+      ],
+      "notes": [
+        "Verify registration with code",
+        "Completes registration flow",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404, 429, 500"
+      ]
+    },
+    {
+      "path": "/auth/resend-code",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/email/send-verification (POST)"
+      ],
+      "notes": [
+        "Resend verification code",
+        "Resends verification code for registration",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404, 429, 500"
+      ]
+    },
+    {
+      "path": "/email/send-verification",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Send verification email",
+        "Initiates registration verification flow",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 500"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/session (POST)"
+      ],
+      "notes": [
+        "Create a new report",
+        "Creates new report resource",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/session (POST)"
+      ],
+      "notes": [
+        "List all reports",
+        "Lists reports, filters by status",
+        "Parameters: status",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /reports: Report ID must exist before retrieving specific report details."
+      ],
+      "notes": [
+        "Get report by ID",
+        "Public read access to specific report",
+        "Parameters: id",
+        "Documented responses: 200, 400, 404"
+      ]
+    },
+    {
+      "path": "/reports/{id}",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Report ID must exist before updating status or category.",
+        "/reports (POST)"
+      ],
+      "notes": [
+        "Change report status",
+        "Updates report status or category; requires specific roles",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 204, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/reports/municipality-users/{municipalityUserId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /users/municipality-users: Municipality user must exist before listing their reports.",
+        "/users/municipality-users (POST)"
+      ],
+      "notes": [
+        "Get reports by municipality user ID",
+        "Lists reports for a specific municipality user",
+        "Parameters: municipalityUserId",
+        "Documented responses: 200, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/reports/{id}/comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Report ID must exist before adding internal comments.",
+        "/reports (POST)"
+      ],
+      "notes": [
+        "Add internal comment to a report",
+        "Adds internal comment to report",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/reports/{id}/comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Report ID must exist before listing internal comments.",
+        "/reports (POST)"
+      ],
+      "notes": [
+        "Get internal comments for a report",
+        "Lists internal comments for report",
+        "Parameters: id",
+        "Documented responses: 200, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/reports/{id}/comments/unread",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Report ID must exist before listing unread comments.",
+        "/reports (POST)"
+      ],
+      "notes": [
+        "Get internal comments for a report unread by the user",
+        "Lists unread internal comments for report",
+        "Parameters: id",
+        "Documented responses: 200, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/reports/reports-map",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get reports for map view",
+        "Public map view of reports",
+        "Documented responses: 200, 500"
+      ]
+    },
+    {
+      "path": "/reports/search",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Search reports in a specific area",
+        "Searches reports by geographic bounding box",
+        "Parameters: bbox",
+        "Documented responses: 200, 400, 500"
+      ]
+    },
+    {
+      "path": "/users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Register a new user",
+        "Registers new user account pending verification",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 409, 500"
+      ]
+    },
+    {
+      "path": "/users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/session (POST)"
+      ],
+      "notes": [
+        "List all users",
+        "Admin-only list of all users",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/users",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/session (POST)"
+      ],
+      "notes": [
+        "Account configuration",
+        "Citizen account configuration update",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 500"
+      ]
+    },
+    {
+      "path": "/users/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users (POST)"
+      ],
+      "notes": [
+        "Get user by ID",
+        "Admin-only get user details",
+        "Parameters: id",
+        "Documented responses: 200, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/users/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users (POST)"
+      ],
+      "notes": [
+        "Delete user",
+        "Admin-only delete user account",
+        "Parameters: id",
+        "Documented responses: 204, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/users/municipality-users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/session (POST)"
+      ],
+      "notes": [
+        "Create a municipality user",
+        "Admin creates municipality user account",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 409, 500"
+      ]
+    },
+    {
+      "path": "/users/municipality-users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users/municipality-users (POST)"
+      ],
+      "notes": [
+        "List municipality users",
+        "Admin lists municipality users",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/users/municipality-users/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users/municipality-users (POST)"
+      ],
+      "notes": [
+        "List municipality roles",
+        "Admin lists available municipality roles",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/users/external-users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/session (POST)"
+      ],
+      "notes": [
+        "Create a external company user for maintenance",
+        "Admin creates external company user account",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 409, 500"
+      ]
+    },
+    {
+      "path": "/users/external-users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/users/external-users (POST)"
+      ],
+      "notes": [
+        "List external company accounts",
+        "Admin lists external company accounts",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/{report_id}/external-maintainers",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /users/external-users: External maintainer account must exist before assigning report to them.",
+        "/users/external-users (POST)"
+      ],
+      "notes": [
+        "Assign a report in ASSIGNED status to an external maintainer",
+        "Assigns report to external maintainer; requires MUNICIPALITY role",
+        "Parameters: report_id",
+        "Documented responses: 204, 400, 401, 403, 404, 500"
+      ]
+    },
+    {
+      "path": "/reports/external-maintainers/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /users/external-users: External maintainer ID must exist before listing their assigned reports.",
+        "/users/external-users (POST)"
+      ],
+      "notes": [
+        "Get reports assigned to an external maintainer",
+        "Lists reports assigned to specific external maintainer",
+        "Parameters: id",
+        "Documented responses: 200, 400, 401, 403, 404, 500"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "/auth/session (POST) establishes the session required for all subsequent authenticated operations.",
+    "/auth/session (GET) confirms active session state before accessing protected resources.",
+    "/auth/session (DELETE) cleans up session state to prevent unauthorized access after logout.",
+    "Operations marked auth_required need an authenticated session during test setup."
+  ],
+  "dependencies": [
+    "Registration flow: /email/send-verification (POST) must precede /auth/verify (POST).",
+    "Resource creation: /reports (POST) is prerequisite for all report-specific operations (/reports/{id} GET/POST, comments, assignments).",
+    "User management: /users (POST) creates users required for /users/{id} operations and role-based access.",
+    "External maintainer assignment: /users/external-users (POST) must precede /reports/{report_id}/external-maintainers (POST).",
+    "POST /email/send-verification -> POST /auth/verify: Verification code must be sent before it can be verified.",
+    "POST /reports -> GET /reports/{id}: Report ID must exist before retrieving specific report details.",
+    "POST /reports -> POST /reports/{id}: Report ID must exist before updating status or category.",
+    "POST /reports -> POST /reports/{id}/comments: Report ID must exist before adding internal comments.",
+    "POST /reports -> GET /reports/{id}/comments: Report ID must exist before listing internal comments.",
+    "POST /reports -> GET /reports/{id}/comments/unread: Report ID must exist before listing unread comments.",
+    "POST /users/municipality-users -> GET /reports/municipality-users/{municipalityUserId}: Municipality user must exist before listing their reports.",
+    "POST /users/external-users -> POST /reports/{report_id}/external-maintainers: External maintainer account must exist before assigning report to them.",
+    "POST /users/external-users -> GET /reports/external-maintainers/{id}: External maintainer ID must exist before listing their assigned reports."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/email/send-verification",
+      "dependent_method": "POST",
+      "dependent_path": "/auth/verify",
+      "dependency_type": "state",
+      "reason": "Verification code must be sent before it can be verified."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{id}",
+      "dependency_type": "resource",
+      "reason": "Report ID must exist before retrieving specific report details."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{id}",
+      "dependency_type": "resource",
+      "reason": "Report ID must exist before updating status or category."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{id}/comments",
+      "dependency_type": "resource",
+      "reason": "Report ID must exist before adding internal comments."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{id}/comments",
+      "dependency_type": "resource",
+      "reason": "Report ID must exist before listing internal comments."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{id}/comments/unread",
+      "dependency_type": "resource",
+      "reason": "Report ID must exist before listing unread comments."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/municipality-users",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/municipality-users/{municipalityUserId}",
+      "dependency_type": "authorization",
+      "reason": "Municipality user must exist before listing their reports."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/external-users",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{report_id}/external-maintainers",
+      "dependency_type": "authorization",
+      "reason": "External maintainer account must exist before assigning report to them."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/external-users",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/external-maintainers/{id}",
+      "dependency_type": "resource",
+      "reason": "External maintainer ID must exist before listing their assigned reports."
+    }
+  ],
+  "risks": [
+    "Ambiguity in role requirements for /reports/{id} (POST) and /reports/municipality-users (GET) - documentation mentions roles but does not specify exact mapping to auth tokens.",
+    "Potential race condition between /email/send-verification and /auth/verify if verification code expires before use.",
+    "Rate limiting on /auth/resend-code (3 per hour) may impact user experience during high-volume registration periods."
+  ]
+}

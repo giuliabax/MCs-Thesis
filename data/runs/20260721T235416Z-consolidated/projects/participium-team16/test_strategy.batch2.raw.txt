@@ -1,0 +1,203 @@
+[
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates report status to move it forward in the lifecycle.",
+    "api_endpoint": "/maintainers/reports/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a specific report. Ensure the user is authenticated as an 'external maintainer' role. The payload should contain a valid status transition (e.g., from 'Assigned' to 'In Progress'). Verify the response confirms the status change.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a report via POST /reports with status 'Assigned' and category matching an external maintainer's scope.",
+      "Assign the report to an external maintainer or ensure they have access rights."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: Status updates are state changes, not resource creation, but verify the endpoint response is idempotent or handled correctly.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for external maintainers to manage report progression as per requirement PT25."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal comments on a report without exposing them to citizens.",
+    "api_endpoint": "/internal-messages",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to create an internal message for a specific report. Authenticate as 'technical_office_staff_member'. The payload should include the report ID and a comment text. Verify that the message is created successfully.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a report via POST /reports with status 'Assigned'."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: Internal messages are stateful, but the cleanup strategy ensures no orphaned data remains.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the internal communication channel for technical office staff as per requirement PT26."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer attempts to update a report status that is not in a valid transition state.",
+    "api_endpoint": "/maintainers/reports/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a report from 'Resolved' to 'In Progress'. This should be an invalid state transition. Verify that the system rejects this change with an appropriate error message.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a report via POST /reports and update its status to 'Resolved' using the admin or technical office staff."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests state machine enforcement to prevent invalid status transitions as per domain rules."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff attempts to send an internal message for a report that does not exist.",
+    "api_endpoint": "/internal-messages",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to create an internal message with a non-existent report ID (e.g., '99999'). Verify that the system rejects this action with an appropriate error message.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Ensure no reports exist in the system."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Tests input validation for report ID existence before creating internal messages."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates a report status, which triggers a state change dependent on previous assignment.",
+    "api_endpoint": "/maintainers/reports/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a report from 'Pending Approval' to 'In Progress'. This should fail because the report must first be assigned. Verify that the system rejects this change with an appropriate error message.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a report via POST /reports with status 'Pending Approval'.",
+      "Ensure the report is NOT assigned to any technical office or maintainer."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the dependency edge where a report must be assigned before its status can be updated by an external maintainer."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff sends an internal message, which is then retrieved to verify content.",
+    "api_endpoint": "/internal-messages/report/{reportId}",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to retrieve internal messages for a specific report. First, create a report via POST /reports and send an internal message via POST /internal-messages. Then, verify that the GET request returns the created message.",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a report via POST /reports with status 'Assigned'.",
+      "Send an internal message via POST /internal-messages for the created report."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the dependency edge where messages must be sent before they can be listed or retrieved for a report."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the Participium system.",
+    "api_endpoint": "/users",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to register a new user. The payload should include 'name', 'username', and 'email'. Verify that the response indicates successful registration and provides a confirmation code or token.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no user with the same username exists."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the registration flow for citizens as per requirement PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate their account.",
+    "api_endpoint": "/users/verifyotp",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to verify the OTP code for a user. First, register a user via POST /users and capture the confirmation code from the response. Then, send the code in the payload to verify the account.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Register a user via POST /users and capture the confirmation code from the response."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the account confirmation flow for citizens as per requirement PT27."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen attempts to register without providing an email address.",
+    "api_endpoint": "/users",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to register a new user without including the 'email' field in the payload. Verify that the system rejects this action with an appropriate error message, as email is mandatory for registration.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no user with the same username exists."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests input validation for mandatory email field during registration as per domain rules."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen attempts to confirm registration with an expired code.",
+    "api_endpoint": "/users/verifyotp",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to verify the OTP code for a user using a code that has expired (e.g., wait 30 minutes after generation or use a hardcoded expired value). Verify that the system rejects this action with an appropriate error message.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Register a user via POST /users and capture the confirmation code from the response."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the edge case of expired confirmation codes as per domain rules."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer attempts to update a report status without being authenticated.",
+    "api_endpoint": "/maintainers/reports/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a report without providing authentication credentials. Verify that the system rejects this action with an appropriate error message (e.g., 401 Unauthorized).",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a report via POST /reports with status 'Assigned'."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Tests authentication enforcement for protected endpoints as per API analysis."
+  }
+]

@@ -1,0 +1,200 @@
+[
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report via POST /reports. The request body must include 'latitude' and 'longitude' fields derived from a map selection action (e.g., click event). Ensure the coordinates are valid numbers within acceptable ranges for the city.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as a citizen (session/token active)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of geolocation-based report submission."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report via POST /reports. The request body must include 'latitude' and 'longitude' fields that are outside the valid range for the city (e.g., lat > 90 or long < -180) to simulate an invalid map selection.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as a citizen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests system validation of coordinate bounds to prevent data corruption or mapping errors."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report via POST /reports. The request body must include 'category' and 'description' fields. Ensure the 'category' matches one of the pre-configured technical office categories to trigger correct automatic assignment logic.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as a citizen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates that report details and category selection work correctly for downstream classification."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report via POST /reports. The request body must include an empty string or null for the 'description' field to test validation of mandatory details.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as a citizen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the system enforces mandatory fields for report classification and prevents empty submissions."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous so that their name is not shown in the public list.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report via POST /reports. The request body must include an 'anonymous' boolean field set to true. Verify that the response indicates successful creation and that the internal user ID is stored but not exposed in public read endpoints (if tested separately).",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as a citizen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the privacy feature allowing users to hide their identity from public views while maintaining internal traceability."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous so that their name is not shown in the public list.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report via POST /reports. The request body must include an 'anonymous' boolean field set to false (default). Verify that the response indicates successful creation and that the reporter's name is stored for staff visibility.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as a citizen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the alternative state where the user explicitly chooses to be identified, ensuring the flag toggles correctly."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Citizen creates a new report through a Telegram bot so that they can quickly notify the public administration.",
+    "api_endpoint": "/auth/telegram",
+    "http_method": "POST",
+    "prompt": "Initiate the Telegram authentication flow via POST /auth/telegram. The request body must include 'chat_id' and 'token'. Verify that the response provides a confirmation code or session token required to complete registration before submitting a report.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure Telegram bot credentials are valid and active."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the entry point for Telegram-based report submission, ensuring the auth handshake works before data submission."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Citizen creates a new report through a Telegram bot so that they can quickly notify the public administration.",
+    "api_endpoint": "/auth/telegram",
+    "http_method": "POST",
+    "prompt": "Initiate the Telegram authentication flow via POST /auth/telegram. The request body must include an invalid 'token' to simulate a compromised or unauthorized bot session.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure Telegram bot credentials are valid and active."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Ensures the system rejects unauthorized or invalid Telegram sessions to prevent spoofed report submissions."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/role/add",
+    "http_method": "PATCH",
+    "prompt": "Assign a new role to a specific municipality user via PATCH /admin/role/add. The request body must include 'user_id' and 'role_name'. Ensure the user exists and the role is valid before execution.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure a municipality user account exists in the system."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core administrative function of role assignment for staff flexibility."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users so that the staff can be more flexible.",
+    "api_endpoint": "/admin/role/remove",
+    "http_method": "PATCH",
+    "prompt": "Remove a specific role from a municipality user via PATCH /admin/role/remove. The request body must include 'user_id' and 'role_name'. Ensure the user has the role before removal to avoid orphaned references.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure a municipality user account exists with the target role assigned."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability to modify roles dynamically, which is essential for staff flexibility and error correction."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/role/add",
+    "http_method": "PATCH",
+    "prompt": "Attempt to assign a non-existent role name to a municipality user via PATCH /admin/role/add. The request body must include 'user_id' and an invalid 'role_name'. Verify that the system rejects this with an appropriate error code.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure a municipality user account exists in the system."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures data integrity by preventing the assignment of invalid roles that could break access control logic."
+  }
+]

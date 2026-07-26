@@ -1,0 +1,162 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/register",
+    "http_method": "POST",
+    "prompt": "Register a new citizen user with a valid name, unique username, and email. Ensure the response includes the verification code or token required for subsequent activation.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core registration flow required for all citizen interactions."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/register",
+    "http_method": "POST",
+    "prompt": "Attempt to register a user with an existing username to verify uniqueness constraints are enforced.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute POST /register with a valid name and username to create a test user."
+    ],
+    "cleanup_strategy": "DELETE the created user via an admin endpoint or verify no resource was created if the system handles duplicates differently.",
+    "expected_status_codes": ["409", "400"],
+    "rationale": "Ensures data integrity by preventing duplicate accounts which could lead to security issues."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/users/{id}/verify/check",
+    "http_method": "POST",
+    "prompt": "Verify the user account using the valid confirmation code received during registration. Ensure the account status changes to 'active' and JWT is issued upon success.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute POST /register to obtain a user ID and verification code."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the critical account activation step before any report submission can occur."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/users/{id}/verify/check",
+    "http_method": "POST",
+    "prompt": "Attempt to verify the user account using an expired confirmation code (simulate by waiting >30 mins or mocking time). Verify that verification fails and the account remains inactive.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute POST /register to obtain a user ID and verification code."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests the security constraint regarding time-limited verification codes."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with valid title, description, category, and location. Ensure the report is created in 'Pending Approval' state as per domain rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Execute POST /register to create a user.",
+      "Execute POST /users/{id}/verify/check with valid code to activate the user."
+    ],
+    "cleanup_strategy": "Verify no resource was created; if report exists, delete it using an admin endpoint or verify system handles cleanup automatically.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the core reporting functionality and initial state management."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to submit a report with 4 photos (exceeding the >3 photos limit). Verify that form validation prevents submission and returns an appropriate error.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Execute POST /register to create a user.",
+      "Execute POST /users/{id}/verify/check with valid code to activate the user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests input validation constraints on photo attachments."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to submit a report without being authenticated (omit JWT). Verify that the system blocks submission due to missing authorization.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["401"],
+    "rationale": "Ensures that report creation is strictly protected by authentication."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/register",
+    "http_method": "POST",
+    "prompt": "Register a new municipality user via the admin endpoint. Ensure the user is created with appropriate default roles or pending role assignment.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute POST /login as a system administrator to obtain an admin JWT."
+    ],
+    "cleanup_strategy": "DELETE the created user via an admin endpoint.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the administrative capability to onboard new staff members."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/users/{id}/role",
+    "http_method": "PUT",
+    "prompt": "Assign a specific role (e.g., 'technical office staff') to an existing municipality user. Verify the role assignment is successful and reflected in the user's profile.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute POST /admin/register to create a test user.",
+      "Execute POST /login as a system administrator."
+    ],
+    "cleanup_strategy": "DELETE the created user via an admin endpoint.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core administrative function of role assignment."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users so that staff can be more flexible.",
+    "api_endpoint": "/admin/users/{id}/role",
+    "http_method": "PUT",
+    "prompt": "Modify the role of a 'technical office staff member' who already has multiple roles. Verify that the system enforces constraints regarding multiple role assignments or handles the modification gracefully as per domain rules.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute POST /admin/register to create a user with 'technical office staff' role.",
+      "Execute PUT /admin/users/{id}/role to assign a second role to the same user."
+    ],
+    "cleanup_strategy": "DELETE the created user via an admin endpoint.",
+    "expected_status_codes": ["200", "400"],
+    "rationale": "Tests the complex constraint logic for technical office staff members with multiple roles."
+  }
+]

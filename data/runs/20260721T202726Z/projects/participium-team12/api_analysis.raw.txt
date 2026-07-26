@@ -1,0 +1,383 @@
+{
+  "summary": "A civic engagement API supporting user registration, authentication (login/logout/refresh), profile management, report creation and lifecycle (comments/messages), role-based municipality user administration, and public data access.",
+  "operations": [
+    {
+      "path": "/auth/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Initial entry point for authentication; returns session cookie"]
+    },
+    {
+      "path": "/auth/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Creates new citizen account; requires email verification before full access"]
+    },
+    {
+      "path": "/auth/verify-email",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Required after registration to activate account; uses email and code"]
+    },
+    {
+      "path": "/auth/logout",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Invalidates session cookie"]
+    },
+    {
+      "path": "/auth/refresh",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Extends session; requires valid current session"]
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public list of report categories"]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Requires authentication to view user-specific notifications"]
+    },
+    {
+      "path": "/notifications/{id}/read",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Marks specific notification as read; requires ID"]
+    },
+    {
+      "path": "/offices",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public list of offices"]
+    },
+    {
+      "path": "/profiles/profile/me",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Retrieves current authenticated user's profile"]
+    },
+    {
+      "path": "/profiles/profile/me",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Updates current user's profile fields"]
+    },
+    {
+      "path": "/profiles/telegram/link",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Links Telegram account; requires authentication"]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/categories"],
+      "notes": ["Creates new report; categoryId must exist in /categories"]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists authenticated user's reports"]
+    },
+    {
+      "path": "/reports/public",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public list of all reports"]
+    },
+    {
+      "path": "/reports/stats",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Aggregated statistics; requires authentication"]
+    },
+    {
+      "path": "/reports/nearby",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public geospatial query for nearby reports"]
+    },
+    {
+      "path": "/reports/user/{userId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/municipality"],
+      "notes": ["Lists reports by specific user; userId must be valid municipality user"]
+    },
+    {
+      "path": "/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public retrieval of report details by ID"]
+    },
+    {
+      "path": "/reports/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/categories"],
+      "notes": ["Updates report status/category; categoryId must exist in /categories"]
+    },
+    {
+      "path": "/reports/{id}/comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists comments on a report; requires authentication"]
+    },
+    {
+      "path": "/reports/{id}/comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Adds comment to report; requires authentication"]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists messages on a report; requires authentication"]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Sends message on a report; requires authentication"]
+    },
+    {
+      "path": "/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists available roles for role assignment"]
+    },
+    {
+      "path": "/users/municipality",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists municipality users; admin-only context"]
+    },
+    {
+      "path": "/users/municipality",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/auth/login"],
+      "notes": ["Creates municipality user; requires admin authentication"]
+    },
+    {
+      "path": "/users/municipality/user/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/municipality"],
+      "notes": ["Retrieves specific municipality user; requires admin authentication"]
+    },
+    {
+      "path": "/users/municipality/user/{id}",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/municipality"],
+      "notes": ["Updates municipality user; requires admin authentication"]
+    },
+    {
+      "path": "/users/municipality/user/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/municipality"],
+      "notes": ["Deletes municipality user; requires admin authentication"]
+    },
+    {
+      "path": "/users/external-maintainers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists external maintainers; admin-only context"]
+    },
+    {
+      "path": "/users/municipality/user/{id}/office-roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/offices", "/roles"],
+      "notes": ["Retrieves office-role assignments; requires valid office and role IDs"]
+    },
+    {
+      "path": "/users/municipality/user/{id}/office-roles",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/offices", "/roles"],
+      "notes": ["Assigns office-role; requires valid officeId and roleId"]
+    },
+    {
+      "path": "/users/municipality/user/{id}/office-roles/{officeId}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/offices"],
+      "notes": ["Removes office-role; requires valid officeId"]
+    }
+  ],
+  "authentication_notes": [
+    "/auth/login and /auth/register are the only public entry points for authentication.",
+    "/auth/verify-email must be called after /auth/register before other authenticated endpoints work.",
+    "/auth/logout and /auth/refresh require an active session (cookie).",
+    "All non-auth endpoints except /categories, /offices, /reports/public, /reports/nearby, and /reports/{id} require authentication.",
+    "Admin operations (/users/municipality*, /roles) require elevated privileges implied by auth_required=true."
+  ],
+  "dependencies": [
+    "POST /auth/login or POST /auth/register + POST /auth/verify-email is required before any authenticated endpoint.",
+    "POST /reports requires GET /categories to ensure valid categoryId.",
+    "PATCH /reports/{id} requires GET /categories for valid categoryId.",
+    "GET /users/municipality/user/{id}, POST /users/municipality/user/{id}, DELETE /users/municipality/user/{id} depend on the existence of a user created via POST /users/municipality.",
+    "GET /reports/user/{userId} depends on a valid municipality user existing (created via POST /users/municipality).",
+    "POST /users/municipality/user/{id}/office-roles and DELETE /users/municipality/user/{id}/office-roles/{officeId} depend on valid office and role resources.",
+    "GET /users/municipality/user/{id}/office-roles depends on valid office and role resources."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/login",
+      "dependent_method": "GET",
+      "dependent_path": "/notifications",
+      "dependency_type": "authorization",
+      "reason": "Session cookie from login is required to access user-specific notifications."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/register",
+      "dependent_method": "POST",
+      "dependent_path": "/auth/verify-email",
+      "dependency_type": "state",
+      "reason": "Registration creates unverified account; verification is required to activate full access."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/categories",
+      "dependent_method": "POST",
+      "dependent_path": "/reports",
+      "dependency_type": "resource",
+      "reason": "Report creation requires a valid categoryId from the categories list."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/categories",
+      "dependent_method": "PATCH",
+      "dependent_path": "/reports/{id}",
+      "dependency_type": "resource",
+      "reason": "Report update may change categoryId; must reference existing category."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/municipality",
+      "dependent_method": "GET",
+      "dependent_path": "/users/municipality/user/{id}",
+      "dependency_type": "resource",
+      "reason": "User retrieval requires a user to exist, created via POST."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/municipality",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/user/{userId}",
+      "dependency_type": "resource",
+      "reason": "Report listing by user requires a valid municipality user ID."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/offices",
+      "dependent_method": "POST",
+      "dependent_path": "/users/municipality/user/{id}/office-roles",
+      "dependency_type": "resource",
+      "reason": "Office-role assignment requires a valid officeId."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/roles",
+      "dependent_method": "POST",
+      "dependent_path": "/users/municipality/user/{id}/office-roles",
+      "dependency_type": "resource",
+      "reason": "Office-role assignment requires a valid roleId."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/offices",
+      "dependent_method": "DELETE",
+      "dependent_path": "/users/municipality/user/{id}/office-roles/{officeId}",
+      "dependency_type": "resource",
+      "reason": "Role removal requires a valid officeId."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/offices",
+      "dependent_method": "GET",
+      "dependent_path": "/users/municipality/user/{id}/office-roles",
+      "dependency_type": "resource",
+      "reason": "Role listing may require office context for filtering or validation."
+    }
+  ],
+  "risks": [
+    "POST /auth/register does not document email verification flow explicitly; client may assume immediate access.",
+    "/reports/{id} GET is public but PATCH is authenticated; potential race condition if public read allows unauthenticated updates (mitigated by auth check).",
+    "No documented rate limiting or brute-force protection for /auth/login and /auth/register.",
+    "POST /profiles/telegram/link does not specify token handling or expiration risks.",
+    "DELETE /users/municipality/user/{id} lacks soft-delete or audit trail documentation.",
+    "GET /reports/user/{userId} exposes user-specific data; ensure userId is validated against authenticated session context to prevent IDOR."
+  ]
+}

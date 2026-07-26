@@ -1,0 +1,188 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports without any authentication headers. Verify that the response contains only reports with status 'Resolved' or equivalent approved states, excluding 'Pending Approval', 'Assigned', or 'In Progress'. Ensure no sensitive fields (like internal comments) are exposed.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core public-facing feature for unregistered users as per PT28 and domain rules regarding visibility of approved reports."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/report/{id}/assign-maintainer",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a technical office staff member. Perform a PATCH request to /reports/report/{id}/assign-maintainer with the ID of a valid external maintainer. Verify the report status transitions correctly and the assignment is recorded.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a test report with status 'Pending Approval' or 'Assigned'.",
+      "Register an external maintainer user account via admin endpoint.",
+      "Authenticate as technical office staff member."
+    ],
+    "cleanup_strategy": "Delete the assigned report if it was created for this test; otherwise, verify no resource was modified unexpectedly and revert status to original state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the assignment workflow defined in PT24 and domain rules regarding external maintainer access."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user attempts to view pending approval reports.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports without authentication. Verify that the response does NOT include any reports with status 'Pending Approval', 'Assigned', or 'In Progress'. Ensure the system hides these reports from public view as per domain rules.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a test report with status 'Pending Approval'."
+    ],
+    "cleanup_strategy": "Delete the test report created for this scenario.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the edge case where unregistered users cannot see pending reports, ensuring data privacy and correct filtering logic."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses incorrectly.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a technical office staff member. Attempt to update a report status directly from 'Pending Approval' to 'Resolved' without going through 'Assigned' or 'In Progress'. Verify that the system rejects this transition or forces the correct state machine flow.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Authenticate as technical_office_staff_member.",
+      "Create a test report with status 'Pending Approval'."
+    ],
+    "cleanup_strategy": "Revert the report status back to 'Pending Approval' or delete the test report if it was created solely for this test.",
+    "expected_status_codes": [
+      "400",
+      "default"
+    ],
+    "rationale": "Tests negative behavior where state transitions violate domain rules (e.g., skipping intermediate states)."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/users/register-citizen",
+    "http_method": "POST",
+    "prompt": "Register a new citizen user with a valid email, password, and unique username. Verify successful registration response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core entry point for citizen access as defined in PT01."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up a new municipality user.",
+    "api_endpoint": "/users/admin/create-municipality-user",
+    "http_method": "POST",
+    "prompt": "Authenticate as a system administrator and create a new municipality user account with valid details.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system_administrator",
+    "setup_needed": [
+      "/auth/login with admin credentials"
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the admin capability to provision users as per PT02."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to a municipality user.",
+    "api_endpoint": "/users/admin/assign-roles",
+    "http_method": "POST",
+    "prompt": "Authenticate as a system administrator and assign specific roles (e.g., 'technical_office_staff') to an existing municipality user ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system_administrator",
+    "setup_needed": [
+      "/auth/login with admin credentials",
+      "/users/admin/create-municipality-user to create a target user"
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates role assignment functionality required by PT03."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal comments on a report.",
+    "api_endpoint": "/reports/{report_id}/comment",
+    "http_method": "POST",
+    "prompt": "Authenticate as a technical office staff member and post an internal comment on an existing report. Verify the comment is recorded but not visible to public endpoints.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "/auth/login with staff credentials",
+      "/users/admin/create-municipality-user to create a report (mock data)"
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates internal communication channels for coordination as per PT26."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/reports/upload",
+    "http_method": "POST",
+    "prompt": "Submit a new report. In the request body, include valid latitude and longitude coordinates (e.g., 45.0703, 7.6869) to satisfy the geolocation requirement. Include minimal required fields for a valid report submission.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "/auth/login as citizen",
+      "/users/register-citizen if not already authenticated"
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of geolocating a report upon submission."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned-to-techOfficer",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of assigned reports. First, perform a 'POST' to '/reports/upload' (as citizen) to create a report, then use '/PATCH' on '/reports/report/{id}/assign' (as admin or staff) to assign it to the current technical office staff member. Finally, execute this GET request.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "/users/register-citizen",
+      "/auth/login as citizen",
+      "/reports/upload (create report)",
+      "/reports/report/{id}/assign (assign to current user)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the dependency where the assigned list requires a prior assignment action."
+  }
+]

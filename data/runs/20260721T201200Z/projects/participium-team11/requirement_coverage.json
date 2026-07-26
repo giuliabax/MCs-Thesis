@@ -1,0 +1,447 @@
+{
+  "project_name": "participium-team11",
+  "openapi_path": "projects\\participium-team11\\swagger.yaml",
+  "assessment_basis": "openapi_documentation",
+  "requirements_total": 30,
+  "status_counts": {
+    "implemented": 13,
+    "partially_implemented": 1,
+    "not_implemented": 16,
+    "not_assessable": 0
+  },
+  "matches": [
+    {
+      "requirement_id": "PT28",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "interactive map visualization for unregistered users",
+        "geolocation-based report filtering"
+      ],
+      "rationale": "No REST endpoint documents map view functionality or public access to approved reports without authentication."
+    },
+    {
+      "requirement_id": "PT24",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PATCH",
+          "path": "/reports/{id}/assign_external",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "PATCH /reports/{id}/assign_external - Assign a report to an external maintainer (staff)"
+      ],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI documents the endpoint for assigning reports to external maintainers with proper auth requirements."
+    },
+    {
+      "requirement_id": "PT25",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PATCH",
+          "path": "/reports/{id}/external/start",
+          "operation_id": null
+        },
+        {
+          "method": "PATCH",
+          "path": "/reports/{id}/external/finish",
+          "operation_id": null
+        },
+        {
+          "method": "PATCH",
+          "path": "/reports/{id}/external/suspend",
+          "operation_id": null
+        },
+        {
+          "method": "PATCH",
+          "path": "/reports/{id}/external/resume",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "External maintainer status update endpoints documented for start/finish/suspend/resume operations"
+      ],
+      "missing_behaviors": [],
+      "rationale": "All external maintainer status transitions are covered by dedicated PATCH endpoints."
+    },
+    {
+      "requirement_id": "PT26",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "GET",
+          "path": "/conversations/{conversationId}/messages",
+          "operation_id": null
+        },
+        {
+          "method": "POST",
+          "path": "/conversations/{conversationId}/messages",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "Conversations and messages endpoints support internal communication between staff and external maintainers"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Conversation endpoints enable internal information exchange without exposing to public."
+    },
+    {
+      "requirement_id": "PT01",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/sessions/signup",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "POST /sessions/signup - Register a new user (citizen)"
+      ],
+      "missing_behaviors": [],
+      "rationale": "User registration endpoint is documented for citizen signup."
+    },
+    {
+      "requirement_id": "PT27",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/sessions/current/verify_email",
+          "operation_id": null
+        },
+        {
+          "method": "GET",
+          "path": "/sessions/current/email_verified",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "Email verification endpoints documented for account confirmation"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Email verification and status check endpoints cover the registration confirmation workflow."
+    },
+    {
+      "requirement_id": "PT02",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Admin user creation endpoint for municipality users"
+      ],
+      "rationale": "No dedicated admin endpoint exists for creating municipality/staff users; signup is for citizens only."
+    },
+    {
+      "requirement_id": "PT03",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PATCH",
+          "path": "/sessions/{id}/role",
+          "operation_id": null
+        },
+        {
+          "method": "PUT",
+          "path": "/sessions/{id}/roles",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "Role assignment endpoints documented for admin-only operations"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Admin role assignment endpoints cover setting up roles for municipality users."
+    },
+    {
+      "requirement_id": "PT04",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Map-based location selection for report creation"
+      ],
+      "rationale": "No endpoint documents map interaction or geolocation selection during report creation."
+    },
+    {
+      "requirement_id": "PT05",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/reports",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "POST /reports - Create a new report with photos (citizen)"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Report creation endpoint covers providing details and classification."
+    },
+    {
+      "requirement_id": "PT06",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PATCH",
+          "path": "/reports/{id}/review",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "PATCH /reports/{id}/review - Review a report (approve/reject) — Public Relations Officer"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Report review endpoint covers approve/reject functionality for PR officers."
+    },
+    {
+      "requirement_id": "PT07",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Interactive map view for approved reports"
+      ],
+      "rationale": "No REST endpoint documents map visualization functionality for citizens."
+    },
+    {
+      "requirement_id": "PT15",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Anonymous report submission option"
+      ],
+      "rationale": "No request field or endpoint parameter documents anonymity configuration for reports."
+    },
+    {
+      "requirement_id": "PT08",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "GET",
+          "path": "/reports/technician/{userId}",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "GET /reports/technician/{userId} - List reports assigned to a technician (staff)"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Assigned reports endpoint covers staff overview of maintenance tasks."
+    },
+    {
+      "requirement_id": "PT09",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PATCH",
+          "path": "/sessions/{id}/config",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "PATCH /sessions/{id}/config - Update account configuration and profile photo (citizen)"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Account configuration endpoint covers notification and virtual presence management."
+    },
+    {
+      "requirement_id": "PT30",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Address-based report search functionality"
+      ],
+      "rationale": "No endpoint documents search/filtering reports by address or area."
+    },
+    {
+      "requirement_id": "PT10",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PUT",
+          "path": "/sessions/{id}/roles",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "PUT /sessions/{id}/roles - Replace the roles of a user (admin only)"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Role modification endpoint covers admin flexibility in managing staff roles."
+    },
+    {
+      "requirement_id": "PT11",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PATCH",
+          "path": "/reports/{id}/start",
+          "operation_id": null
+        },
+        {
+          "method": "PATCH",
+          "path": "/reports/{id}/finish",
+          "operation_id": null
+        },
+        {
+          "method": "PATCH",
+          "path": "/reports/{id}/suspend",
+          "operation_id": null
+        },
+        {
+          "method": "PATCH",
+          "path": "/reports/{id}/resume",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "Report status update endpoints documented for start/finish/suspend/resume"
+      ],
+      "missing_behaviors": [],
+      "rationale": "All staff report status transitions are covered by dedicated PATCH endpoints."
+    },
+    {
+      "requirement_id": "PT12",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Telegram bot report creation endpoint"
+      ],
+      "rationale": "No dedicated Telegram bot endpoint exists for creating reports; only verification endpoints documented."
+    },
+    {
+      "requirement_id": "PT13",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Telegram bot report status check endpoint"
+      ],
+      "rationale": "No Telegram-specific endpoint for checking report status; only verification documented."
+    },
+    {
+      "requirement_id": "PT14",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Telegram bot help/assistance command endpoint"
+      ],
+      "rationale": "No Telegram-specific endpoint for help commands or assistance functionality."
+    },
+    {
+      "requirement_id": "PT18",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/conversations/{conversationId}/messages",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "POST /conversations/{conversationId}/messages - Send a message in a conversation"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Message sending endpoint covers replying to municipal operator messages."
+    },
+    {
+      "requirement_id": "PT16",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Report following/subscription functionality"
+      ],
+      "rationale": "No endpoint documents report following or subscription to other citizens' reports."
+    },
+    {
+      "requirement_id": "PT17",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Telegram push notification delivery endpoint"
+      ],
+      "rationale": "No Telegram-specific push notification endpoint; only general notifications documented."
+    },
+    {
+      "requirement_id": "PT19",
+      "status": "partially_implemented",
+      "matched_operations": [
+        {
+          "method": "PATCH",
+          "path": "/sessions/{id}/config",
+          "operation_id": null
+        }
+      ],
+      "evidence": [
+        "Account configuration endpoint exists but email alert specifics not documented"
+      ],
+      "missing_behaviors": [
+        "Explicit email alert configuration option in contract"
+      ],
+      "rationale": "Account config endpoint exists for notification management but email alerts specifically are not documented."
+    },
+    {
+      "requirement_id": "PT20",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Public statistics endpoint"
+      ],
+      "rationale": "No endpoint documents public statistics or analytics about reports."
+    },
+    {
+      "requirement_id": "PT21",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Private administrator statistics endpoint"
+      ],
+      "rationale": "No endpoint documents private statistics or analytics for administrators."
+    },
+    {
+      "requirement_id": "PT29",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Automatic assignment configuration endpoint"
+      ],
+      "rationale": "No endpoint documents automatic report assignment rules by category."
+    },
+    {
+      "requirement_id": "PT22",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Public/unauthenticated report list with filters"
+      ],
+      "rationale": "/reports GET requires authentication; no public browsing endpoint documented."
+    },
+    {
+      "requirement_id": "PT23",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Report data export/download endpoint"
+      ],
+      "rationale": "No endpoint documents downloading or exporting report summary tables."
+    }
+  ],
+  "validation_warnings": []
+}

@@ -1,0 +1,94 @@
+[
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports. Use an authenticated session (citizen role). Apply no specific filter parameters to retrieve the full list of approved reports as per the 'unregistered users can view reports' rule, ensuring the response includes summary data for exploration.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a valid session via POST /sessions (or use existing authenticated context)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality of browsing reports for citizens/unregistered users as defined in PT22."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Receive optional email alerts in addition to platform notifications",
+    "api_endpoint": "/notifications",
+    "http_method": "GET",
+    "prompt": "Execute GET /notifications. Verify that the response payload includes fields related to email alert preferences or status, confirming the system supports the optional email alert feature mentioned in PT19.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user has a valid session."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the existence and structure of notification data related to email alerts (PT19) within the standard notifications endpoint."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports. Attempt to apply an invalid filter parameter (e.g., 'status=InvalidStatus') or a filter for a non-existent category to verify the system handles malformed queries gracefully.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a valid session via POST /sessions."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the API does not crash or return sensitive data when provided with invalid filter inputs for report browsing (PT22)."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Receive optional email alerts in addition to platform notifications",
+    "api_endpoint": "/notifications/{id}/seen",
+    "http_method": "PUT",
+    "prompt": "Execute PUT /notifications/{id}/seen. Mark a notification as seen. Verify that the action does not inadvertently disable or alter the 'email alert' preference setting associated with PT19, ensuring email alerts remain optional and independent of read status.",
+    "test_type": "stateful",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a valid session via POST /sessions.",
+      "Ensure at least one notification exists in the system to mark as seen."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates state transition (marking as seen) while ensuring it does not negatively impact the optional email alert feature (PT19)."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports. Attempt to access the endpoint without providing any authentication headers or session cookie, simulating an unauthenticated request to verify access control for report browsing.",
+    "test_type": "cleanup",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no active session is present in the test context."
+    ],
+    "cleanup_strategy": "Verify that the response returns 401 Unauthorized or 403 Forbidden; if a resource was unexpectedly accessible, terminate the session immediately.",
+    "expected_status_codes": [
+      "401",
+      "403"
+    ],
+    "rationale": "Confirms that report browsing (PT22) is restricted to authenticated users as per API analysis notes, preventing unauthorized access."
+  }
+]

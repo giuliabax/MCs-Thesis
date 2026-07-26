@@ -1,0 +1,614 @@
+{
+  "summary": "API for managing users (citizens/operators), roles, categories, and a multi-stage report lifecycle involving creation, internal/external comments, status updates by various officers (tech, external maintainer, pub relations), and notifications.",
+  "operations": [
+    {
+      "path": "/users/{firebaseUid}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get a user by Firebase UID",
+        "Retrieves user by Firebase UID; requires authentication.",
+        "Parameters: firebaseUid",
+        "Documented responses: 200, 404"
+      ]
+    },
+    {
+      "path": "/users/{userId}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Update a user",
+        "Updates user profile fields (firstName, lastName, username, email).",
+        "Parameters: userId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/user/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get reports created by the authenticated user",
+        "Lists reports created by the authenticated user.",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/user-registrations",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Register a new citizen",
+        "Registers a new citizen; requires firstName, lastName, username, email, password.",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 409"
+      ]
+    },
+    {
+      "path": "/verify-code",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/user-registrations"
+      ],
+      "notes": [
+        "Verify a registration code",
+        "Verifies registration code sent to email; requires email and code.",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400"
+      ]
+    },
+    {
+      "path": "/resend-code",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Resend a registration verification code",
+        "Resends verification code for a given email.",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/operators",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "List all operators",
+        "Lists all operators; requires authentication.",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/categories/{categoryId}/operators",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "GET /categories: Category-specific operator list requires a valid categoryId from the categories list.",
+        "/categories"
+      ],
+      "notes": [
+        "List operators for a category",
+        "Lists operators for a specific category; categoryId required.",
+        "Parameters: categoryId",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/operator-registrations",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "GET /roles: Operator registration requires a valid role_id from the roles list.",
+        "/roles"
+      ],
+      "notes": [
+        "Register a new operator (admin)",
+        "Registers a new operator (admin); requires role_id.",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201"
+      ]
+    },
+    {
+      "path": "/external-maintainers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "List external maintainers",
+        "Lists external maintainers; requires authentication.",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/operators/{operatorId}/roles",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/roles"
+      ],
+      "notes": [
+        "Update an operator's roles (admin)",
+        "Updates operator roles; requires role_ids array.",
+        "Parameters: operatorId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "List all roles",
+        "Lists all available roles; required for operator registration and role updates.",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "List all categories",
+        "Lists all categories; used in report creation and filtering.",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "GET /categories: Report creation requires a valid category_id from the categories list.",
+        "/categories"
+      ],
+      "notes": [
+        "Create a new report with photos",
+        "Creates a new report with photos; requires title, description, category_id, position coordinates.",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "List reports (authenticated staff)",
+        "Lists all reports (authenticated staff only).",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/map/accepted",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/reports"
+      ],
+      "notes": [
+        "List accepted reports for the public map",
+        "Public endpoint listing accepted reports for the map; implies prior acceptance workflow.",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/reports/{reportId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "GET /reports: Retrieving a specific report requires the report to exist in the reports list.",
+        "/reports"
+      ],
+      "notes": [
+        "Get a report by id",
+        "Retrieves a specific report by ID.",
+        "Parameters: reportId",
+        "Documented responses: 200, 404"
+      ]
+    },
+    {
+      "path": "/reports/{reportId}/internal-comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "/reports"
+      ],
+      "notes": [
+        "Add an internal comment to a report",
+        "Adds an internal comment to a report.",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201"
+      ]
+    },
+    {
+      "path": "/reports/{reportId}/external-comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "/reports"
+      ],
+      "notes": [
+        "Add an external comment to a report",
+        "Adds an external comment to a report.",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201"
+      ]
+    },
+    {
+      "path": "/report/{reportId}/internal-comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "POST /reports/{reportId}/internal-comments: Internal comments can only be retrieved after the report exists and potentially after comments are added.",
+        "/reports"
+      ],
+      "notes": [
+        "Get internal comments of a report",
+        "Lists internal comments for a report.",
+        "Parameters: reportId",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/report/{reportId}/external-comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "POST /reports/{reportId}/external-comments: External comments can only be retrieved after the report exists and potentially after comments are added.",
+        "/reports"
+      ],
+      "notes": [
+        "Get external comments of a report",
+        "Lists external comments for a report.",
+        "Parameters: reportId",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/ext_maintainer/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "List reports assigned to the external maintainer",
+        "Lists reports assigned to the external maintainer role.",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/ext_maintainer/reports/{reportId}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "/reports"
+      ],
+      "notes": [
+        "Update a report as external maintainer",
+        "Updates report status as external maintainer.",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/tech_officer/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "List reports assigned to the technical officer",
+        "Lists reports assigned to the technical officer role.",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/tech_officer/reports/{reportId}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "/reports"
+      ],
+      "notes": [
+        "Update a report as technical officer",
+        "Updates report status as technical officer.",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/tech_officer/reports/{reportId}/assign_external",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "PATCH /ext_maintainer/reports/{reportId}: Assigning a report to an external maintainer requires the report to be in a state where assignment is valid (e.g., accepted by tech officer).",
+        "GET /external-maintainers: Assigning a report to an external maintainer requires a valid external maintainer ID.",
+        "/ext_maintainer/reports",
+        "/external-maintainers"
+      ],
+      "notes": [
+        "Assign a report to an external maintainer (technical officer)",
+        "Assigns a report to an external maintainer; requires externalMaintainerId.",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/pub_relations/reports/{reportId}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "/reports"
+      ],
+      "notes": [
+        "Review/update a report as public relations officer",
+        "Reviews/updates report status and explanation as public relations officer.",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "List notifications for the authenticated user",
+        "Lists notifications for the authenticated user.",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/notifications/{notificationId}/set-read",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "GET /notifications: Marking a notification as read requires the notification to exist in the notifications list.",
+        "/notifications"
+      ],
+      "notes": [
+        "Mark a notification as read",
+        "Marks a specific notification as read.",
+        "Parameters: notificationId",
+        "Documented responses: 200"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "Most endpoints require authentication (auth_required: true).",
+    "Registration and verification endpoints (/user-registrations, /verify-code, /resend-code) do not require authentication.",
+    "/categories is public; all other endpoints are protected.",
+    "Operations marked auth_required need an authenticated session during test setup."
+  ],
+  "dependencies": [
+    "POST /operator-registrations depends on GET /roles to provide role_id.",
+    "GET /categories/{categoryId}/operators depends on GET /categories to resolve categoryId.",
+    "POST /reports depends on GET /categories to provide category_id.",
+    "PATCH /tech_officer/reports/{reportId}/assign_external depends on existence of external maintainer (via GET /external-maintainers).",
+    "Public map endpoint (/reports/map/accepted) implies prior acceptance workflow via PATCH endpoints on reports.",
+    "POST /reports -> GET /reports/{reportId}: A report must exist before an operation can address reportId.",
+    "POST /reports -> POST /reports/{reportId}/internal-comments: A report must exist before an operation can address reportId.",
+    "POST /reports -> POST /reports/{reportId}/external-comments: A report must exist before an operation can address reportId.",
+    "POST /reports -> GET /report/{reportId}/internal-comments: A report must exist before an operation can address reportId.",
+    "POST /reports -> GET /report/{reportId}/external-comments: A report must exist before an operation can address reportId.",
+    "POST /reports -> PATCH /ext_maintainer/reports/{reportId}: A report must exist before an operation can address reportId.",
+    "POST /reports -> PATCH /tech_officer/reports/{reportId}: A report must exist before an operation can address reportId.",
+    "POST /reports -> PATCH /tech_officer/reports/{reportId}/assign_external: A report must exist before an operation can address reportId.",
+    "POST /reports -> PATCH /pub_relations/reports/{reportId}: A report must exist before an operation can address reportId.",
+    "GET /roles -> POST /operator-registrations: Operator registration requires a valid role_id from the roles list.",
+    "GET /categories -> GET /categories/{categoryId}/operators: Category-specific operator list requires a valid categoryId from the categories list.",
+    "GET /categories -> POST /reports: Report creation requires a valid category_id from the categories list.",
+    "GET /reports -> GET /reports/{reportId}: Retrieving a specific report requires the report to exist in the reports list.",
+    "POST /reports/{reportId}/internal-comments -> GET /report/{reportId}/internal-comments: Internal comments can only be retrieved after the report exists and potentially after comments are added.",
+    "POST /reports/{reportId}/external-comments -> GET /report/{reportId}/external-comments: External comments can only be retrieved after the report exists and potentially after comments are added.",
+    "PATCH /ext_maintainer/reports/{reportId} -> PATCH /tech_officer/reports/{reportId}/assign_external: Assigning a report to an external maintainer requires the report to be in a state where assignment is valid (e.g., accepted by tech officer).",
+    "GET /external-maintainers -> PATCH /tech_officer/reports/{reportId}/assign_external: Assigning a report to an external maintainer requires a valid external maintainer ID.",
+    "GET /notifications -> PATCH /notifications/{notificationId}/set-read: Marking a notification as read requires the notification to exist in the notifications list."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{reportId}",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{reportId}/internal-comments",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{reportId}/external-comments",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/report/{reportId}/internal-comments",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/report/{reportId}/external-comments",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PATCH",
+      "dependent_path": "/ext_maintainer/reports/{reportId}",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PATCH",
+      "dependent_path": "/tech_officer/reports/{reportId}",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PATCH",
+      "dependent_path": "/tech_officer/reports/{reportId}/assign_external",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PATCH",
+      "dependent_path": "/pub_relations/reports/{reportId}",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/roles",
+      "dependent_method": "POST",
+      "dependent_path": "/operator-registrations",
+      "dependency_type": "resource",
+      "reason": "Operator registration requires a valid role_id from the roles list."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/categories",
+      "dependent_method": "GET",
+      "dependent_path": "/categories/{categoryId}/operators",
+      "dependency_type": "resource",
+      "reason": "Category-specific operator list requires a valid categoryId from the categories list."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/categories",
+      "dependent_method": "POST",
+      "dependent_path": "/reports",
+      "dependency_type": "resource",
+      "reason": "Report creation requires a valid category_id from the categories list."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{reportId}",
+      "dependency_type": "state",
+      "reason": "Retrieving a specific report requires the report to exist in the reports list."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports/{reportId}/internal-comments",
+      "dependent_method": "GET",
+      "dependent_path": "/report/{reportId}/internal-comments",
+      "dependency_type": "state",
+      "reason": "Internal comments can only be retrieved after the report exists and potentially after comments are added."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports/{reportId}/external-comments",
+      "dependent_method": "GET",
+      "dependent_path": "/report/{reportId}/external-comments",
+      "dependency_type": "state",
+      "reason": "External comments can only be retrieved after the report exists and potentially after comments are added."
+    },
+    {
+      "prerequisite_method": "PATCH",
+      "prerequisite_path": "/ext_maintainer/reports/{reportId}",
+      "dependent_method": "PATCH",
+      "dependent_path": "/tech_officer/reports/{reportId}/assign_external",
+      "dependency_type": "state",
+      "reason": "Assigning a report to an external maintainer requires the report to be in a state where assignment is valid (e.g., accepted by tech officer)."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/external-maintainers",
+      "dependent_method": "PATCH",
+      "dependent_path": "/tech_officer/reports/{reportId}/assign_external",
+      "dependency_type": "authorization",
+      "reason": "Assigning a report to an external maintainer requires a valid external maintainer ID."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/notifications",
+      "dependent_method": "PATCH",
+      "dependent_path": "/notifications/{notificationId}/set-read",
+      "dependency_type": "state",
+      "reason": "Marking a notification as read requires the notification to exist in the notifications list."
+    }
+  ],
+  "risks": [
+    "Ambiguity in role-based access control: endpoints like /tech_officer/reports imply specific roles but do not define how role membership is enforced beyond auth_required.",
+    "No explicit cleanup or deactivation endpoints for users, operators, or reports.",
+    "/reports/map/accepted lacks a clear definition of 'accepted' state transition criteria.",
+    "External maintainer assignment depends on an implicit workflow (tech officer acceptance) not documented in endpoint descriptions."
+  ]
+}

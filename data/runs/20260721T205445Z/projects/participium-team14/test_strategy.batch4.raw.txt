@@ -1,0 +1,88 @@
+[
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters as an unregistered user.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports. Ensure the response includes a summary table structure (e.g., list of report IDs, statuses, locations). Apply standard filter parameters if defined in the schema (e.g., status, category) to verify filtering logic works for an unregistered user.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for unregistered users to view reports without authentication, as specified in PT22."
+  },
+  {
+    "requirement_id": "PT23",
+    "requirement_summary": "Download the summary table of reports as a citizen.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports with an authenticated session for role 'citizen'. Verify that the response headers indicate a downloadable format (e.g., CSV) or that the payload is structured for download, and confirm that only filtered data (if filters are applied in the prompt context) is returned.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/session with valid citizen credentials to obtain a session token."
+    ],
+    "cleanup_strategy": "DELETE /auth/session to invalidate the session token.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that authenticated citizens can access and download report data, fulfilling PT23."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters as an unregistered user.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports with invalid or empty filter parameters (e.g., status='InvalidStatus' or missing required geo-coordinates if enforced by domain rules). Verify that the system handles these gracefully, either returning an error or ignoring invalid filters while still returning available data.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200",
+      "400"
+    ],
+    "rationale": "Tests the system's resilience to invalid filter inputs and ensures it adheres to domain rules regarding geographic location or valid statuses."
+  },
+  {
+    "requirement_id": "PT23",
+    "requirement_summary": "Download the summary table of reports as a citizen.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports with an authenticated session for role 'citizen' but attempt to access a report that is in 'Resolved' or 'Rejected' status. Verify that the system prevents following or downloading such reports, returning an appropriate error or excluding them from the list.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/session with valid citizen credentials to obtain a session token."
+    ],
+    "cleanup_strategy": "DELETE /auth/session to invalidate the session token.",
+    "expected_status_codes": [
+      "403",
+      "200"
+    ],
+    "rationale": "Validates that citizens cannot access or download reports that are no longer active (Resolved/Rejected), adhering to domain rules."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters as an unregistered user.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports without any authentication headers and verify that the response includes data for unregistered users. Ensure that no sensitive internal comments or restricted fields are exposed in the summary table.",
+    "test_type": "stateful",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures that the state of the system (presence of reports) allows unregistered users to view data without authentication, while maintaining data privacy regarding internal comments."
+  }
+]

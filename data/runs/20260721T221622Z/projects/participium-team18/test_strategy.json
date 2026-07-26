@@ -1,0 +1,190 @@
+[
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/internal/reports/{id}/delegate",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to delegate a report. Ensure the user is authenticated as 'technical office staff member'. Verify that the response indicates successful delegation and that the external maintainer's ID is recorded.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create an authenticated session for a 'technical office staff member' user.",
+      "Ensure a report exists in the 'Assigned' status (created via POST /citizens/report and assigned).",
+      "Identify a valid external maintainer ID to delegate to."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: Delegation updates state, not resources.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow of requirement PT24 where staff delegates work to external parties."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/internal/reports/{id}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a specific report. Ensure the user is authenticated as 'external maintainer'. Update the status to 'In Progress' or 'Resolved' depending on the scenario.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Create an authenticated session for an 'external maintainer' user.",
+      "Ensure a report exists in 'Assigned' status and is assigned to this external maintainer."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow of requirement PT25 allowing maintainers to update progress."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member/external maintainer exchanges information and comments on the report internally.",
+    "api_endpoint": "/internal/reports/{id}/comments",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to add an internal comment to a report. Ensure the user is authenticated as either 'technical office staff member' or 'external maintainer'. Verify that the comment is created and stored in the system.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create an authenticated session for a 'technical office staff member' user.",
+      "Ensure a report exists in the system."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core workflow of requirement PT26 for internal coordination without exposing notes to citizens."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/internal/reports/{id}/delegate",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to delegate a report. Ensure the user is authenticated as 'technical office staff member'. Attempt to delegate a report that is currently in 'Pending Approval' status (not yet assigned). Verify that the operation fails or returns an error indicating the report must be assigned first.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create an authenticated session for a 'technical office staff member' user.",
+      "Ensure a report exists in 'Pending Approval' status."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the dependency edge where delegation requires the report to be in 'Assigned' state first."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/internal/reports/{id}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a report. Ensure the user is authenticated as 'municipal public relations officer'. Attempt to reject a report without providing an explanation in the payload. Verify that the operation fails because rejected reports require an explanation.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create an authenticated session for a 'municipal public relations officer' user.",
+      "Ensure a report exists in 'Pending Approval' status."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the negative case where domain rules mandate an explanation for rejected reports."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them.",
+    "api_endpoint": "/internal/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to retrieve the list of assigned reports. Ensure the user is authenticated as 'technical office staff member'. Attempt to access the endpoint without being authenticated (simulate by not providing auth headers). Verify that the operation fails with an unauthorized error.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no active session exists for the user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Tests the negative case of unauthorized access to internal endpoints."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/internal-users/{id}",
+    "http_method": "PUT",
+    "prompt": "Update an existing internal user (created in a previous step or via setup) to assign a specific role. Verify the response confirms the role change and returns 200 OK.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator.",
+      "Create an internal user via POST /admin/internal-users to obtain a valid ID for this test."
+    ],
+    "cleanup_strategy": "Delete the created internal user using DELETE /admin/internal-users/{id} if it was created specifically for this test.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates role assignment capability as per PT03."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/internal-users",
+    "http_method": "POST",
+    "prompt": "Create a new internal user with valid data. Then, immediately attempt to update the same user's role using PUT /admin/internal-users/{id} without first verifying the user exists or checking for any state changes.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator.",
+      "Create an internal user via POST /admin/internal-users to obtain a valid ID."
+    ],
+    "cleanup_strategy": "Delete the created internal user using DELETE /admin/internal-users/{id} if it was created specifically for this test.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the stateful dependency where a user must exist before their role can be updated, as per PT02 and PT03."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/citizens/report",
+    "http_method": "POST",
+    "prompt": "Create a test case where a verified citizen submits a new report including valid latitude and longitude coordinates. Verify that the response includes the report ID, status 'Pending Approval', and echoes back the provided location data.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen is registered and email verified (via POST /email-verification/verify) to obtain a valid session token."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of geolocating reports as per PT04 and domain rules requiring location data."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account to better manage notifications and virtual presence.",
+    "api_endpoint": "/citizens/me",
+    "http_method": "PATCH",
+    "prompt": "Update the authenticated citizen's profile to enable real-time notifications and set a specific notification preference. Verify the updated preferences are reflected in the GET /citizens/me response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen is registered, email verified, and has a valid session token."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability to configure account settings (PT09) as per domain rules on notifications."
+  }
+]

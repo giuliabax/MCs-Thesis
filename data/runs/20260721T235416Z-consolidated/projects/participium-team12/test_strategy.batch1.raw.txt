@@ -1,0 +1,169 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/auth/register",
+    "http_method": "POST",
+    "prompt": "Register a new citizen user account with a valid name, unique username, and email. Verify successful registration response and session creation if applicable.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the primary entry point for citizen access to the Participium system."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registration fails due to duplicate username.",
+    "api_endpoint": "/auth/register",
+    "http_method": "POST",
+    "prompt": "Attempt to register a citizen using an existing username. Verify the system rejects the request with an appropriate error code indicating the username is taken.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute a successful registration for user 'existing_user' to populate the database."
+    ],
+    "cleanup_strategy": "Delete the test user 'existing_user' created in setup.",
+    "expected_status_codes": ["409", "400"],
+    "rationale": "Ensures data integrity and prevents duplicate accounts, a critical security and usability requirement."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as an external maintainer. Fetch a report currently in 'Assigned' state where this user is the assignee. Update the report status to 'In Progress'. Verify the update succeeds and the new status is reflected.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Create a test report via POST /reports with categoryId from GET /categories (satisfying dependency_edges). Assign the report to the authenticated external maintainer.",
+      "Ensure the report is in 'Assigned' state."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if the API supports it, or verify no resource was created by checking the list of reports for this user.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core workflow for external maintainers to manage assigned tasks."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer attempts to update a report not assigned to them.",
+    "api_endpoint": "/reports/{id}",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as an external maintainer. Attempt to PATCH a report that is assigned to a different user or has no assignee. Verify the system rejects the request with a permission error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Create a test report via POST /reports and assign it to a different user (e.g., 'other_maintainer').",
+      "Ensure the report is in 'Assigned' state."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if supported, or verify no resource was created.",
+    "expected_status_codes": ["403"],
+    "rationale": "Enforces role-based access control (RBAC) to prevent unauthorized status changes."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges information and comments on a report internally.",
+    "api_endpoint": "/reports/{id}/comments",
+    "http_method": "POST",
+    "prompt": "Authenticate as a technical office staff member. POST a new comment to an existing report. Verify the comment is created successfully and is visible in GET /reports/{id}/comments.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member/external maintainer",
+    "setup_needed": [
+      "Create a test report via POST /reports with categoryId from GET /categories (satisfying dependency_edges).",
+      "Ensure the report is in 'Assigned' state."
+    ],
+    "cleanup_strategy": "Delete the created comment if the API supports individual deletion, or verify no resource was created by checking the comments list.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates internal coordination capabilities without exposing data to unauthorized parties."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff attempts to comment on a report in 'Pending Approval' state.",
+    "api_endpoint": "/reports/{id}/comments",
+    "http_method": "POST",
+    "prompt": "Authenticate as a technical office staff member. Attempt to POST a comment to a report that is currently in 'Pending Approval' state (before preliminary verification). Verify the system rejects the request.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member/external maintainer",
+    "setup_needed": [
+      "Create a test report via POST /reports with categoryId from GET /categories (satisfying dependency_edges).",
+      "Ensure the report is in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if supported, or verify no resource was created.",
+    "expected_status_codes": ["400", "403"],
+    "rationale": "Enforces domain rules regarding state transitions; internal comments should only occur after assignment."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Authenticate as a citizen. POST a reply message to an existing report where a municipal operator has previously sent a message. Verify the reply is created and visible in GET /reports/{id}/messages.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a test report via POST /reports with categoryId from GET /categories (satisfying dependency_edges).",
+      "Simulate a municipal operator sending a message to the report (via POST /reports/{id}/messages) to establish context.",
+      "Ensure the report is in 'Assigned' state."
+    ],
+    "cleanup_strategy": "Delete the created reply message if the API supports individual deletion, or verify no resource was created by checking the messages list.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the two-way communication channel between citizens and operators."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen attempts to reply to a message on a report they do not own or are not assigned to.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Authenticate as a citizen. Attempt to POST a reply message to a report that is not associated with this citizen's identity (e.g., anonymous or assigned to someone else). Verify the system rejects the request.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a test report via POST /reports with categoryId from GET /categories (satisfying dependency_edges).",
+      "Ensure the report is in 'Assigned' state and assigned to a different user."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if supported, or verify no resource was created.",
+    "expected_status_codes": ["403"],
+    "rationale": "Ensures message threads are scoped correctly to the relevant user context."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and rejects a report with mandatory explanation.",
+    "api_endpoint": "/reports/{id}",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a municipal public relations officer. PATCH a report in 'Pending Approval' state to change its status to 'Rejected'. Include a mandatory explanation field in the request body. Verify the update succeeds and the rejection reason is recorded.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a test report via POST /reports with categoryId from GET /categories (satisfying dependency_edges).",
+      "Ensure the report is in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if supported, or verify no resource was created.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the rejection workflow and ensures domain rule compliance regarding mandatory explanations."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer attempts to reject a report without providing an explanation.",
+    "api_endpoint": "/reports/{id}",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a municipal public relations officer. Attempt to PATCH a report in 'Pending Approval' state to change its status to 'Rejected' but omit the mandatory explanation field. Verify the system rejects the request.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a test report via POST /reports with categoryId from GET /categories (satisfying dependency_edges).",
+      "Ensure the report is in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{id} if supported, or verify no resource was created.",
+    "expected_status_codes": ["400"],
+    "rationale": "Enforces domain rules requiring a mandatory explanation for all rejected reports."
+  }
+]

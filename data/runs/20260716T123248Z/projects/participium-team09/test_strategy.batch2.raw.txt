@@ -1,0 +1,180 @@
+[
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/auth/verify-registration",
+    "http_method": "POST",
+    "prompt": "Execute verification for a pending registration. Use the email and confirmation code from the setup step. Verify status change to 'active' or equivalent success response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "POST /auth/register-request with valid citizen email and name; capture returned confirmation code."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core registration completion flow defined in PT27."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen attempts verification with an expired confirmation code.",
+    "api_endpoint": "/auth/verify-registration",
+    "http_method": "POST",
+    "prompt": "Execute verification using a confirmation code that is older than 30 minutes (per domain rules). Expect rejection due to code expiration.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "POST /auth/register-request with valid citizen email and name; capture returned confirmation code."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the 30-minute validity constraint mentioned in domain rules."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen attempts verification without a valid registration request pending.",
+    "api_endpoint": "/auth/verify-registration",
+    "http_method": "POST",
+    "prompt": "Execute verification with a random or missing confirmation code against an email that has not requested registration. Expect failure.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures verification cannot be bypassed without a prior valid registration request."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up a new municipality user.",
+    "api_endpoint": "/admin/users",
+    "http_method": "POST",
+    "prompt": "Create a new municipality user with valid details (name, email, role). Verify the user is created and accessible for subsequent operations like role assignment.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure authenticated session exists for 'system administrator' role."
+    ],
+    "cleanup_strategy": "DELETE /admin/users/{userId} if the created user ID is returned and accessible; otherwise verify no resource was created.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the ability to create users as per PT02."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to an existing municipality user.",
+    "api_endpoint": "/admin/users/{userId}/roles",
+    "http_method": "PUT",
+    "prompt": "Assign a specific role (e.g., 'Technical Office Staff') to the user created in the setup step. Verify the role assignment is successful and reflected in the user profile.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "POST /admin/users to create a municipality user; capture userId."
+    ],
+    "cleanup_strategy": "DELETE /admin/users/{userId} using the captured userId.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates role assignment functionality per PT03."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen submits a report with the anonymous flag set to true.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with details and set 'anonymous' to true. Verify that the system accepts the request and stores the report with the anonymous flag, ensuring name is hidden in public views (per domain rules).",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure authenticated session exists for 'citizen' role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the anonymous reporting feature per PT15 and domain rules."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen submits a report with the anonymous flag set to false.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with details and set 'anonymous' to false. Verify that the system accepts the request and stores the report with the reporter's name visible to staff but hidden in public views (per domain rules).",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure authenticated session exists for 'citizen' role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the non-anonymous reporting flow and visibility rules per PT15 and domain rules."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen attempts to submit a report without providing required details.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to submit a report with missing mandatory fields (e.g., empty description or category). Expect rejection due to validation errors.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure authenticated session exists for 'citizen' role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures report submission enforces data integrity per PT15 and domain rules."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles for an existing municipality user.",
+    "api_endpoint": "/admin/users/{userId}/roles",
+    "http_method": "PUT",
+    "prompt": "Modify the roles of an existing municipality user (e.g., remove 'Public Relation' and add 'Technical Office'). Verify the modification is successful and the user has the updated roles.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "POST /admin/users to create a municipality user; capture userId."
+    ],
+    "cleanup_strategy": "DELETE /admin/users/{userId} using the captured userId.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates role modification flexibility per PT10."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator attempts to modify roles for a non-existent user.",
+    "api_endpoint": "/admin/users/{userId}/roles",
+    "http_method": "PUT",
+    "prompt": "Attempt to modify roles for a userId that does not exist. Expect rejection due to resource not found.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure authenticated session exists for 'system administrator' role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Ensures robustness against invalid resource references per PT10."
+  }
+]

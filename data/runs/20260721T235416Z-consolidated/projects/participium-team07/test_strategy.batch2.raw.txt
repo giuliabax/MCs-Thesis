@@ -1,0 +1,182 @@
+[
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/users/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with valid description, category, and location data. Ensure the request body contains all required fields for proper classification logic.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /session to obtain a valid citizen session token"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., via GET /reports/approved or similar listing endpoint).",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of report creation and classification based on provided details."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/users/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with missing required fields (e.g., empty description or invalid category) to test input validation and error handling.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /session to obtain a valid citizen session token"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the system correctly rejects incomplete or invalid report data to prevent misclassification."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/users/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with the 'anonymous' flag set to true. Verify that the name field is either omitted or replaced with 'anonymous' in the response and subsequent views.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /session to obtain a valid citizen session token"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the anonymous reporting feature, ensuring user privacy preferences are respected during creation."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/reject",
+    "http_method": "POST",
+    "prompt": "Attempt to reject a report that is not in the 'Pending Approval' state (e.g., already 'Assigned'). Verify that the system enforces state transition rules.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "POST /session to obtain a valid municipal public relations officer session token"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures that reports are only rejected when they meet the prerequisite state conditions defined in domain rules."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{reportID}",
+    "http_method": "PATCH",
+    "prompt": "Update a report's status to 'Resolved' by a technical office staff member. Verify that the status change is recorded and notifications are triggered appropriately.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /session to obtain a valid technical office staff member session token"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the workflow for resolving reports and ensuring proper status transitions."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to a specific technical office staff member. Verify that only reports assigned to this user or their office are returned.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /session to obtain a valid technical office staff member session token"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures that the assigned reports listing correctly filters and displays relevant reports for the staff member."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account for notifications and virtual presence.",
+    "api_endpoint": "/api/user/profile",
+    "http_method": "PUT",
+    "prompt": "Update a citizen's profile to change notification preferences (e.g., from real-time to on page refresh) and verify the changes are persisted correctly.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /session to obtain a valid citizen session token"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability of citizens to manage their account settings and notification preferences."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of approved reports and verify that anonymous reports display 'anonymous' in the public view while showing full names to staff.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "POST /session to obtain a valid citizen session token (for initial setup if needed)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the edge case where anonymous reports are displayed differently based on user role."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/statuses",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of report statuses and verify that rejected reports include a mandatory explanation field populated by the organization office.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "POST /session to obtain a valid municipal public relations officer session token"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures that rejected reports adhere to the domain rule requiring an explanation."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{reportID}",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update a report's status to 'Suspended' without completing the required intervention steps. Verify that the system prevents invalid state transitions.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /session to obtain a valid technical office staff member session token"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the system's ability to enforce state transition rules and prevent invalid status updates."
+  }
+]

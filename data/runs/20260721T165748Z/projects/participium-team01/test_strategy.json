@@ -1,0 +1,192 @@
+[
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Execute a happy path test where a technical office staff member updates the maintainer of an existing report. Ensure the request body contains a valid maintainer ID or email. Verify the response indicates successful assignment.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data (lat/lon, category, description).",
+      "Ensure the session token for 'technical office staff member' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation updates an existing report attribute, so the report itself remains. No specific cleanup of the report is needed unless the test logic requires resetting state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality of assigning a maintainer to a report as per requirement PT24."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Execute a negative test where a technical office staff member attempts to update the status of a report that has already been resolved or closed. Verify that the API rejects this action with an appropriate error code (e.g., 400 or 409) indicating that the operation is not allowed on a closed report.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data.",
+      "Update the status of the report to 'resolved' or 'closed' using PUT /reports/{id}/status.",
+      "Ensure the session token for 'technical office staff member' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation updates an existing report attribute, so the report itself remains.",
+    "expected_status_codes": [
+      "400",
+      "default"
+    ],
+    "rationale": "Validates that closed reports cannot be modified further, adhering to domain rules and requirement PT11 constraints."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Execute a happy path test where a citizen sends a reply message to an existing report. Verify that the message is created successfully and appears in the list of messages for that report.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data.",
+      "Ensure the session token for 'citizen' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation creates a message, which is a resource. If the test framework requires strict cleanup of all created resources, ensure the message is deleted or ignored based on policy.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the citizen's ability to communicate directly about their report as per requirement PT18."
+  },
+  {
+    "requirement_id": "PT29",
+    "requirement_summary": "Municipal administrator configures automatic assignment of all reports in a certain category.",
+    "api_endpoint": "/reports/{id}/auto-assign-maintainer",
+    "http_method": "POST",
+    "prompt": "Execute an edge case test where a municipal administrator attempts to configure automatic assignment for a report that does not exist yet (pre-configuration). Verify that the API handles this gracefully, either by creating a placeholder configuration or returning a specific error indicating that the target report must exist first.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "municipal administrator",
+    "setup_needed": [
+      "Ensure the session token for 'municipal administrator' is active.",
+      "Create or locate the resource referenced by the path parameter."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation creates a configuration or assignment, which is a resource. If the test framework requires strict cleanup of all created resources, ensure the configuration is deleted or ignored based on policy.",
+    "expected_status_codes": [
+      "201",
+      "400",
+      "default"
+    ],
+    "rationale": "Validates the behavior of automatic assignment configuration when applied to non-existent reports, covering an edge case in requirement PT29."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member/external maintainer exchange information and comments on the report internally.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "GET",
+    "prompt": "Execute a stateful test where a technical office staff member retrieves internal comments for a report that has previously had comments added by another staff member. Verify that the list of comments is returned correctly and includes only internal comments.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a new report via POST /reports with valid data.",
+      "Add an internal comment to the report using POST /reports/{id}/internal-comments (simulating prior action).",
+      "Ensure the session token for 'technical office staff member' is active."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: The operation retrieves existing resources, so no cleanup of the report itself is needed unless the test logic requires resetting state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the retrieval of internal comments as per requirement PT26, ensuring proper handling of stateful dependencies."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Register a new citizen user with a valid name, unique username, and mandatory email address. Ensure the response includes a session token or indicates successful registration pending verification.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core registration flow for citizens to gain access to the system."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration using a valid verification code.",
+    "api_endpoint": "/citizens/verify-email",
+    "http_method": "POST",
+    "prompt": "First, generate a verification code for the registered citizen via /citizens/verification-code. Then, call /citizens/verify-email with that valid code and authenticated session to activate the account.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration to create a user (from PT01 happy path)",
+      "POST /citizens/verification-code with the session token from registration"
+    ],
+    "cleanup_strategy": "Verify account is active; no resource deletion needed as this is an activation step.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the stateful dependency where verification code generation must precede email verification to activate the account."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator creates a new municipality user.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Authenticate as a system administrator and call /admin/createuser to create a new user with valid attributes (name, email, role). Verify the response confirms successful creation.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an admin session is active via /sessions"
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the admin capability to provision new users within the system."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with valid geographic coordinates (lat/lon), a valid category from the fixed list, and a detailed description. Ensure at least one photo is included in the payload.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as 'citizen' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of report creation and classification based on provided details."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to the current user, who is authenticated as 'technical office staff member'. Ensure at least one report exists in the system that has been assigned to this role.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create a report via POST /reports with valid data and assign it to the current user's role (simulating assignment logic).",
+      "Ensure user is authenticated as 'technical office staff member' role."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that staff members can view their assigned workload, which depends on the existence of assigned reports."
+  }
+]

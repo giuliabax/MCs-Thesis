@@ -1,0 +1,157 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/api/users",
+    "http_method": "POST",
+    "prompt": "Register a new citizen user with a unique username, valid email, and full name. Ensure the response indicates successful registration but unverified status.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the core registration flow for citizens as defined in PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/api/sessions/verify",
+    "http_method": "POST",
+    "prompt": "Verify the account created in PT01 using the verification code sent to the registered email. Ensure the session is activated and the user can now authenticate via standard login.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute POST /api/users with valid citizen data to create an unverified account (Requirement PT01)."
+    ],
+    "cleanup_strategy": "Verify the user is now in 'active' state; if a verification code was reused or invalid, ensure no duplicate active sessions are created for the same email.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the account activation flow dependent on successful registration (PT01)."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/api/municipality/users",
+    "http_method": "POST",
+    "prompt": "Create a new municipality staff user (e.g., 'Technical Office Staff') with valid credentials. Ensure the request includes necessary role IDs obtained from the mapping endpoint.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute GET /api/departments/roles/mapping to retrieve valid department_role_ids for the user creation payload."
+    ],
+    "cleanup_strategy": "Delete the created municipality user via DELETE /api/municipality/users/{id} if it was not intended to persist.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates admin capability to create staff users, requiring role mapping setup."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/api/municipality/users/{id}/roles",
+    "http_method": "PUT",
+    "prompt": "Assign a specific role (e.g., 'report_resolver') to the municipality user created in PT02. Ensure the payload contains the correct role ID and that the assignment is reflected in the user's profile.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Create a municipality user via POST /api/municipality/users (Requirement PT02)."
+    ],
+    "cleanup_strategy": "Remove the assigned role via DELETE /api/municipality/users/{id}/roles/{roleId} to restore the user to their initial state.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the role assignment functionality for staff members."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users.",
+    "api_endpoint": "/api/municipality/users/{id}/role",
+    "http_method": "PUT",
+    "prompt": "Modify the role of an existing municipality user (created in PT02) from 'report_resolver' to 'external_maintainer'. Verify that the change is applied correctly.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Create a municipality user via POST /api/municipality/users (Requirement PT02).",
+      "Assign an initial role to the user via PUT /api/municipality/users/{id}/roles (Requirement PT03)."
+    ],
+    "cleanup_strategy": "Revert the user's role back to the original state or remove all roles if the modification was unintended.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the flexibility of modifying user roles as per PT10."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal comments on a report.",
+    "api_endpoint": "/api/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Post an internal comment on a specific report ID. Ensure the comment is visible only to authorized staff (auth_role: technical office staff member) and not exposed in public views.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure a report exists with status 'Assigned' or 'In Progress' to allow internal commenting."
+    ],
+    "cleanup_strategy": "Delete the created comment via DELETE /api/reports/{reportId}/internal-comments/{commentId} to maintain data cleanliness.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the secure internal communication channel for staff (PT26)."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/api/users",
+    "http_method": "POST",
+    "prompt": "Attempt to register a citizen user with an existing username that is already taken by another registered user. Expect the system to reject the duplicate registration.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["409"],
+    "rationale": "Tests system behavior when a citizen attempts to register with a duplicate username."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/api/sessions/verify",
+    "http_method": "POST",
+    "prompt": "Attempt to verify an account using an invalid or expired verification code. The system should reject the request and not activate the account.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute POST /api/users with valid citizen data to create an unverified account (Requirement PT01)."
+    ],
+    "cleanup_strategy": "Ensure the account remains in 'unverified' state; if a session was inadvertently created, terminate it.",
+    "expected_status_codes": ["400"],
+    "rationale": "Tests system resilience against invalid verification codes."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/api/municipality/users",
+    "http_method": "POST",
+    "prompt": "Attempt to create a municipality user without providing valid department_role_ids (e.g., using IDs from an unmapped or invalid department). The system should reject the request due to missing prerequisites.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute GET /api/departments/roles/mapping to identify valid role IDs for comparison."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests system validation when creating users with invalid role mappings."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal comments on a report.",
+    "api_endpoint": "/api/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Attempt to post an internal comment on a report that does not exist or has been deleted. The system should return an error indicating the resource is unavailable.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["404"],
+    "rationale": "Tests system behavior when attempting to comment on non-existent reports."
+  }
+]

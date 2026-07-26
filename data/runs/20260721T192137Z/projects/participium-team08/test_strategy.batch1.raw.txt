@@ -1,0 +1,189 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/active",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports/active without authentication. Verify that the response contains a list of reports filtered to only those with status 'Approved' or equivalent public-visible states. Ensure no internal notes or sensitive reporter data (like full name if anonymous) are exposed in the payload.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core public-facing functionality for unregistered users as per PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/technician/reports/{id}/external",
+    "http_method": "PATCH",
+    "prompt": "1. Login as a 'technical office staff member' role. 2. Ensure a report exists in 'Assigned' state. 3. Execute PATCH /technician/reports/{id}/external with payload setting the external maintainer ID. 4. Verify the response indicates successful assignment and the report status reflects the delegation.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login with technical office staff credentials",
+      "POST /reports (to create a report in 'Pending Approval' or 'Assigned' state if not pre-existing)"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: This endpoint modifies state, so ensure the external assignment is rolled back or verified as completed before cleanup logic applies to the specific test artifact.",
+    "expected_status_codes": [
+      "200",
+      "403"
+    ],
+    "rationale": "Tests the primary workflow for PT24 regarding external maintainer assignment."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "1. Login as an 'external maintainer' role. 2. Ensure a report is assigned to this external maintainer (via PT24 workflow or pre-setup). 3. Execute PATCH /reports/{id}/status with payload setting status to 'Resolved'. 4. Verify the response confirms the status update.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /login with external maintainer credentials",
+      "Ensure report exists and is assigned to this user (may require prior setup via PT24 logic)"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: Status update is a state change, not a resource creation/deletion in the traditional sense, but verify the specific status value is correct.",
+    "expected_status_codes": [
+      "200",
+      "403"
+    ],
+    "rationale": "Validates the external maintainer's ability to update report status as per PT25."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff/external maintainer exchange internal comments on a report.",
+    "api_endpoint": "/reports/{id}/comments",
+    "http_method": "POST",
+    "prompt": "1. Login as a 'technical office staff member'. 2. Ensure a report exists. 3. Execute POST /reports/{id}/comments with an internal note payload. 4. Verify the comment is created and accessible via GET /reports/{id}/comments for the same user.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login with technical office staff credentials",
+      "Ensure report exists"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: Comments are resources, so ensure the specific comment ID is tracked for deletion if needed.",
+    "expected_status_codes": [
+      "201",
+      "403"
+    ],
+    "rationale": "Tests the internal communication capability defined in PT26."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user attempts to view reports with sensitive data exposed.",
+    "api_endpoint": "/reports/active",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports/active without authentication. Verify that the response does NOT contain internal notes, full names of anonymous reporters, or any data marked as private. Ensure only approved reports are returned.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the domain rule regarding anonymous user visibility and data privacy (Domain Rule: Anonymous user's name is visible to staff but hidden in public Turin map)."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "1. Login as a 'technical office staff member'. 2. Ensure a report exists in 'Pending Approval' state. 3. Execute PATCH /reports/{id}/status with payload setting status to 'Approved'. 4. Verify the response confirms the status change.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login with technical office staff credentials",
+      "Ensure report exists in 'Pending Approval' state"
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: Status update is a state change.",
+    "expected_status_codes": [
+      "200",
+      "403"
+    ],
+    "rationale": "Validates the technical office staff's ability to approve reports as per PT11."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer attempts to view internal comments from technical office staff.",
+    "api_endpoint": "/reports/{id}/comments",
+    "http_method": "GET",
+    "prompt": "1. Login as an 'external maintainer'. 2. Ensure a report exists with internal comments added by a 'technical office staff member' (via PT26 setup). 3. Execute GET /reports/{id}/comments. 4. Verify that the response does NOT contain the internal comments added by the technical office staff.",
+    "test_type": "edge_case",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /login with external maintainer credentials",
+      "Ensure report exists and has internal comments from a different role (technical office staff)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the domain rule regarding visibility of internal notes to external maintainers (Domain Rule: Case 1/Case 2)."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member attempts to assign a report to an external maintainer without login.",
+    "api_endpoint": "/technician/reports/{id}/external",
+    "http_method": "PATCH",
+    "prompt": "Execute PATCH /technician/reports/{id}/external without providing authentication headers (simulating missing JWT). Verify that the system returns a 401 Unauthorized or 403 Forbidden error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure report exists"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401",
+      "403"
+    ],
+    "rationale": "Tests the authorization dependency for PT24 (Dependency Edge: JWT from login is required)."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user attempts to submit a report without registration.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Execute POST /reports without authentication headers. Verify that the system blocks the submission and returns an error indicating that registration is required (e.g., 401 or specific validation error).",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401",
+      "403"
+    ],
+    "rationale": "Tests the domain rule regarding user attempts to submit reports without registration (Domain Rule: User attempts to submit a report without registration)."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer attempts to update status of a report not assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "1. Login as an 'external maintainer'. 2. Ensure a report exists but is NOT assigned to this external maintainer (assigned to someone else or in 'Pending Approval'). 3. Execute PATCH /reports/{id}/status with payload setting status to 'Resolved'. 4. Verify that the system denies the action due to lack of assignment or insufficient permissions.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /login with external maintainer credentials",
+      "Ensure report exists and is assigned to a different user or in 'Pending Approval' state"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "403",
+      "400"
+    ],
+    "rationale": "Tests the authorization constraint where an external maintainer can only update reports assigned to them."
+  }
+]

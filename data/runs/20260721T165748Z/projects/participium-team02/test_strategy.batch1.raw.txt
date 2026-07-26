@@ -1,0 +1,161 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports without authentication. Verify that the response returns a list of reports where status is 'approved'. Ensure that for unregistered users, any reporter names are hidden or anonymized as per domain rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Validates the core functionality for unregistered users to view public data without login."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports without authentication. Verify that the response filters out any reports with status 'pending', 'in_progress', or 'rejected'. Ensure no sensitive internal comments are included in the response.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Tests that the map view correctly excludes non-approved reports and hides internal data."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+    "api_endpoint": "/reports/get-map-reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/get-map-reports without authentication. Verify that the response does not include any reporter names or personal identifiers, ensuring anonymity for unregistered users as per domain rules.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Ensures that unregistered users cannot access PII (Personally Identifiable Information) regarding reporters."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member can assign reports to external maintainers.",
+    "api_endpoint": "/reports/report/{id}/assign-maintainer",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'technical_office_staff' role. Execute a PATCH request to /reports/report/{id}/assign-maintainer with a valid external maintainer ID. Verify the report assignment is successful and the status reflects the new assignee.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Authenticate as technical_office_staff role.",
+      "Ensure a report exists with status 'pending' or 'in_progress'."
+    ],
+    "cleanup_strategy": "Verify the assignment was recorded; no resource deletion required for assignment operations unless rollback is needed, which is not standard here.",
+    "expected_status_codes": [200],
+    "rationale": "Validates the primary workflow for assigning maintenance tasks to external parties."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member can assign reports to external maintainers.",
+    "api_endpoint": "/reports/report/{id}/assign-maintainer",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'technical_office_staff' role. Execute a PATCH request to /reports/report/{id}/assign-maintainer with an invalid or non-existent external maintainer ID. Verify the API returns a 400 Bad Request or 404 Not Found error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Authenticate as technical_office_staff role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400", "404"],
+    "rationale": "Ensures the system handles invalid maintainer IDs gracefully and prevents data corruption."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer can update the status of a report assigned to them.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as an 'external_maintainer' role. Execute a PATCH request to /reports/report/{id}/status with a valid new status (e.g., 'in_progress'). Verify the status update is successful and the report reflects the change.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Authenticate as external_maintainer role.",
+      "Ensure a report exists with status 'pending' and is assigned to this maintainer."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Validates the workflow for external maintainers to update their assigned tasks."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer can update the status of a report assigned to them.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as an 'external_maintainer' role. Execute a PATCH request to /reports/report/{id}/status attempting to resolve a report that was not assigned to this maintainer or is already closed. Verify the API rejects the request with an appropriate error code (e.g., 403 Forbidden).",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Authenticate as external_maintainer role."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Ensures that external maintainers cannot modify reports outside their scope or on closed items."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer can review and approve or reject reports.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'municipal_public_relations_officer' role. Execute a PATCH request to /reports/report/{id}/status with status 'approved'. Verify the report is marked as approved and visible to public users.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal_public_relations_officer",
+    "setup_needed": [
+      "Authenticate as municipal_public_relations_officer role.",
+      "Ensure a report exists with status 'pending'."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Validates the approval workflow for public relations officers to manage report visibility."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer can review and approve or reject reports.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'municipal_public_relations_officer' role. Execute a PATCH request to /reports/report/{id}/status with status 'rejected' and include an explanation in the payload. Verify the report is marked as rejected and the explanation is stored.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "municipal_public_relations_officer",
+    "setup_needed": [
+      "Authenticate as municipal_public_relations_officer role.",
+      "Ensure a report exists with status 'pending'."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Tests the rejection workflow ensuring explanations are captured for rejected reports."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member can update report statuses.",
+    "api_endpoint": "/reports/report/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'technical_office_staff' role. Execute a PATCH request to /reports/report/{id}/status with status 'in_progress'. Verify the status update is successful and reflects the resolution process stage.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Authenticate as technical_office_staff role.",
+      "Ensure a report exists with status 'pending'."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [200],
+    "rationale": "Validates the ability of technical office staff to manage the lifecycle of reports."
+  }
+]

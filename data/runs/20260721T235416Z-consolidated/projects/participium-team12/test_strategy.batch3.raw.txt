@@ -1,0 +1,236 @@
+[
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member can see the list of reports assigned to them.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Ensure the session is authenticated as a 'technical_office_staff_member' role. Verify that the response body contains a list of report objects where the 'assigned_to' field matches the current user's ID or role, and the status is 'Assigned'. Check pagination metadata if present.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "POST /auth/login with credentials for a user having the role 'technical_office_staff_member'",
+      "Ensure at least one report exists in the system with status 'Assigned' and assigned to this user"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for staff members to view their workload as defined in PT08."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees empty list when no reports are assigned.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Ensure the session is authenticated as a 'technical_office_staff_member' role. Verify that the response body contains an empty array or list indicating zero assigned reports, and check that pagination indicates 0 total items.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "POST /auth/login with credentials for a user having the role 'technical_office_staff_member'",
+      "Ensure no reports exist in the system or none are assigned to this specific user"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures the API handles the empty state gracefully without errors when a staff member has no pending work."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Unauthorized user cannot access the assigned reports list.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports without providing any authentication headers or cookies. Verify that the response returns an unauthorized error indicating that access is restricted to authenticated users.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Confirms that the /reports endpoint enforces authentication as per API analysis rules."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen can browse a summary table of reports with active filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Ensure the session is authenticated as a 'citizen' role. Include query parameters for specific filters (e.g., status='Pending Approval', category='Infrastructure'). Verify that the response body contains a summary table structure or list of reports matching these filters.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/login with credentials for a user having the role 'citizen'",
+      "Ensure at least one report exists in the system with status 'Pending Approval' and category 'Infrastructure'"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the filtering capability for citizens to explore reports as defined in PT22."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen receives empty list when filters match no existing reports.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Ensure the session is authenticated as a 'citizen' role. Include query parameters for filters that do not match any existing data (e.g., status='Resolved' if no resolved reports exist, or a non-existent category). Verify that the response returns an empty list.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/login with credentials for a user having the role 'citizen'"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures the API handles filter combinations that result in zero matches without crashing or returning errors."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Unauthenticated user cannot access the filtered reports summary table.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports with query parameters for filters (e.g., status='Pending Approval'). Do not provide any authentication headers or cookies. Verify that the response returns an unauthorized error, as this endpoint requires authentication unlike the public endpoints.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Confirms that the /reports endpoint with filters enforces authentication as per API analysis rules."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen can configure their account to manage notifications and virtual presence.",
+    "api_endpoint": "/profiles/profile/me",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /profiles/profile/me. Ensure the session is authenticated as a 'citizen' role. Include a JSON body updating notification preferences (e.g., set 'email_alerts' to true and 'notification_mode' to 'real-time'). Verify that the response returns the updated profile with the new settings applied.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/login with credentials for a user having the role 'citizen'",
+      "Ensure the current profile exists and is accessible for updates"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200",
+      "204"
+    ],
+    "rationale": "Validates the ability of a citizen to update their account settings as defined in PT09."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen cannot update profile fields they do not own or have insufficient permissions.",
+    "api_endpoint": "/profiles/profile/me",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /profiles/profile/me. Ensure the session is authenticated as a 'citizen' role. Include a JSON body attempting to update a restricted field (e.g., 'role' or 'organization_id') or an invalid value for a mutable field. Verify that the response returns a validation error or permission denied error.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/login with credentials for a user having the role 'citizen'"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400",
+      "403"
+    ],
+    "rationale": "Ensures that citizens cannot modify sensitive or restricted profile attributes."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen can enable optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/profiles/profile/me",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /profiles/profile/me. Ensure the session is authenticated as a 'citizen' role. Include a JSON body setting 'email_alerts' to true and 'notification_mode' to 'real-time'. Verify that the response confirms both notification channels are active.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/login with credentials for a user having the role 'citizen'",
+      "Ensure the current profile exists and is accessible for updates"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200",
+      "204"
+    ],
+    "rationale": "Validates the specific requirement in PT19 regarding enabling email alerts alongside platform notifications."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Citizen can search for reports in a specific area by typing in an address.",
+    "api_endpoint": "/reports/nearby",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/nearby. Ensure the session is authenticated as a 'citizen' role (or unregistered if applicable, but per API analysis, this endpoint is public). Include a query parameter for 'address' with a specific street name or location string. Verify that the response returns a list of reports located near the provided address.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure at least one report exists in the system with a location coordinate or address that matches the search query"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the geospatial search functionality for citizens to explore reports by address as defined in PT30."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Search returns empty list when no reports exist near the provided address.",
+    "api_endpoint": "/reports/nearby",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/nearby. Include a query parameter for 'address' with a location where no reports have been submitted (e.g., a remote island or an empty coordinate). Verify that the response returns an empty list.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures the API handles search queries with no results gracefully."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen cannot disable email alerts if they are currently disabled and trying to set to false without valid reason (simulating invalid payload).",
+    "api_endpoint": "/profiles/profile/me",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /profiles/profile/me. Ensure the session is authenticated as a 'citizen' role. Include a JSON body with an invalid structure for email alerts (e.g., missing required field or wrong type). Verify that the response returns a validation error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /auth/login with credentials for a user having the role 'citizen'"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures that invalid updates to notification preferences are rejected."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen cannot access reports summary table without authentication.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports with query parameters for filters. Do not provide any authentication headers or cookies. Verify that the response returns an unauthorized error, as this endpoint requires authentication unlike the public endpoints.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Confirms that the /reports endpoint enforces authentication as per API analysis rules."
+  }
+]

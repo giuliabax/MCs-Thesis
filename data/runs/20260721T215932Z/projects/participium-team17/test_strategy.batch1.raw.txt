@@ -1,0 +1,157 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports/map/accepted",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/map/accepted without providing any authentication headers. Verify that the response returns a list of accepted reports (status 'Accepted') with location data, category, and title. Ensure no private internal comments or sensitive reporter details are exposed.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core public-facing functionality for unregistered users as per requirement PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/tech_officer/reports/{reportId}/assign_external",
+    "http_method": "PATCH",
+    "prompt": "First, ensure a valid report exists and is in 'Accepted' status. Then, execute a PATCH request to /tech_officer/reports/{reportId}/assign_external with an authenticated token for a technical office staff member. The payload should include the external_maintainer_id obtained from /external-maintainers. Verify the assignment succeeds.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a new report via POST /reports with status 'Accepted' to satisfy dependency edges.",
+      "Retrieve a list of external maintainers via GET /external-maintainers and select one valid ID."
+    ],
+    "cleanup_strategy": "Verify the assignment was successful; if the test fails or is aborted, ensure no partial state changes remain by re-fetching the report status to confirm it hasn't been incorrectly modified.",
+    "expected_status_codes": ["200", "403"],
+    "rationale": "Tests the workflow of assigning external maintainers, a key step in requirement PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of an assigned report.",
+    "api_endpoint": "/ext_maintainer/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /ext_maintainer/reports/{reportId} with an authenticated token for an external maintainer. Update the status field (e.g., from 'Accepted' to 'In Progress'). Verify the update is reflected in the report resource.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Ensure a report exists and has been assigned to this external maintainer (requires prior setup of assignment)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the ability of an external maintainer to update their own assigned reports as per PT25."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member adds internal comments on a report.",
+    "api_endpoint": "/reports/{reportId}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /reports/{reportId}/internal-comments with an authenticated token for a technical office staff member. The payload should contain the comment text and optionally the external_maintainer_id if relevant. Verify that the comment is created successfully.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a new report via POST /reports to satisfy the resource dependency."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["201"],
+    "rationale": "Tests the internal communication feature for coordination without exposing notes to citizens (PT26)."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username.",
+    "api_endpoint": "/user-registrations",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /user-registrations without authentication. The payload must include 'name', 'username', and 'email'. Verify that the system accepts the registration and returns a confirmation code or success message.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the user registration flow for citizens as per requirement PT01."
+  },
+  {
+    "requirement_id": "PT07",
+    "requirement_summary": "Citizen views approved reports on an interactive map.",
+    "api_endpoint": "/reports/map/accepted",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/map/accepted with an authenticated token for a citizen. Verify that the response returns accepted reports similar to the unregistered view, but potentially including additional fields allowed for registered users (e.g., reporter name if not anonymous). Ensure no internal comments are visible.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure at least one report with status 'Accepted' exists in the system."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates that authenticated citizens can view the map of approved reports as per PT07."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer (Edge Case: Invalid External Maintainer).",
+    "api_endpoint": "/tech_officer/reports/{reportId}/assign_external",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /tech_officer/reports/{reportId}/assign_external with an authenticated token for a technical office staff member. The payload should include an invalid or non-existent external_maintainer_id (e.g., '99999'). Verify that the system rejects this operation with an appropriate error code (e.g., 400 or 404) indicating the maintainer does not exist.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a new report via POST /reports to satisfy the resource dependency."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400", "404"],
+    "rationale": "Tests the system's handling of invalid external maintainer IDs during assignment (PT24)."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates status (Negative: Unauthorized Access to Unassigned Report).",
+    "api_endpoint": "/ext_maintainer/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /ext_maintainer/reports/{reportId} with an authenticated token for an external maintainer. The reportId should belong to a report that has NOT been assigned to this specific external maintainer. Verify that the system rejects this operation with a 403 Forbidden error, preventing unauthorized status updates.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a new report via POST /reports and assign it to a DIFFERENT external maintainer (or leave it unassigned) to ensure the current user cannot access it."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Tests security boundaries where an external maintainer tries to modify a report they are not assigned to (PT25)."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member adds internal comments (Edge Case: Missing Report ID).",
+    "api_endpoint": "/reports/{reportId}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /reports/{reportId}/internal-comments with an authenticated token for a technical office staff member. The payload should be valid, but the reportId in the URL path should be null or empty (e.g., '/reports//internal-comments'). Verify that the system rejects this operation with a 400 Bad Request error.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests the system's handling of malformed URLs or missing resource identifiers for internal comments (PT26)."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username (Negative: Duplicate Username).",
+    "api_endpoint": "/user-registrations",
+    "http_method": "POST",
+    "prompt": "First, execute a successful POST to /user-registrations with a specific username (e.g., 'testuser'). Then, immediately execute a second POST to /user-registrations with the SAME username but different name/email. Verify that the system rejects this operation with a 409 Conflict or 400 Bad Request error, indicating the username is already taken.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Perform a prior registration step to create an existing user with the target username."
+    ],
+    "cleanup_strategy": "If the test fails or is aborted, ensure no duplicate user accounts were created by checking the database or re-fetching the user list.",
+    "expected_status_codes": ["409", "400"],
+    "rationale": "Tests the system's handling of duplicate username registration attempts (PT01)."
+  }
+]

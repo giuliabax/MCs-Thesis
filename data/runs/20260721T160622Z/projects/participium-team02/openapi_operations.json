@@ -1,0 +1,957 @@
+[
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/auth/login",
+    "summary": "Log in a user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/auth/logout",
+    "summary": "Log out the current user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/auth/current",
+    "summary": "Get the currently logged in user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/register-citizen",
+    "summary": "Register a new citizen (public)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "name",
+        "surname",
+        "email",
+        "password"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "surname": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "422"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/register-user",
+    "summary": "Create a user with a given role (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "name",
+        "surname",
+        "email",
+        "password",
+        "role"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "surname": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        },
+        "role": {
+          "$ref": "#/components/schemas/UserType"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "401"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/users/edit-user",
+    "summary": "Update another user's information (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "username": {
+          "type": "string",
+          "nullable": true
+        },
+        "name": {
+          "type": "string",
+          "nullable": true
+        },
+        "surname": {
+          "type": "string",
+          "nullable": true
+        },
+        "email": {
+          "type": "string",
+          "nullable": true
+        },
+        "usertype": {
+          "$ref": "#/components/schemas/UserType"
+        },
+        "rolesArray": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/users/edit-me",
+    "summary": "Update the current user's information",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "username": {
+          "type": "string",
+          "nullable": true
+        },
+        "name": {
+          "type": "string",
+          "nullable": true
+        },
+        "surname": {
+          "type": "string",
+          "nullable": true
+        },
+        "email": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/get-roles",
+    "summary": "Retrieve all roles defined in the system (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/get-roles/{userId}",
+    "summary": "Retrieve the roles assigned to a user (admin only)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "userId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/search-users",
+    "summary": "Search users with pagination and filters (admin only)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "query",
+        "name": "page_num",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      {
+        "in": "query",
+        "name": "page_size",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      {
+        "in": "query",
+        "name": "first_name",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "in": "query",
+        "name": "last_name",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "in": "query",
+        "name": "email",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "in": "query",
+        "name": "role",
+        "schema": {
+          "$ref": "#/components/schemas/UserType"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/admin/create-municipality-user",
+    "summary": "Create a municipality user and optionally assign roles (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "name",
+        "surname",
+        "email",
+        "password"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "surname": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "format": "password"
+        },
+        "rolesArray": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "401"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/admin/assign-roles",
+    "summary": "Replace the roles of a user (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "userId",
+        "rolesArray"
+      ],
+      "properties": {
+        "userId": {
+          "type": "integer"
+        },
+        "rolesArray": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/upload",
+    "summary": "Upload a new report with photos (citizen only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "category_id",
+        "latitude",
+        "longitude",
+        "is_public",
+        "photos"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category_id": {
+          "type": "integer"
+        },
+        "latitude": {
+          "type": "number",
+          "format": "float"
+        },
+        "longitude": {
+          "type": "number",
+          "format": "float"
+        },
+        "is_public": {
+          "type": "boolean"
+        },
+        "photos": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/categories",
+    "summary": "List all report categories (public)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/report/{id}",
+    "summary": "Get a report by id (public)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "404"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/reports/report/{id}/status",
+    "summary": "Update a report status (admin or municipality)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/components/schemas/ReportStatus"
+        },
+        "status_reason": {
+          "type": "string",
+          "description": "Required when status is Rejected"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/search-reports",
+    "summary": "Search reports with pagination and filters (admin or municipality)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "query",
+        "name": "page_num",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      {
+        "in": "query",
+        "name": "page_size",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      {
+        "in": "query",
+        "name": "status",
+        "schema": {
+          "$ref": "#/components/schemas/ReportStatus"
+        }
+      },
+      {
+        "in": "query",
+        "name": "is_public",
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
+        "in": "query",
+        "name": "category_id",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/get-map-reports",
+    "summary": "Get reports for map display (public)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "statusArray": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ReportStatus"
+          }
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/tos-users",
+    "summary": "Get technical office staff users by category (admin or municipality)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "query",
+        "name": "category_id",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/maintainer-users",
+    "summary": "Get all external maintainer users (technical officer)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/reports/report/{id}/assign",
+    "summary": "Assign a report to a user (admin or municipality)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "assigned_to"
+      ],
+      "properties": {
+        "assigned_to": {
+          "type": "integer"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/assigned-to-techOfficer",
+    "summary": "Get reports assigned to the authenticated technical officer",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/assigned-to-maintainer",
+    "summary": "Get reports assigned to the authenticated maintainer",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/reports/report/{id}/assign-maintainer",
+    "summary": "Assign a report to an external maintainer (technical officer)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "maintainer_id"
+      ],
+      "properties": {
+        "maintainer_id": {
+          "type": "integer"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{report_id}/comments",
+    "summary": "Get all comments for a report (admin or municipality)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "report_id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{report_id}/comment",
+    "summary": "Add a comment to a report (admin or municipality)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "report_id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "comment"
+      ],
+      "properties": {
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/reports/{report_id}/comment",
+    "summary": "Edit an own comment on a report (admin or municipality)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "report_id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "comment_id",
+        "comment"
+      ],
+      "properties": {
+        "comment_id": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/reports/{report_id}/comment",
+    "summary": "Delete an own comment on a report (admin or municipality)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "report_id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "comment_id"
+      ],
+      "properties": {
+        "comment_id": {
+          "type": "integer"
+        }
+      }
+    },
+    "response_codes": [
+      "204",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  }
+]

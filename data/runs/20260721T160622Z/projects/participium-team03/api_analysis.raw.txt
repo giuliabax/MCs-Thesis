@@ -1,0 +1,416 @@
+{
+  "summary": "A municipal reporting API allowing citizens to submit reports with photos, track status via notifications, and interact via internal comments or public messages. It supports role-based workflows for review (admin), assignment (technical office), and external maintenance (external maintainers). Includes user management, session handling, Telegram integration, and street search.",
+  "operations": [
+    {
+      "path": "/comment/{id}/comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Requires report ID in path; adds internal comment"]
+    },
+    {
+      "path": "/comment/{id}/comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Retrieves comments for a specific report"]
+    },
+    {
+      "path": "/api/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Returns available report categories; used during report creation"]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Adds a public message to a report chat"]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Retrieves chat history for a report"]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists all notifications for the logged-in user"]
+    },
+    {
+      "path": "/notifications/unread",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists unread notifications only"]
+    },
+    {
+      "path": "/notifications/{id}/read",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Marks a specific notification as read"]
+    },
+    {
+      "path": "/notifications/read-all",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Marks all notifications as read for the user"]
+    },
+    {
+      "path": "/notifications/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Deletes a specific notification"]
+    },
+    {
+      "path": "/reports/me",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists reports created by the authenticated citizen"]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/api/categories"],
+      "notes": ["Creates a new report; requires category selection and photos"]
+    },
+    {
+      "path": "/reports/anonymous",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/api/categories"],
+      "notes": ["Creates an anonymous report; no user ID attached"]
+    },
+    {
+      "path": "/reports/pending",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists reports awaiting review by admin/public relations officer"]
+    },
+    {
+      "path": "/reports/approved",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Returns accepted reports for public map; supports bounding box filter"]
+    },
+    {
+      "path": "/reports/citizen",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Returns visible reports to citizens (excludes pending/rejected)"]
+    },
+    {
+      "path": "/reports/assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists reports assigned to the authenticated technical office staff member"]
+    },
+    {
+      "path": "/reports/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Retrieves a single report by ID"]
+    },
+    {
+      "path": "/reports/{id}/review",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/pending"],
+      "notes": ["Approves or rejects a report; requires technicalOffice role on accept"]
+    },
+    {
+      "path": "/reports/{id}/assign-external",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/assigned"],
+      "notes": ["Assigns a report to an external maintainer; requires assigned status"]
+    },
+    {
+      "path": "/reports/{id}/status",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/reports/assigned"],
+      "notes": ["Updates report progress state for external maintainers"]
+    },
+    {
+      "path": "/reports/external/assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists reports assigned to the authenticated external maintainer"]
+    },
+    {
+      "path": "/streets",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Autocomplete street names for report location input"]
+    },
+    {
+      "path": "/streets/{name}/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/streets"],
+      "notes": ["Returns reports and map focus for a specific street"]
+    },
+    {
+      "path": "/sessions",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Logs in a user; requires username/password"]
+    },
+    {
+      "path": "/sessions/current",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/sessions"],
+      "notes": ["Returns current logged-in user info"]
+    },
+    {
+      "path": "/sessions/current",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Logs out the current user"]
+    },
+    {
+      "path": "/telegram/webhook",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Receives Telegram bot updates; no auth required"]
+    },
+    {
+      "path": "/telegram/info",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/telegram/webhook"],
+      "notes": ["Returns Telegram bot configuration info"]
+    },
+    {
+      "path": "/users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Registers a new citizen; requires email confirmation within 30 minutes"]
+    },
+    {
+      "path": "/users/confirm",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users"],
+      "notes": ["Confirms a citizen account using email and code"]
+    },
+    {
+      "path": "/users/resend-confirmation",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users"],
+      "notes": ["Resends confirmation code to user's email"]
+    },
+    {
+      "path": "/users/admin",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Admin-only: creates a new user with specified role"]
+    },
+    {
+      "path": "/users/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/admin"],
+      "notes": ["Admin-only: lists allowed roles for user creation"]
+    },
+    {
+      "path": "/users/municipality",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists non-citizen, non-admin municipality users"]
+    },
+    {
+      "path": "/users/{id}/update",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/sessions/current"],
+      "notes": ["Updates user profile; requires authentication"]
+    },
+    {
+      "path": "/users/external-maintainers",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Admin-only: creates an external maintainer with company association"]
+    },
+    {
+      "path": "/users/external-maintainers",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists all external maintainers; accessible to technical office staff"]
+    },
+    {
+      "path": "/users/{id}/assign-role",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/admin"],
+      "notes": ["Admin-only: assigns a role to a municipality user"]
+    },
+    {
+      "path": "/users/{id}/remove-role",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/admin"],
+      "notes": ["Admin-only: removes a role from a municipality user"]
+    },
+    {
+      "path": "/users/companies",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists all registered companies; admin-only"]
+    }
+  ],
+  "authentication_notes": [
+    "Most endpoints require authentication via session tokens obtained from /sessions.",
+    "Anonymous report creation (/reports/anonymous) does not require authentication.",
+    "Telegram webhook endpoint is publicly accessible without auth.",
+    "User registration and confirmation flow requires email verification before full access.",
+    "Admin-only operations (e.g., /users/admin, /users/roles) enforce elevated privileges."
+  ],
+  "dependencies": [
+    "POST /sessions must precede any authenticated request requiring user identity.",
+    "POST /users creates a citizen account; POST /users/confirm finalizes registration.",
+    "GET /api/categories is a prerequisite for creating reports (both authenticated and anonymous).",
+    "PUT /reports/{id}/review depends on the report being in 'pending' state (accessible via GET /reports/pending).",
+    "PUT /reports/{id}/assign-external requires the report to be in 'assigned' status (accessible via GET /reports/assigned).",
+    "PUT /reports/{id}/status is only valid for reports assigned to external maintainers.",
+    "GET /streets enables autocomplete; GET /streets/{name}/reports depends on a valid street name from the search.",
+    "POST /users/admin and POST /users/{id}/assign-role require admin privileges established via prior auth.",
+    "GET /users/roles is only meaningful after admin context is set (via /sessions or /users/admin)."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/sessions",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/me",
+      "dependency_type": "authorization",
+      "reason": "Session must be established to identify the citizen for retrieving their reports."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users",
+      "dependent_method": "POST",
+      "dependent_path": "/users/confirm",
+      "dependency_type": "state",
+      "reason": "Account must be registered before confirmation code can be applied."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/api/categories",
+      "dependent_method": "POST",
+      "dependent_path": "/reports",
+      "dependency_type": "resource",
+      "reason": "Report creation requires selecting a valid category from the available list."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/reports/pending",
+      "dependent_method": "PUT",
+      "dependent_path": "/reports/{id}/review",
+      "dependency_type": "state",
+      "reason": "Review operation applies only to reports in pending status."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/reports/assigned",
+      "dependent_method": "PUT",
+      "dependent_path": "/reports/{id}/assign-external",
+      "dependency_type": "state",
+      "reason": "External assignment requires the report to be in assigned status and owned by the requester."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/streets",
+      "dependent_method": "GET",
+      "dependent_path": "/streets/{name}/reports",
+      "dependency_type": "resource",
+      "reason": "Street-specific reports require a valid street name obtained from autocomplete."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/admin",
+      "dependent_method": "GET",
+      "dependent_path": "/users/roles",
+      "dependency_type": "authorization",
+      "reason": "Role listing is only valid in the context of admin user creation or management."
+    }
+  ],
+  "risks": [
+    "Ambiguity in role-based access control: some endpoints (e.g., /reports/assigned) imply role checks but do not specify exact roles in documentation.",
+    "Anonymous report creation bypasses user identity, potentially complicating accountability or notification flows.",
+    "Telegram webhook endpoint lacks authentication, risking unauthorized bot updates if secret tokens are not validated server-side.",
+    "Confirmation code expiration (30 minutes) is documented but not enforced via API response codes; client must handle timeouts.",
+    "External maintainer status updates (/reports/{id}/status) lack explicit validation of maintainer ownership in documentation."
+  ]
+}

@@ -1,0 +1,239 @@
+[
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/assignExternal",
+    "http_method": "POST",
+    "prompt": "Assign a report to an external maintainer. Ensure the request body contains valid maintainer ID and target report ID. Verify the response confirms assignment and status transition to 'Assigned'.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via POST /session.",
+      "Ensure a report exists in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow for requirement PT24, ensuring staff can delegate reports correctly."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/external-maintainer/:id",
+    "http_method": "PATCH",
+    "prompt": "Update the status of an assigned report. Send a PATCH request with a valid status (e.g., 'Resolved') and optional internal comment. Verify the status updates successfully.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer via POST /session.",
+      "Ensure a report is in 'Assigned' state and assigned to this maintainer."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow for requirement PT25, ensuring maintainers can update their assigned reports."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/users/temporary",
+    "http_method": "POST",
+    "prompt": "Register a new citizen user. Provide valid name, username, and email. Verify that a temporary user record is created and an OTP code is generated in the response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no existing temporary user exists with the same email to avoid conflicts."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the initial registration flow for requirement PT01, ensuring users can create accounts."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/users/temporary/verify",
+    "http_method": "POST",
+    "prompt": "Verify the temporary user account using the OTP code received during registration. Ensure the code matches the one generated for the specific email and is within the 30-minute validity window.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a temporary user via POST /users/temporary to obtain an OTP code."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the account activation flow for requirement PT27, ensuring users can confirm their registration."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/reports/assignExternal",
+    "http_method": "POST",
+    "prompt": "Attempt to assign a report to an external maintainer who does not exist in the system. Provide a non-existent maintainer ID in the request body.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member via POST /session."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests error handling for invalid maintainer IDs in requirement PT24, ensuring the system rejects non-existent users."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/external-maintainer/:id",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update a report that is not in 'Assigned' state (e.g., 'Pending Approval') or is not assigned to the current user. Provide an invalid status value.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer via POST /session."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests error handling for invalid states or statuses in requirement PT25, ensuring the system enforces state transitions correctly."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/users/temporary",
+    "http_method": "POST",
+    "prompt": "Attempt to register a user with an invalid email format (e.g., missing '@' symbol) or duplicate username. Verify that the system rejects the request with an appropriate error message.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no existing temporary user exists with the same email to avoid conflicts."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests input validation for registration in requirement PT01, ensuring the system handles invalid or duplicate data correctly."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/users/temporary/verify",
+    "http_method": "POST",
+    "prompt": "Attempt to verify a temporary user account using an expired OTP code (simulate by waiting >30 minutes or manually setting an old timestamp). Verify that the system rejects the verification request.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a temporary user via POST /users/temporary to obtain an OTP code."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests expiration logic for account activation in requirement PT27, ensuring the system enforces the 30-minute validity window."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/employees",
+    "http_method": "POST",
+    "prompt": "Create a new employee (municipality user) with valid details. Verify that the system creates the user and returns the appropriate response indicating success.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator via POST /session."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core workflow for requirement PT02, ensuring administrators can create users."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/employees/assign",
+    "http_method": "POST",
+    "prompt": "Assign a newly created employee to a specific technical office. Verify that the system updates the employee's assignment and returns the appropriate response indicating success.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator via POST /session.",
+      "Create an employee via POST /employees to have a valid employee ID for assignment."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the assignment workflow for requirement PT02, ensuring administrators can assign users to offices."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/users/temporary",
+    "http_method": "POST",
+    "prompt": "Attempt to register a user without providing an email address, which is mandatory for registration. Verify that the system rejects the request with an appropriate error message.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no existing temporary user exists with the same email to avoid conflicts."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests mandatory field validation for registration in requirement PT01, ensuring the system enforces email as a required field."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/users/temporary/verify",
+    "http_method": "POST",
+    "prompt": "Attempt to verify a temporary user account using an incorrect OTP code. Verify that the system rejects the verification request and does not update the user's status.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a temporary user via POST /users/temporary to obtain an OTP code."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests incorrect code handling for account activation in requirement PT27, ensuring the system validates the OTP correctly."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/external-maintainer/:id",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update a report that is not assigned to the current external maintainer. Verify that the system rejects the request with an appropriate error message indicating lack of authorization.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer via POST /session."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Tests authorization checks for report updates in requirement PT25, ensuring the system enforces ownership constraints."
+  }
+]

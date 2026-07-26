@@ -1,0 +1,79 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Execute a happy path registration for a citizen. Provide a unique username, valid email, and password. Verify that the response indicates successful registration and returns a verification code or token as expected by domain rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the primary entry point for citizen access (PT01) and ensures the system generates necessary verification artifacts."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate their account.",
+    "api_endpoint": "/citizens/verify-email",
+    "http_method": "POST",
+    "prompt": "Execute the email verification flow. First, call /citizens/verification-code to generate a code for the registered user. Then, call /citizens/verify-email with that valid code and the user's email. Verify the account status changes to 'valid' or equivalent.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Perform POST /registration to create a citizen with a valid email address."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the stateful dependency between code generation and verification (PT27) to ensure accounts are not active until confirmed."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registration fails due to missing mandatory email field.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Execute a negative test for citizen registration. Submit a request with only 'name' and 'username', omitting the 'email' field. Verify that the API rejects the request with an appropriate error code (e.g., 400) citing the missing mandatory field.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Validates domain rule 'Email is a mandatory field for registration' (PT01) and ensures input validation."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member exchanges internal comments on a report.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Execute a stateful workflow for internal communication. First, create a report via POST /reports using an authenticated session for 'technical office staff member'. Then, use the same role to POST a comment to that specific report ID. Verify the comment is created and accessible via GET.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Create an authenticated session for 'technical office staff member'.",
+      "POST /reports to create a new report with a valid category and description."
+    ],
+    "cleanup_strategy": "Delete the created report via DELETE /reports/{id} if it was successfully created.",
+    "expected_status_codes": ["201"],
+    "rationale": "Tests the ability of staff (PT26) to communicate internally on reports, ensuring isolation from public views."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member cannot access internal comments without authentication.",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "GET",
+    "prompt": "Execute a negative test for unauthorized access to internal data. Attempt to GET /reports/{id}/internal-comments without providing an authentication token or with a citizen's token. Verify the API returns a 401 Unauthorized or 403 Forbidden error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a report via POST /reports to have a valid ID for the endpoint."
+    ],
+    "cleanup_strategy": "Delete the created report via DELETE /reports/{id} if it was successfully created.",
+    "expected_status_codes": ["401", "403"],
+    "rationale": "Ensures internal comments (PT26) are strictly protected and not visible to unauthorized users or citizens."
+  }
+]

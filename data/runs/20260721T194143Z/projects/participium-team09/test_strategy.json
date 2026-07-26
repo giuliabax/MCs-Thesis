@@ -1,0 +1,200 @@
+[
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/offices/reports/{reportId}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Execute assignment of a report to an external maintainer. Ensure the report is in 'Assigned' state and the maintainer ID is valid.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Create a new report via POST /reports with status 'Pending Approval'.",
+      "Approve the report via PUT /municipal/reports/{reportId} to move it to 'Assigned' state.",
+      "Assign the report to a technical office (simulated prerequisite).",
+      "Ensure an external maintainer exists in the system."
+    ],
+    "cleanup_strategy": "Delete the assigned report if it remains in the database after test completion; verify no orphaned assignments exist.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow of requirement PT24, ensuring external maintainers can be correctly linked to reports."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/offices/reports/{reportId}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Attempt to assign a report to an external maintainer who has not been assigned to the report yet. Verify that the assignment fails or requires prior assignment logic.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Create a report via POST /reports.",
+      "Approve the report via PUT /municipal/reports/{reportId}."
+    ],
+    "cleanup_strategy": "Delete the report if it remains in the database; verify no partial assignment state exists.",
+    "expected_status_codes": [
+      "400",
+      "default"
+    ],
+    "rationale": "Tests edge cases where external maintainer assignment logic might fail due to missing prerequisites or invalid states."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/external-maintainer/reports/{reportId}/status",
+    "http_method": "PUT",
+    "prompt": "Attempt to update the status of a report that has not been assigned to an external maintainer. Verify that the operation is rejected.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Authenticate as external maintainer.",
+      "Create a report via POST /reports.",
+      "Approve the report via PUT /municipal/reports/{reportId}."
+    ],
+    "cleanup_strategy": "Delete the report if it remains in the database; verify no unauthorized status updates occurred.",
+    "expected_status_codes": [
+      "403",
+      "default"
+    ],
+    "rationale": "Tests negative scenarios where an external maintainer attempts to modify a report they are not authorized to manage."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/offices/reports/{reportId}/assign-external",
+    "http_method": "PUT",
+    "prompt": "Assign a report to an external maintainer and then verify that the assignment can be retrieved via GET /messages/reports/{reportId} or similar inspection endpoint.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as technical office staff member.",
+      "Create a report via POST /reports.",
+      "Approve the report via PUT /municipal/reports/{reportId}.",
+      "Assign the report to an external maintainer via PUT /offices/reports/{reportId}/assign-external."
+    ],
+    "cleanup_strategy": "Delete the report and any associated messages if they remain after test execution; verify no orphaned state exists.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the stateful dependency where assignment must precede further operations, ensuring correct state transitions."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/users",
+    "http_method": "POST",
+    "prompt": "Create a new municipality user account with valid credentials and necessary profile data for the 'municipal public relations officer' role.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure authentication session is active as system administrator."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of user creation for administrative roles."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/users/{userId}/roles",
+    "http_method": "PUT",
+    "prompt": "Assign the 'municipal public relations officer' role to an existing user (created in a previous step or via setup) to enable report review capabilities.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator.",
+      "Create a municipality user via POST /admin/users if not already present."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Verifies the role assignment mechanism which is critical for workflow progression."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report to ensure correct classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with complete details including title, description, category, and location coordinates.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as citizen.",
+      "Ensure user is logged in as a citizen."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the primary use case of report submission with all required fields."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/municipal/reports/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Update an existing report (created in a previous step) to change its status from 'Pending Approval' to 'Accepted' by the authorized officer.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Authenticate as municipal public relations officer.",
+      "Create a report via POST /reports and ensure it is in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the approval workflow transition which moves reports to the next stage of processing."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of reports assigned to them.",
+    "api_endpoint": "/offices/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /offices/reports/assigned as a technical office staff member. Verify the response contains a list of report objects where the status is 'Assigned' and the assignedTo field matches the current user's role.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Ensure a valid session exists for a technical office staff member (via /auth/login).",
+      "Ensure at least one report exists in the system with status 'Assigned' and assigned to this user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for staff members to view their workload as per PT08."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account (notifications and virtual presence).",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute a PUT request to /users/me as a citizen. Update the 'emailNotificationsEnabled' field to true and 'virtualPresenceEnabled' to false. Verify the response reflects these changes.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a valid session exists for a citizen user (via /auth/login).",
+      "Ensure the current user has an existing profile to update."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the ability of a citizen to modify their notification and presence preferences as per PT09."
+  }
+]

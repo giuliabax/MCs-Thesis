@@ -1,0 +1,189 @@
+[
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Create a new report through a Telegram bot",
+    "api_endpoint": "/reports/telegram",
+    "http_method": "POST",
+    "prompt": "Execute a POST to /reports/telegram with a valid authenticated citizen session. Payload should include necessary report details (e.g., location, description) as expected by the bot integration. Verify that the report is created successfully and returns a 201 status code.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists (login via /auth/login or valid token).",
+      "Prepare a valid Telegram bot payload with required fields for report creation."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of creating reports via the Telegram bot interface as per PT12."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Check report status through a Telegram bot",
+    "api_endpoint": "/reports/telegram/report/{reportId}",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/telegram/report/{reportId} using an authenticated citizen session. Use the reportId from a previously created report (from PT12 or similar). Verify that the response includes the current status of the report.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists.",
+      "Create a report first (using PT12 or equivalent) to obtain a valid reportId."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability of citizens to check their report status via the Telegram bot as per PT13."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Create a new report through a Telegram bot",
+    "api_endpoint": "/reports/telegram",
+    "http_method": "POST",
+    "prompt": "Execute a POST to /reports/telegram with an invalid or missing required field in the payload (e.g., missing location). Verify that the API returns a 400 Bad Request status code.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the API properly handles invalid input by rejecting incomplete payloads."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Check report status through a Telegram bot",
+    "api_endpoint": "/reports/telegram/report/{reportId}",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/telegram/report/{reportId} with an invalid or non-existent reportId. Verify that the API returns a 404 Not Found status code.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Ensures the API correctly handles requests for non-existent reports."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Create a new report through a Telegram bot",
+    "api_endpoint": "/reports/telegram",
+    "http_method": "POST",
+    "prompt": "Execute a POST to /reports/telegram without an authenticated session (simulate by omitting the auth token). Verify that the API returns a 401 Unauthorized status code.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no valid authentication token is present in the request headers."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that report creation via Telegram bot requires authentication as per API analysis notes."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Check report status through a Telegram bot",
+    "api_endpoint": "/reports/telegram/report/{reportId}",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/telegram/report/{reportId} with an authenticated session but without the required auth token. Verify that the API returns a 401 Unauthorized status code.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no valid authentication token is present in the request headers."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that checking report status via Telegram bot requires authentication as per API analysis notes."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Create a new report through a Telegram bot",
+    "api_endpoint": "/reports/telegram",
+    "http_method": "POST",
+    "prompt": "Execute a POST to /reports/telegram with an authenticated citizen session and a valid payload. Verify that the created report is in 'Pending Approval' state as per domain rules.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists.",
+      "Prepare a valid Telegram bot payload with required fields for report creation."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates that newly created reports are correctly initialized in the 'Pending Approval' state as per domain rules."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Check report status through a Telegram bot",
+    "api_endpoint": "/reports/telegram/report/{reportId}",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/telegram/report/{reportId} with an authenticated citizen session. Verify that the response includes the reporter's name as 'anonymous' if the user is unregistered, as per domain rules.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists.",
+      "Create a report first (using PT12 or equivalent) with an unregistered user as the reporter."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that anonymous users are correctly identified in report details as per domain rules."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Create a new report through a Telegram bot",
+    "api_endpoint": "/reports/telegram",
+    "http_method": "POST",
+    "prompt": "Execute a POST to /reports/telegram with an authenticated citizen session and a valid payload. Verify that the created report is visible on the Participium portal (map and table) after approval, as per domain rules.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists.",
+      "Prepare a valid Telegram bot payload with required fields for report creation.",
+      "Simulate the approval process (e.g., via admin endpoint or mock) to move the report to 'Accepted' state."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates that approved reports are correctly visible on the Participium portal as per domain rules."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Check report status through a Telegram bot",
+    "api_endpoint": "/reports/telegram/report/{reportId}",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/telegram/report/{reportId} with an authenticated citizen session. Verify that the response includes the reporter's name as 'anonymous' if the user is unregistered, as per domain rules.",
+    "test_type": "cleanup",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure an authenticated citizen session exists.",
+      "Create a report first (using PT12 or equivalent) with an unregistered user as the reporter."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures that cleanup operations correctly handle anonymous users in report details."
+  }
+]

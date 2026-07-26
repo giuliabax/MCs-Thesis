@@ -1,0 +1,720 @@
+{
+  "summary": "A municipal citizen reporting platform allowing user registration, login, profile management, report submission, administrative review workflows, external maintainer assignment, and internal messaging.",
+  "operations": [
+    {
+      "path": "/auth/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Register a new citizen",
+        "Direct registration endpoint",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 409"
+      ]
+    },
+    {
+      "path": "/auth/register-request",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Request citizen registration with email verification",
+        "Email verification flow prerequisite; stores data in Redis with 30-minute TTL",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 409"
+      ]
+    },
+    {
+      "path": "/auth/verify-registration",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /auth/register-request: A pending registration and verification code must exist.",
+        "/auth/register-request"
+      ],
+      "notes": [
+        "Verify OTP and complete citizen registration",
+        "Consumes Redis temporary data; deletes it upon success",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 404, 409"
+      ]
+    },
+    {
+      "path": "/auth/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "POST /auth/verify-registration: A verified account is needed for credential-based login tests."
+      ],
+      "notes": [
+        "Login for citizens or staff and start a session",
+        "Starts session for citizens or staff",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/auth/logout",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [
+        "/auth/login"
+      ],
+      "notes": [
+        "Close the authenticated user's session",
+        "Closes session",
+        "Documented responses: 204"
+      ]
+    },
+    {
+      "path": "/auth/session",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Returns the authenticated session status",
+        "Checks current session status",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/users/me",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /auth/login: User profile access requires active session",
+        "/auth/login"
+      ],
+      "notes": [
+        "Get logged in user's profile",
+        "Retrieves authenticated user profile",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/users/me",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /auth/login: Profile update requires active session",
+        "/auth/login"
+      ],
+      "notes": [
+        "Update logged in user's profile",
+        "Updates profile; requires authentication",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 404"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/login"
+      ],
+      "notes": [
+        "Citizen submits a new report",
+        "Creates new report",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/login"
+      ],
+      "notes": [
+        "Retrieve all reports",
+        "Lists all reports",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/reports/user/{userId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/login"
+      ],
+      "notes": [
+        "Retrieve reports created by a specific user",
+        "Lists reports by specific user ID",
+        "Parameters: userId",
+        "Documented responses: 200, 400, 401"
+      ]
+    },
+    {
+      "path": "/reports/assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/auth/login"
+      ],
+      "notes": [
+        "(Citizen) Get all Assigned reports",
+        "Lists assigned reports for citizen",
+        "Documented responses: 200, 401, 403"
+      ]
+    },
+    {
+      "path": "/reports/{reportId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "/auth/login"
+      ],
+      "notes": [
+        "Retrieve a single report by id",
+        "Retrieves single report details",
+        "Parameters: reportId",
+        "Documented responses: 200, 400, 401, 404"
+      ]
+    },
+    {
+      "path": "/municipal/reports/{reportId}/category",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "/reports"
+      ],
+      "notes": [
+        "(Municipal Staff) Change report category",
+        "Municipal staff changes report category",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/municipal/reports/{reportId}",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "/reports"
+      ],
+      "notes": [
+        "(URP) Review a report (Accept/Reject)",
+        "URP officer accepts or rejects report",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404, 409"
+      ]
+    },
+    {
+      "path": "/upload/photo",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Upload a single photo for a report",
+        "Uploads single photo for a report",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401"
+      ]
+    },
+    {
+      "path": "/upload/photos",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Upload multiple photos for a report",
+        "Uploads multiple photos for a report",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401"
+      ]
+    },
+    {
+      "path": "/admin/users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "(Admin) Retrieves all users in the system and their details.",
+        "Admin retrieves all users",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/admin/users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "(Admin) Create a new municipal/staff member user",
+        "Admin creates new municipal/staff user",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 409"
+      ]
+    },
+    {
+      "path": "/admin/users/{userId}/roles",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /admin/users: A municipality user must exist before an operation can address userId.",
+        "/admin/users"
+      ],
+      "notes": [
+        "(Admin) Update user roles with associations",
+        "Admin updates user roles and associations",
+        "Parameters: userId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/admin/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "(Admin) Ottiene la lista di tutti i ruoli disponibili",
+        "Admin retrieves available roles",
+        "Documented responses: 200, 403"
+      ]
+    },
+    {
+      "path": "/admin/companies",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "(Admin) Get all companies",
+        "Admin retrieves external companies for role assignment",
+        "Documented responses: 200, 401, 403"
+      ]
+    },
+    {
+      "path": "/admin/users/{userId}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /admin/users: A municipality user must exist before an operation can address userId.",
+        "/admin/users"
+      ],
+      "notes": [
+        "(Admin) Delete a municipality user",
+        "Admin deletes a municipality/staff user",
+        "Parameters: userId",
+        "Documented responses: 204, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/municipal/reports/pending",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/reports"
+      ],
+      "notes": [
+        "(Municipal Public Relations Officer) Retrieve all reports in 'Pending Approval' status",
+        "PR Officer retrieves pending approval reports",
+        "Documented responses: 200, 401, 403"
+      ]
+    },
+    {
+      "path": "/statistics/public",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get public statistics",
+        "Public statistics endpoint",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/statistics/private",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "/admin/users"
+      ],
+      "notes": [
+        "Get private statistics (Admin only)",
+        "Admin-only private statistics",
+        "Documented responses: 200, 403"
+      ]
+    },
+    {
+      "path": "/offices",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "(Admin) Get the list of all technical offices",
+        "Admin retrieves technical offices list",
+        "Documented responses: 200, 401, 403"
+      ]
+    },
+    {
+      "path": "/offices/reports/assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "PUT /municipal/reports/{reportId}: The report must be approved and assigned to a technical office.",
+        "/reports"
+      ],
+      "notes": [
+        "(Technical Staff) Retrieve reports assigned to me",
+        "Technical staff retrieves assigned reports",
+        "Documented responses: 200, 401, 403"
+      ]
+    },
+    {
+      "path": "/offices/reports/{reportId}/status",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "PUT /municipal/reports/{reportId}: The report must be approved and assigned to a technical office.",
+        "/reports"
+      ],
+      "notes": [
+        "(Technical Staff or External Maintainer) Update report status",
+        "Technical staff/External maintainer updates report status",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/offices/reports/{reportId}/assign-external",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "PUT /municipal/reports/{reportId}: The report must be approved and assigned to a technical office.",
+        "/reports"
+      ],
+      "notes": [
+        "(Technical Staff) Assign a report to an external maintainer",
+        "Technical staff assigns report to external maintainer",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404, 409"
+      ]
+    },
+    {
+      "path": "/offices/reports/{reportId}/companies",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "PUT /municipal/reports/{reportId}: The report must be approved and assigned to a technical office.",
+        "/reports"
+      ],
+      "notes": [
+        "(Technical Staff) Get eligible companies for a report",
+        "Technical staff retrieves eligible companies for a report",
+        "Parameters: reportId",
+        "Documented responses: 200, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/external-maintainer/reports/{reportId}/status",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "PUT /offices/reports/{reportId}/assign-external: The report must be assigned to an external maintainer.",
+        "/reports"
+      ],
+      "notes": [
+        "(External Maintainer) Update report status",
+        "External maintainer updates report status",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/messages/reports/{reportId}",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "/reports"
+      ],
+      "notes": [
+        "Create a new message for a report",
+        "Creates new message for a report",
+        "Parameters: reportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/messages/reports/{reportId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "POST /messages/reports/{reportId}: At least one message must exist to verify message retrieval.",
+        "/reports"
+      ],
+      "notes": [
+        "Retrieve all messages for a report",
+        "Retrieves chat history for a report",
+        "Parameters: reportId",
+        "Documented responses: 200, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Retrieve user notifications",
+        "Retrieves user notifications",
+        "Documented responses: 200, 401, 500"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "/auth/register and /auth/register-request do not require authentication; /auth/verify-registration completes registration without auth; /auth/login starts a session required for all subsequent operations",
+    "Operations marked auth_required need an authenticated session during test setup."
+  ],
+  "dependencies": [
+    "/auth/register-request is prerequisite for /auth/verify-registration; /auth/login is prerequisite for all authenticated endpoints; /reports creation is prerequisite for category change, review, status updates, and messaging",
+    "POST /auth/register-request -> POST /auth/verify-registration: A pending registration and verification code must exist.",
+    "POST /auth/verify-registration -> POST /auth/login: A verified account is needed for credential-based login tests.",
+    "POST /reports -> GET /reports/{reportId}: A report must exist before an operation can address reportId.",
+    "POST /reports -> PUT /municipal/reports/{reportId}/category: A report must exist before an operation can address reportId.",
+    "POST /reports -> PUT /municipal/reports/{reportId}: A report must exist before an operation can address reportId.",
+    "POST /admin/users -> PUT /admin/users/{userId}/roles: A municipality user must exist before an operation can address userId.",
+    "POST /admin/users -> DELETE /admin/users/{userId}: A municipality user must exist before an operation can address userId.",
+    "POST /reports -> PUT /offices/reports/{reportId}/status: A report must exist before an operation can address reportId.",
+    "POST /reports -> PUT /offices/reports/{reportId}/assign-external: A report must exist before an operation can address reportId.",
+    "POST /reports -> GET /offices/reports/{reportId}/companies: A report must exist before an operation can address reportId.",
+    "POST /reports -> PUT /external-maintainer/reports/{reportId}/status: A report must exist before an operation can address reportId.",
+    "POST /reports -> POST /messages/reports/{reportId}: A report must exist before an operation can address reportId.",
+    "POST /reports -> GET /messages/reports/{reportId}: A report must exist before an operation can address reportId.",
+    "PUT /municipal/reports/{reportId} -> GET /offices/reports/assigned: The report must be approved and assigned to a technical office.",
+    "PUT /municipal/reports/{reportId} -> PUT /offices/reports/{reportId}/status: The report must be approved and assigned to a technical office.",
+    "PUT /municipal/reports/{reportId} -> PUT /offices/reports/{reportId}/assign-external: The report must be approved and assigned to a technical office.",
+    "PUT /municipal/reports/{reportId} -> GET /offices/reports/{reportId}/companies: The report must be approved and assigned to a technical office.",
+    "PUT /offices/reports/{reportId}/assign-external -> PUT /external-maintainer/reports/{reportId}/status: The report must be assigned to an external maintainer.",
+    "POST /messages/reports/{reportId} -> GET /messages/reports/{reportId}: At least one message must exist to verify message retrieval.",
+    "POST /auth/login -> GET /users/me: User profile access requires active session",
+    "POST /auth/login -> PUT /users/me: Profile update requires active session"
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/register-request",
+      "dependent_method": "POST",
+      "dependent_path": "/auth/verify-registration",
+      "dependency_type": "state",
+      "reason": "A pending registration and verification code must exist."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/verify-registration",
+      "dependent_method": "POST",
+      "dependent_path": "/auth/login",
+      "dependency_type": "state",
+      "reason": "A verified account is needed for credential-based login tests."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{reportId}",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/municipal/reports/{reportId}/category",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/municipal/reports/{reportId}",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/admin/users",
+      "dependent_method": "PUT",
+      "dependent_path": "/admin/users/{userId}/roles",
+      "dependency_type": "resource",
+      "reason": "A municipality user must exist before an operation can address userId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/admin/users",
+      "dependent_method": "DELETE",
+      "dependent_path": "/admin/users/{userId}",
+      "dependency_type": "resource",
+      "reason": "A municipality user must exist before an operation can address userId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/offices/reports/{reportId}/status",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/offices/reports/{reportId}/assign-external",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/offices/reports/{reportId}/companies",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/external-maintainer/reports/{reportId}/status",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/messages/reports/{reportId}",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/messages/reports/{reportId}",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "PUT",
+      "prerequisite_path": "/municipal/reports/{reportId}",
+      "dependent_method": "GET",
+      "dependent_path": "/offices/reports/assigned",
+      "dependency_type": "state",
+      "reason": "The report must be approved and assigned to a technical office."
+    },
+    {
+      "prerequisite_method": "PUT",
+      "prerequisite_path": "/municipal/reports/{reportId}",
+      "dependent_method": "PUT",
+      "dependent_path": "/offices/reports/{reportId}/status",
+      "dependency_type": "state",
+      "reason": "The report must be approved and assigned to a technical office."
+    },
+    {
+      "prerequisite_method": "PUT",
+      "prerequisite_path": "/municipal/reports/{reportId}",
+      "dependent_method": "PUT",
+      "dependent_path": "/offices/reports/{reportId}/assign-external",
+      "dependency_type": "state",
+      "reason": "The report must be approved and assigned to a technical office."
+    },
+    {
+      "prerequisite_method": "PUT",
+      "prerequisite_path": "/municipal/reports/{reportId}",
+      "dependent_method": "GET",
+      "dependent_path": "/offices/reports/{reportId}/companies",
+      "dependency_type": "state",
+      "reason": "The report must be approved and assigned to a technical office."
+    },
+    {
+      "prerequisite_method": "PUT",
+      "prerequisite_path": "/offices/reports/{reportId}/assign-external",
+      "dependent_method": "PUT",
+      "dependent_path": "/external-maintainer/reports/{reportId}/status",
+      "dependency_type": "state",
+      "reason": "The report must be assigned to an external maintainer."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/messages/reports/{reportId}",
+      "dependent_method": "GET",
+      "dependent_path": "/messages/reports/{reportId}",
+      "dependency_type": "state",
+      "reason": "At least one message must exist to verify message retrieval."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/login",
+      "dependent_method": "GET",
+      "dependent_path": "/users/me",
+      "dependency_type": "authorization",
+      "reason": "User profile access requires active session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/auth/login",
+      "dependent_method": "PUT",
+      "dependent_path": "/users/me",
+      "dependency_type": "authorization",
+      "reason": "Profile update requires active session"
+    }
+  ],
+  "risks": [
+    "/auth/register and /auth/register-request both accept UserRegister schema; ambiguity on which to use for direct registration vs email verification flow; /auth/verify-registration returns 409 if code mismatch but does not specify if previous record is overwritten or deleted; /admin/users/{userId}/roles replaces all existing roles without backup mechanism"
+  ]
+}

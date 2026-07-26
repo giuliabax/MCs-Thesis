@@ -1,0 +1,342 @@
+{
+  "summary": "A citizen reporting platform API supporting user registration, verification, login, and logout. Citizens can create reports with images, view categories, and update their profiles. Municipality officers are created by admins and assigned roles. Tech leads assign officers to reports and manage agents. The system includes chat messaging for specific report contexts, notifications management, and public endpoints for viewing accepted reports and static image serving.",
+  "operations": [
+    {
+      "path": "/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Initial registration flow; requires username, email, password, first_name, last_name"]
+    },
+    {
+      "path": "/verify",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": ["/register"],
+      "notes": ["Requires verification code sent during registration; validates account status"]
+    },
+    {
+      "path": "/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Authenticates user; requires username and password"]
+    },
+    {
+      "path": "/logout",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Ends current session; requires active authentication"]
+    },
+    {
+      "path": "/session",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Returns current user info; validates session token"]
+    },
+    {
+      "path": "/users/reports/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Lists available report categories for authenticated users"]
+    },
+    {
+      "path": "/users/reports",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Creates new report; requires location, title, description, category ID, photos, anonymous flag"]
+    },
+    {
+      "path": "/users/reports/images/upload",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Uploads images for reports; max 3 files allowed"]
+    },
+    {
+      "path": "/users/me",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Updates authenticated user profile; accepts telegram_id, flag_email, photo"]
+    },
+    {
+      "path": "/users/{username}/my-reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Retrieves reports created by specific user; requires username path parameter"]
+    },
+    {
+      "path": "/users/uploads/{filename}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Serves static uploaded images; requires filename path parameter"]
+    },
+    {
+      "path": "/reports/list",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Lists all reports publicly"]
+    },
+    {
+      "path": "/reports/list/accepted",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Lists only accepted reports; may return 500 on error"]
+    },
+    {
+      "path": "/reports/{id}/status",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Updates report status; requires newStatus and optional explanation"]
+    },
+    {
+      "path": "/admin/accounts/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Admin-only endpoint to create municipality officer accounts; requires external flag"]
+    },
+    {
+      "path": "/admin/accounts/list",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/login"],
+      "notes": ["Lists all municipality officers; admin-only access"]
+    },
+    {
+      "path": "/admin/accounts/assign",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/admin/accounts/register"],
+      "notes": ["Assigns roles to existing officer; requires username and rolesTitle"]
+    },
+    {
+      "path": "/admin/roles/list",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists available roles for assignment; admin-only access"]
+    },
+    {
+      "path": "/tech-lead/report/{reportId}",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/reports"],
+      "notes": ["Tech lead assigns officer to report; requires reportId and officerUsername"]
+    },
+    {
+      "path": "/tech-lead/agents",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists tech agents managed by authenticated tech lead"]
+    },
+    {
+      "path": "/tech-lead/reports/list",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Lists reports assigned to authenticated tech lead"]
+    },
+    {
+      "path": "/tech/reports/list",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/tech-lead/report/{reportId}"],
+      "notes": ["Lists reports assigned to authenticated tech agent"]
+    },
+    {
+      "path": "/messages/{chatId}",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Sends message in chat; requires chatId and content"]
+    },
+    {
+      "path": "/messages/{reportId}/officer-user",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/reports"],
+      "notes": ["Retrieves officer-user chat messages for specific report; requires reportId"]
+    },
+    {
+      "path": "/messages/{reportId}/lead-external",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/users/reports"],
+      "notes": ["Retrieves lead-external chat messages for specific report; requires reportId"]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": ["Retrieves notifications for authenticated user"]
+    },
+    {
+      "path": "/notifications/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/notifications"],
+      "notes": ["Deletes specific notification; requires notification id"]
+    },
+    {
+      "path": "/notifications/{id}/read",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": ["/notifications"],
+      "notes": ["Marks notification as read; requires notification id"]
+    }
+  ],
+  "authentication_notes": [
+    "/register and /verify are public endpoints for initial account setup",
+    "/login establishes session state required for all authenticated operations",
+    "/logout terminates session state",
+    "/session validates current authentication state",
+    "/users/uploads/{filename} is the only endpoint that does not require authentication"
+  ],
+  "dependencies": [
+    "POST /register must precede POST /verify to complete account creation flow",
+    "POST /login must precede all authenticated operations including profile updates, report creation, and admin functions",
+    "POST /admin/accounts/register must precede PUT /admin/accounts/assign to create officer before assigning roles",
+    "POST /users/reports must precede GET /messages/{reportId}/officer-user or GET /messages/{reportId}/lead-external as reports must exist for chat context",
+    "PUT /tech-lead/report/{reportId} creates assignment state required for GET /tech/reports/list"
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/register",
+      "dependent_method": "POST",
+      "dependent_path": "/verify",
+      "dependency_type": "state",
+      "reason": "Verification code is generated during registration and consumed in verification step"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PUT",
+      "dependent_path": "/users/me",
+      "dependency_type": "authorization",
+      "reason": "Profile update requires active authenticated session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "POST",
+      "dependent_path": "/users/reports",
+      "dependency_type": "authorization",
+      "reason": "Report creation requires authenticated user identity"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/login",
+      "dependent_method": "PUT",
+      "dependent_path": "/admin/accounts/register",
+      "dependency_type": "authorization",
+      "reason": "Admin account creation requires authenticated admin session"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/admin/accounts/register",
+      "dependent_method": "PUT",
+      "dependent_path": "/admin/accounts/assign",
+      "dependency_type": "resource",
+      "reason": "Role assignment requires existing officer account created via register"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/tech-lead/report/{reportId}",
+      "dependency_type": "resource",
+      "reason": "Tech lead assignment requires existing report resource"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/messages/{reportId}/officer-user",
+      "dependency_type": "state",
+      "reason": "Chat messages require existing report context"
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/users/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/messages/{reportId}/lead-external",
+      "dependency_type": "state",
+      "reason": "Chat messages require existing report context"
+    },
+    {
+      "prerequisite_method": "PUT",
+      "prerequisite_path": "/tech-lead/report/{reportId}",
+      "dependent_method": "GET",
+      "dependent_path": "/tech/reports/list",
+      "dependency_type": "state",
+      "reason": "Tech agent report list depends on assignment state created by tech lead"
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/notifications",
+      "dependent_method": "DELETE",
+      "dependent_path": "/notifications/{id}",
+      "dependency_type": "resource",
+      "reason": "Notification deletion requires existing notification resource"
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/notifications",
+      "dependent_method": "PATCH",
+      "dependent_path": "/notifications/{id}/read",
+      "dependency_type": "state",
+      "reason": "Marking as read requires existing notification state"
+    }
+  ],
+  "risks": [
+    "POST /register does not specify if verification code is sent via email or SMS, creating ambiguity in client implementation",
+    "POST /verify lacks explicit error codes for invalid code vs expired code beyond generic 400",
+    "PUT /reports/{id}/status has no documented response codes other than 200 and 400, missing success confirmation details",
+    "GET /users/{username}/my-reports requires username but does not specify if it must match authenticated user or can be any user",
+    "POST /messages/{chatId} lacks documentation on how chatId is derived or validated",
+    "PUT /admin/accounts/assign includes nullable companyName in properties but not in required fields, creating potential inconsistency",
+    "GET /reports/list/accepted returns 500 error code without specific message, hindering debugging"
+  ]
+}

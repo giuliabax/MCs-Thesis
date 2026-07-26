@@ -1,0 +1,236 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Execute registration for a new citizen user. Provide valid name, unique username, and mandatory email address. Verify response indicates successful account creation or appropriate error if duplicate username/email is detected.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the entry point for user onboarding and ensures data integrity during initial account creation."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "As a citizen I want to confirm my registration with a code So that my account becomes valid and I can start using the system.",
+    "api_endpoint": "/citizens/verify-email",
+    "http_method": "POST",
+    "prompt": "Simulate email verification flow. First, trigger code generation via /citizens/verification-code (authenticated). Then, call /citizens/verify-email with a valid 6-digit code within the 30-minute window. Verify account status updates to 'verified'.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration with valid citizen data",
+      "POST /citizens/verification-code to generate a valid code"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Ensures the critical account activation flow works correctly and respects the time-bound nature of verification codes."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "As a citizen I want to reply to messages from municipal operators in the platform So that I can communicate directly about my report.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Create a new message on an existing approved report. Authenticate as a citizen who owns the report. Send a reply text to a previous operator message. Verify the message is appended to the thread.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration",
+      "POST /citizens/verification-code",
+      "POST /citizens/verify-email",
+      "POST /reports to create a valid report"
+    ],
+    "cleanup_strategy": "DELETE /reports/{id}/messages/{message_id} for the created message; verify deletion success.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the core communication feature allowing citizens to engage with operators."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "As an external maintainer I want to update the status of a report assigned to me So that I can updated citizens about the intervention.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update the status of a specific report from 'In Progress' to 'Resolved'. Authenticate as an external maintainer with access to this report. Ensure the payload includes the new status value.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "POST /registration for external maintainer",
+      "POST /citizens/verification-code",
+      "POST /citizens/verify-email",
+      "POST /reports to create a report and assign it to the maintainer"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the workflow for external maintainers to close reports they are responsible for."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "As a technical office staff member/external maintainer I want to exchange information and comments on the report internally So that coordination happens without exposing internal notes to citizens",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "POST",
+    "prompt": "Add an internal comment to a report. Authenticate as technical office staff or external maintainer. Ensure the comment is stored but not visible in the public message thread.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /registration for technical office staff",
+      "POST /citizens/verification-code",
+      "POST /citizens/verify-email",
+      "POST /reports to create a report"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the internal coordination mechanism and ensures data isolation from public views."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+    "api_endpoint": "/registration",
+    "http_method": "POST",
+    "prompt": "Attempt registration using an email address that already exists in the database. Verify the system rejects the request to prevent duplicate accounts.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["409"],
+    "rationale": "Tests system resilience against duplicate account creation attempts."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "As a citizen I want to confirm my registration with a code So that my account becomes valid and I can start using the system.",
+    "api_endpoint": "/citizens/verify-email",
+    "http_method": "POST",
+    "prompt": "Attempt email verification using an expired confirmation code (simulate by waiting >30 mins or mocking time). Verify the system rejects the request as the code is no longer valid.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration",
+      "POST /citizens/verification-code"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Validates that the 30-minute validity window for verification codes is strictly enforced."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "As a citizen I want to reply to messages from municipal operators in the platform So that I can communicate directly about my report.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Attempt to post a message on a report that is currently in 'Pending Approval' state. Verify the system blocks this action as citizens cannot interact with unapproved reports.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration",
+      "POST /citizens/verification-code",
+      "POST /citizens/verify-email",
+      "POST /reports with status 'Pending Approval'"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Ensures state-dependent access control prevents interaction with unapproved reports."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "As an external maintainer I want to update the status of a report assigned to me So that I can updated citizens about the intervention.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Attempt to update the status of a report to 'Resolved' while acting as an external maintainer who does NOT have assignment access to this specific report. Verify the system denies the transition.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "POST /registration for external maintainer",
+      "POST /citizens/verification-code",
+      "POST /citizens/verify-email",
+      "POST /reports to create a report assigned to a different user"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Validates role-based access control (RBAC) prevents unauthorized status changes."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "As a technical office staff member/external maintainer I want to exchange information and comments on the report internally So that coordination happens without exposing internal notes to citizens",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "GET",
+    "prompt": "Retrieve internal comments for a report while authenticated as a citizen. Verify the API returns an empty list or error, ensuring internal notes are not exposed to unauthorized users.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration for citizen",
+      "POST /citizens/verification-code",
+      "POST /citizens/verify-email",
+      "POST /reports to create a report"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Confirms data isolation between internal staff communications and public citizen views."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "As a citizen I want to reply to messages from municipal operators in the platform So that I can communicate directly about my report.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Create a message on a report that has been rejected by the municipality. Verify the system blocks new citizen messages as the lifecycle is closed.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /registration",
+      "POST /citizens/verification-code",
+      "POST /citizens/verify-email",
+      "POST /reports",
+      "PUT /reports/{id}/status to set status to 'Rejected'"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["403"],
+    "rationale": "Tests behavior when a report enters a terminal state (rejected) regarding message creation."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "As an external maintainer I want to update the status of a report assigned to me So that I can updated citizens about the intervention.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update the status of a report from 'In Progress' directly to 'Resolved' without passing through intermediate states (e.g., skipping 'Pending Approval'). Verify the system enforces state transition rules.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "POST /registration for external maintainer",
+      "POST /citizens/verification-code",
+      "POST /citizens/verify-email",
+      "POST /reports to create a report in 'Pending Approval' state"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Validates that the system enforces the defined state machine and prevents invalid transitions."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "As a technical office staff member/external maintainer I want to exchange information and comments on the report internally So that coordination happens without exposing internal notes to citizens",
+    "api_endpoint": "/reports/{id}/internal-comments",
+    "http_method": "GET",
+    "prompt": "Retrieve internal comments for a report where no comments have been added yet. Verify the system returns an empty list with a 200 status rather than an error.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /registration for technical office staff",
+      "POST /citizens/verification-code",
+      "POST /citizens/verify-email",
+      "POST /reports to create a report"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Ensures graceful handling of empty internal comment lists for authorized users."
+  }
+]

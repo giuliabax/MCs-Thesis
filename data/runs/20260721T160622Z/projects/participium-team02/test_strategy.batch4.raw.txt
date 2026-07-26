@@ -1,0 +1,72 @@
+[
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute the search endpoint to retrieve a list of reports. Apply standard filters (e.g., category, status) to verify the summary table displays correct data subsets.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": ["/auth/login as citizen"],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core functionality of browsing and filtering reports for authenticated users."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Search for reports in a specific area by typing in an address",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute the search endpoint with a query parameter specifying a specific street address or area to verify location-based filtering.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": ["/auth/login as citizen"],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the specific requirement for searching by address/area."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute the search endpoint without applying any filters to verify the system handles empty filter sets gracefully and returns all available reports.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": ["/auth/login as citizen"],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the edge case where no filters are applied, ensuring the system defaults to returning all data correctly."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Search for reports in a specific area by typing in an address",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute the search endpoint with an empty string or null value for the address parameter to verify how the system handles missing location data.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": ["/auth/login as citizen"],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200", "400"],
+    "rationale": "Tests the negative case where an address is not provided or is empty, expecting either a fallback to all results or a validation error."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Browse a summary table of reports with filters",
+    "api_endpoint": "/reports/search-reports",
+    "http_method": "GET",
+    "prompt": "Execute the search endpoint without an active authentication session to verify access control for this specific operation.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["401"],
+    "rationale": "Verifies that the endpoint correctly rejects unauthenticated requests as per domain rules requiring authentication for viewing reports."
+  }
+]

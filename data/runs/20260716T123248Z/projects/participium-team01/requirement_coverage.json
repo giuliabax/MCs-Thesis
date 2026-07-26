@@ -1,0 +1,470 @@
+{
+  "project_name": "participium-team01",
+  "openapi_path": "projects\\participium-team01\\swagger.yaml",
+  "assessment_basis": "openapi_documentation",
+  "requirements_total": 30,
+  "status_counts": {
+    "implemented": 13,
+    "partially_implemented": 4,
+    "not_implemented": 6,
+    "not_assessable": 7
+  },
+  "matches": [
+    {
+      "requirement_id": "PT28",
+      "status": "partially_implemented",
+      "matched_operations": [
+        {
+          "method": "GET",
+          "path": "/reports/approved",
+          "operation_id": "listApprovedReports"
+        }
+      ],
+      "evidence": [
+        "GET /reports/approved with auth_required: null exposes approved reports for public viewing"
+      ],
+      "missing_behaviors": [
+        "Interactive map visualization functionality not documented in REST contract"
+      ],
+      "rationale": "API exposes approved reports endpoint but does not document map-specific filtering or geospatial display capabilities required for interactive map view"
+    },
+    {
+      "requirement_id": "PT24",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PUT",
+          "path": "/reports/{id}/mainteiner",
+          "operation_id": "assignReportMainteiner"
+        },
+        {
+          "method": "POST",
+          "path": "/reports/{id}/auto-assign-maintainer",
+          "operation_id": "autoAssignMaintainer"
+        }
+      ],
+      "evidence": [
+        "PUT /reports/{id}/mainteiner for manual assignment, POST /reports/{id}/auto-assign-maintainer for automatic assignment"
+      ],
+      "missing_behaviors": [],
+      "rationale": "OpenAPI operations document both manual and automatic assignment of external maintainers to reports"
+    },
+    {
+      "requirement_id": "PT25",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PUT",
+          "path": "/reports/{id}/status",
+          "operation_id": "updateReportStatus"
+        }
+      ],
+      "evidence": [
+        "PUT /reports/{id}/status allows updating report status for assigned users"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Status update endpoint is available and accessible to authenticated technical office staff/external maintainers"
+    },
+    {
+      "requirement_id": "PT26",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/reports/{id}/internal-comments",
+          "operation_id": "createInternalComment"
+        },
+        {
+          "method": "GET",
+          "path": "/reports/{id}/internal-comments",
+          "operation_id": "listInternalComments"
+        },
+        {
+          "method": "POST",
+          "path": "/reports/{id}/messages",
+          "operation_id": "createReportMessage"
+        },
+        {
+          "method": "GET",
+          "path": "/reports/{id}/messages",
+          "operation_id": "listReportMessages"
+        }
+      ],
+      "evidence": [
+        "Internal comments and messages endpoints for report coordination"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Both internal comments and chat message endpoints support information exchange between operators and maintainers"
+    },
+    {
+      "requirement_id": "PT01",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/registration",
+          "operation_id": "registerCitizen"
+        }
+      ],
+      "evidence": [
+        "POST /registration endpoint for citizen account registration"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Registration endpoint documented for citizen account creation"
+    },
+    {
+      "requirement_id": "PT27",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/citizens/verification-code",
+          "operation_id": "createCitizenVerificationCode"
+        },
+        {
+          "method": "POST",
+          "path": "/citizens/verify-email",
+          "operation_id": "verifyCitizenEmail"
+        }
+      ],
+      "evidence": [
+        "Verification code generation and email verification endpoints documented"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Complete registration verification workflow is exposed through code generation and verification endpoints"
+    },
+    {
+      "requirement_id": "PT02",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/admin/createuser",
+          "operation_id": "createMunicipalityUser"
+        }
+      ],
+      "evidence": [
+        "POST /admin/createuser for creating municipality operator accounts"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Admin endpoint for creating municipality users is documented"
+    },
+    {
+      "requirement_id": "PT03",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/admin/addcategory",
+          "operation_id": "addOperatorCategory"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/removecategory",
+          "operation_id": "removeOperatorCategory"
+        }
+      ],
+      "evidence": [
+        "Add and remove category endpoints for role assignment"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Category management endpoints support assigning/removing roles to municipality users"
+    },
+    {
+      "requirement_id": "PT04",
+      "status": "not_assessable",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Map coordinate selection during report creation not documented in request schema"
+      ],
+      "rationale": "Cannot verify from REST contract whether location/map coordinates are accepted as input parameters for report creation"
+    },
+    {
+      "requirement_id": "PT05",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/reports",
+          "operation_id": "createReport"
+        }
+      ],
+      "evidence": [
+        "POST /reports endpoint for creating new citizen reports"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Report creation endpoint exists to accept report details and classification"
+    },
+    {
+      "requirement_id": "PT06",
+      "status": "partially_implemented",
+      "matched_operations": [
+        {
+          "method": "GET",
+          "path": "/reports/approved",
+          "operation_id": "listApprovedReports"
+        },
+        {
+          "method": "PUT",
+          "path": "/reports/{id}/status",
+          "operation_id": "updateReportStatus"
+        }
+      ],
+      "evidence": [
+        "Status update endpoint exists but no explicit approve/reject workflow documented"
+      ],
+      "missing_behaviors": [
+        "Explicit approve/reject action endpoints not documented, only generic status updates"
+      ],
+      "rationale": "Status update endpoint can be used for approval but lacks explicit approve/reject semantics in contract"
+    },
+    {
+      "requirement_id": "PT07",
+      "status": "partially_implemented",
+      "matched_operations": [
+        {
+          "method": "GET",
+          "path": "/reports/approved",
+          "operation_id": "listApprovedReports"
+        }
+      ],
+      "evidence": [
+        "GET /reports/approved with auth_required: null exposes approved reports for public viewing"
+      ],
+      "missing_behaviors": [
+        "Interactive map visualization functionality not documented in REST contract"
+      ],
+      "rationale": "API exposes approved reports endpoint but does not document map-specific filtering or geospatial display capabilities"
+    },
+    {
+      "requirement_id": "PT15",
+      "status": "not_assessable",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Anonymous report flag not visible in request schema or contract"
+      ],
+      "rationale": "Cannot verify from REST contract whether anonymity settings are supported for report creation"
+    },
+    {
+      "requirement_id": "PT08",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "GET",
+          "path": "/reports/assigned",
+          "operation_id": "listAssignedReports"
+        }
+      ],
+      "evidence": [
+        "GET /reports/assigned endpoint for viewing assigned reports"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Assigned reports listing endpoint is documented for technical office staff"
+    },
+    {
+      "requirement_id": "PT09",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PUT",
+          "path": "/citizens",
+          "operation_id": "updateCitizenProfile"
+        }
+      ],
+      "evidence": [
+        "PUT /citizens endpoint for updating citizen profile settings"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Profile update endpoint supports account configuration including notification preferences"
+    },
+    {
+      "requirement_id": "PT30",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "No search endpoint with address/location filtering documented"
+      ],
+      "rationale": "No search functionality with address-based filtering is exposed in OpenAPI contract"
+    },
+    {
+      "requirement_id": "PT10",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/admin/addcategory",
+          "operation_id": "addOperatorCategory"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/removecategory",
+          "operation_id": "removeOperatorCategory"
+        }
+      ],
+      "evidence": [
+        "Add and remove category endpoints for modifying user roles"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Category management endpoints support role modification for municipality users"
+    },
+    {
+      "requirement_id": "PT11",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "PUT",
+          "path": "/reports/{id}/status",
+          "operation_id": "updateReportStatus"
+        }
+      ],
+      "evidence": [
+        "PUT /reports/{id}/status endpoint for updating report statuses"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Status update endpoint is available for technical office staff to inform citizens of resolution progress"
+    },
+    {
+      "requirement_id": "PT12",
+      "status": "not_assessable",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Telegram bot integration not documented in REST contract"
+      ],
+      "rationale": "Telegram bot is external integration; REST contract does not expose Telegram-specific endpoints"
+    },
+    {
+      "requirement_id": "PT13",
+      "status": "not_assessable",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Telegram bot status checking integration not documented in REST contract"
+      ],
+      "rationale": "Telegram bot is external integration; REST contract does not expose Telegram-specific endpoints"
+    },
+    {
+      "requirement_id": "PT14",
+      "status": "not_assessable",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Telegram bot help commands integration not documented in REST contract"
+      ],
+      "rationale": "Telegram bot is external integration; REST contract does not expose Telegram-specific endpoints"
+    },
+    {
+      "requirement_id": "PT18",
+      "status": "implemented",
+      "matched_operations": [
+        {
+          "method": "POST",
+          "path": "/reports/{id}/messages",
+          "operation_id": "createReportMessage"
+        },
+        {
+          "method": "GET",
+          "path": "/reports/{id}/messages",
+          "operation_id": "listReportMessages"
+        }
+      ],
+      "evidence": [
+        "Chat message endpoints for replying to municipal operator messages"
+      ],
+      "missing_behaviors": [],
+      "rationale": "Message creation and listing endpoints support two-way communication on reports"
+    },
+    {
+      "requirement_id": "PT16",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "No follow/subscribe endpoint for tracking other citizens' reports"
+      ],
+      "rationale": "No mechanism documented in contract for following or subscribing to other users' reports"
+    },
+    {
+      "requirement_id": "PT17",
+      "status": "not_assessable",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Telegram bot push notification integration not documented in REST contract"
+      ],
+      "rationale": "Telegram bot is external integration; REST contract does not expose Telegram-specific endpoints"
+    },
+    {
+      "requirement_id": "PT19",
+      "status": "not_assessable",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "Email alert configuration endpoint not documented in contract"
+      ],
+      "rationale": "Notification endpoints exist but email-specific configuration is not exposed in REST contract"
+    },
+    {
+      "requirement_id": "PT20",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "No statistics endpoint documented for public report trends"
+      ],
+      "rationale": "No statistics or analytics endpoints are exposed in the OpenAPI contract"
+    },
+    {
+      "requirement_id": "PT21",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "No private statistics endpoint documented for administrators"
+      ],
+      "rationale": "No statistics or analytics endpoints are exposed in the OpenAPI contract"
+    },
+    {
+      "requirement_id": "PT29",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "No configuration endpoint for automatic assignment rules per category"
+      ],
+      "rationale": "Auto-assign endpoints exist for individual reports but no rule configuration endpoint is documented"
+    },
+    {
+      "requirement_id": "PT22",
+      "status": "partially_implemented",
+      "matched_operations": [
+        {
+          "method": "GET",
+          "path": "/reports",
+          "operation_id": "listReports"
+        }
+      ],
+      "evidence": [
+        "GET /reports endpoint for listing reports"
+      ],
+      "missing_behaviors": [
+        "Filtering parameters not documented in contract schema"
+      ],
+      "rationale": "Endpoint exists but filtering capabilities are not explicitly documented in the OpenAPI contract"
+    },
+    {
+      "requirement_id": "PT23",
+      "status": "not_implemented",
+      "matched_operations": [],
+      "evidence": [],
+      "missing_behaviors": [
+        "No export/download endpoint for report summary table"
+      ],
+      "rationale": "No CSV/Excel export or download functionality is exposed in the OpenAPI contract"
+    }
+  ],
+  "validation_warnings": []
+}

@@ -1,0 +1,181 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/api/reports/map",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /api/reports/map without any authentication headers or session cookies. Verify that the response returns a list of reports filtered by status 'Resolved' (or equivalent approved state) and that no sensitive user data (like full names for anonymous users) is exposed.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core public-facing functionality for unregistered users as per requirement PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/api/reports/{id}/assign-external",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'technical office staff member'. First, ensure an external company exists via POST /api/companies. Then, perform a PATCH request to /api/reports/{id}/assign-external with the ID of the existing company and category matching the report. Verify the assignment is successful.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+    "Create an external company via POST /api/companies with a valid name and category."
+  ],
+  "cleanup_strategy": "Verify the assignment was successful; no resource deletion required as companies are persistent entities.",
+  "expected_status_codes": [
+    "200"
+  ],
+  "rationale": "Tests the primary workflow for assigning external maintainers to reports, satisfying requirement PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/api/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an 'external maintainer' who has been assigned a report. Execute a PUT request to /api/reports/{id}/status to change the status from 'Assigned' to 'In Progress'. Verify the status update is reflected in the response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+    "Assign a report to this external maintainer using PATCH /api/reports/{id}/assign-external."
+  ],
+  "cleanup_strategy": null,
+  "expected_status_codes": [
+    "200"
+  ],
+  "rationale": "Validates the ability of an external maintainer to update report status as defined in requirement PT25."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/api/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'municipal public relations officer'. Execute a PUT request to /api/reports/{id}/status to change the status of a report from 'Pending Approval' to 'Rejected'. Ensure the response includes an explanation field populated with a rejection reason.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+    "Create a report in 'Pending Approval' status."
+  ],
+  "cleanup_strategy": null,
+  "expected_status_codes": [
+    "200"
+  ],
+  "rationale": "Tests the approval/rejection workflow for municipal officers as per requirement PT06."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/api/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'technical office staff member'. Execute a PUT request to /api/reports/{id}/status to transition a report from 'In Progress' to 'Resolved'. Verify the status change is accepted.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+    "Ensure a report exists in 'In Progress' status."
+  ],
+  "cleanup_strategy": null,
+  "expected_status_codes": [
+    "200"
+  ],
+  "rationale": "Validates the technical office staff's ability to manage report lifecycle as per requirement PT11."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/api/reports/{id}/assign-external",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'technical office staff member'. Attempt to assign a report to an external company that does not exist or has a category mismatch. Verify the API returns a 400 Bad Request error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+    "Ensure no external company exists with the required category."
+  ],
+  "cleanup_strategy": null,
+  "expected_status_codes": [
+    "400"
+  ],
+  "rationale": "Tests validation logic for assigning reports to non-existent or mismatched companies as per requirement PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/api/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as an 'external maintainer'. Attempt to update the status of a report that is not currently assigned to this user (e.g., still in 'Pending Approval' or assigned to someone else). Verify the API returns a 403 Forbidden error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+    "Ensure the report is not assigned to this external maintainer."
+  ],
+  "cleanup_strategy": null,
+  "expected_status_codes": [
+    "403"
+  ],
+  "rationale": "Tests access control ensuring external maintainers can only update their own assigned reports as per requirement PT25."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/api/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'municipal public relations officer'. Attempt to update the status of a report that is already in 'Resolved' state. Verify the API returns an error indicating the transition is invalid.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+    "Ensure a report exists in 'Resolved' status."
+  ],
+  "cleanup_strategy": null,
+  "expected_status_codes": [
+    "400"
+  ],
+  "rationale": "Tests state transition constraints to prevent invalid status changes as per requirement PT06."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/api/reports/{id}/assign-external",
+    "http_method": "PATCH",
+    "prompt": "Authenticate as a 'technical office staff member'. Assign a report to an external company, then immediately attempt to assign the same report to a different external company. Verify the API rejects the second assignment.",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+    "Create two distinct external companies with valid categories."
+  ],
+  "cleanup_strategy": "Verify that the report remains assigned to the first company and is not reassigned; no cleanup of companies required.",
+  "expected_status_codes": [
+    "200",
+    "400"
+  ],
+  "rationale": "Tests the stateful dependency where a report can only be assigned to one external maintainer at a time, satisfying requirement PT24."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/api/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a 'technical office staff member'. Update a report status from 'Pending Approval' directly to 'Resolved', skipping the 'Assigned' and 'In Progress' states. Verify the API rejects this transition.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+    "Ensure a report exists in 'Pending Approval' status."
+  ],
+  "cleanup_strategy": null,
+  "expected_status_codes": [
+    "400"
+  ],
+  "rationale": "Tests state machine integrity to ensure reports follow the correct lifecycle path as per requirement PT11."
+  }
+]

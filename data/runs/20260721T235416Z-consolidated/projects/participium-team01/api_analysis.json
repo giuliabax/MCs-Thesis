@@ -1,0 +1,853 @@
+{
+  "summary": "A citizen reporting and operator management API supporting authentication, user registration, profile management, report creation, status updates, role-based assignment (technical officers, external maintainers), internal/external messaging, notifications, and chat history.",
+  "operations": [
+    {
+      "path": "/sessions",
+      "method": "POST",
+      "operation_id": "createSession",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Log in with username or email and password.",
+        "Initial login required for all authenticated flows",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 401"
+      ]
+    },
+    {
+      "path": "/sessions/current",
+      "method": "GET",
+      "operation_id": "getCurrentSession",
+      "auth_required": true,
+      "dependencies": [
+        "POST /sessions: Session creation is required to establish authenticated state for subsequent requests.",
+        "createSession"
+      ],
+      "notes": [
+        "Return the authenticated user.",
+        "Verifies active session state",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/sessions/current",
+      "method": "DELETE",
+      "operation_id": "deleteCurrentSession",
+      "auth_required": true,
+      "dependencies": [
+        "GET /sessions/current: Logout depends on an active session to invalidate.",
+        "getCurrentSession"
+      ],
+      "notes": [
+        "Log out the current user.",
+        "Logout endpoint; invalidates current session",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/registration",
+      "method": "POST",
+      "operation_id": "registerCitizen",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Register a new citizen account.",
+        "Public registration flow; creates citizen account",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 409, 422, 503"
+      ]
+    },
+    {
+      "path": "/citizens",
+      "method": "GET",
+      "operation_id": "getCitizenProfile",
+      "auth_required": true,
+      "dependencies": [
+        "POST /registration: Citizen profile retrieval requires a registered citizen account.",
+        "createSession"
+      ],
+      "notes": [
+        "Get the logged-in citizen profile.",
+        "Retrieves logged-in citizen profile",
+        "Documented responses: 200, 401, 404, 423, 503"
+      ]
+    },
+    {
+      "path": "/citizens",
+      "method": "PUT",
+      "operation_id": "updateCitizenProfile",
+      "auth_required": true,
+      "dependencies": [
+        "GET /citizens: Profile update requires existing profile state.",
+        "getCitizenProfile"
+      ],
+      "notes": [
+        "Update the logged-in citizen profile.",
+        "Updates logged-in citizen profile",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 404, 409, 500"
+      ]
+    },
+    {
+      "path": "/citizens/verification-code",
+      "method": "POST",
+      "operation_id": "createCitizenVerificationCode",
+      "auth_required": true,
+      "dependencies": [
+        "GET /citizens: Verification code generation requires authenticated citizen context.",
+        "getCitizenProfile"
+      ],
+      "notes": [
+        "Generate and email a verification code for the logged-in citizen.",
+        "Generates email verification code",
+        "Documented responses: 200, 401, 423, 503"
+      ]
+    },
+    {
+      "path": "/citizens/verify-email",
+      "method": "POST",
+      "operation_id": "verifyCitizenEmail",
+      "auth_required": true,
+      "dependencies": [
+        "POST /citizens/verification-code: Email verification requires a generated code to be validated.",
+        "createCitizenVerificationCode"
+      ],
+      "notes": [
+        "Verify the logged-in citizen email using a code.",
+        "Validates email using generated code",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 422, 423, 503"
+      ]
+    },
+    {
+      "path": "/citizens/verification-token",
+      "method": "GET",
+      "operation_id": "getCitizenVerificationToken",
+      "auth_required": true,
+      "dependencies": [
+        "POST /citizens/verify-email: Token expiry check requires prior verification attempt.",
+        "verifyCitizenEmail"
+      ],
+      "notes": [
+        "Get the active email verification token expiry.",
+        "Checks verification token expiry",
+        "Documented responses: 200, 401, 404, 423, 503"
+      ]
+    },
+    {
+      "path": "/upload-url",
+      "method": "POST",
+      "operation_id": "createUploadUrl",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Create a signed Supabase upload URL.",
+        "Public file upload URL generation",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 500"
+      ]
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operation_id": "listCategories",
+      "auth_required": true,
+      "dependencies": [
+        "createSession"
+      ],
+      "notes": [
+        "List all report categories.",
+        "Lists available report categories",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/roles",
+      "method": "GET",
+      "operation_id": "listRoles",
+      "auth_required": true,
+      "dependencies": [
+        "createSession"
+      ],
+      "notes": [
+        "List all operator roles.",
+        "Lists operator roles",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/companies",
+      "method": "GET",
+      "operation_id": "listCompanies",
+      "auth_required": true,
+      "dependencies": [
+        "createSession"
+      ],
+      "notes": [
+        "List all companies.",
+        "Lists companies",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/admin",
+      "method": "GET",
+      "operation_id": "listOperatorsForAdmin",
+      "auth_required": true,
+      "dependencies": [
+        "createSession"
+      ],
+      "notes": [
+        "List municipality operators.",
+        "Admin view of municipality operators",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/admin/createuser",
+      "method": "POST",
+      "operation_id": "createMunicipalityUser",
+      "auth_required": true,
+      "dependencies": [
+        "listOperatorsForAdmin"
+      ],
+      "notes": [
+        "Create an operator or external maintainer.",
+        "Creates new operator/maintainer account",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 409, 422, 503"
+      ]
+    },
+    {
+      "path": "/admin/addcategory",
+      "method": "POST",
+      "operation_id": "addOperatorCategory",
+      "auth_required": true,
+      "dependencies": [
+        "POST /admin/createuser: Category addition requires an existing operator user.",
+        "createMunicipalityUser"
+      ],
+      "notes": [
+        "Add a category to an operator.",
+        "Assigns category to operator",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 401, 404, 409, 422, 500"
+      ]
+    },
+    {
+      "path": "/admin/removecategory",
+      "method": "DELETE",
+      "operation_id": "removeOperatorCategory",
+      "auth_required": true,
+      "dependencies": [
+        "POST /admin/addcategory: Category removal requires an existing category assignment.",
+        "addOperatorCategory"
+      ],
+      "notes": [
+        "Remove a category from an operator.",
+        "Removes category from operator",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 404, 422, 500"
+      ]
+    },
+    {
+      "path": "/admin/companies/{companyId}/categories",
+      "method": "GET",
+      "operation_id": "listCompanyCategories",
+      "auth_required": true,
+      "dependencies": [
+        "createMunicipalityUser"
+      ],
+      "notes": [
+        "List categories managed by one company.",
+        "Lists categories managed by specific company",
+        "Parameters: #/components/parameters/CompanyId",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/operators",
+      "method": "GET",
+      "operation_id": "listOperatorsByCategory",
+      "auth_required": true,
+      "dependencies": [
+        "addOperatorCategory"
+      ],
+      "notes": [
+        "List assignable operators for a category.",
+        "Lists assignable operators for a category",
+        "Parameters: category_id",
+        "Documented responses: 200, 400, 401, 422, 503"
+      ]
+    },
+    {
+      "path": "/operators/my-categories",
+      "method": "GET",
+      "operation_id": "listMyOperatorCategories",
+      "auth_required": true,
+      "dependencies": [
+        "addOperatorCategory"
+      ],
+      "notes": [
+        "List categories assigned to the authenticated operator.",
+        "Lists categories assigned to authenticated operator",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": "createReport",
+      "auth_required": true,
+      "dependencies": [
+        "getCitizenProfile"
+      ],
+      "notes": [
+        "Create a new citizen report.",
+        "Creates new citizen report",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 401, 422, 503"
+      ]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": "listReports",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Report listing requires at least one report to exist.",
+        "createReport"
+      ],
+      "notes": [
+        "List all reports for admin or public relations officer.",
+        "Lists reports for admin/PR officer",
+        "Documented responses: 200, 401, 403, 503"
+      ]
+    },
+    {
+      "path": "/reports/approved",
+      "method": "GET",
+      "operation_id": "listApprovedReports",
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "List approved reports for the public map.",
+        "Public view of approved reports",
+        "Documented responses: 200, 503"
+      ]
+    },
+    {
+      "path": "/reports/assigned",
+      "method": "GET",
+      "operation_id": "listAssignedReports",
+      "auth_required": true,
+      "dependencies": [
+        "createReport"
+      ],
+      "notes": [
+        "List reports assigned to the logged-in technical officer or external maintainer.",
+        "Lists reports assigned to logged-in technical officer/maintainer",
+        "Documented responses: 200, 401, 403, 503"
+      ]
+    },
+    {
+      "path": "/reports/{id}/status",
+      "method": "PUT",
+      "operation_id": "updateReportStatus",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Status update requires an existing report.",
+        "createReport"
+      ],
+      "notes": [
+        "Update the status of a report.",
+        "Updates report status",
+        "Parameters: #/components/parameters/ReportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 404, 422, 423, 503"
+      ]
+    },
+    {
+      "path": "/reports/{id}/operator",
+      "method": "PUT",
+      "operation_id": "assignReportOperator",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Operator assignment requires an existing report.",
+        "createReport"
+      ],
+      "notes": [
+        "Assign an internal technical operator to a report.",
+        "Assigns internal technical operator to report",
+        "Parameters: #/components/parameters/ReportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 404, 422, 423, 503"
+      ]
+    },
+    {
+      "path": "/reports/{id}/auto-assign-officer",
+      "method": "POST",
+      "operation_id": "autoAssignTechnicalOfficer",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Auto-assignment requires an existing report.",
+        "createReport"
+      ],
+      "notes": [
+        "Automatically assign a technical officer to a report.",
+        "Auto-assigns technical officer to report",
+        "Parameters: #/components/parameters/ReportId",
+        "Documented responses: 200, 401, 403, 422, 503"
+      ]
+    },
+    {
+      "path": "/reports/{id}/mainteiner",
+      "method": "PUT",
+      "operation_id": "assignReportMainteiner",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Maintainer assignment requires an existing report.",
+        "createReport"
+      ],
+      "notes": [
+        "Assign an external maintainer to a report.",
+        "Assigns external maintainer to report",
+        "Parameters: #/components/parameters/ReportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 404, 422, 423, 503"
+      ]
+    },
+    {
+      "path": "/reports/{id}/auto-assign-maintainer",
+      "method": "POST",
+      "operation_id": "autoAssignMaintainer",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Auto-maintainer assignment requires an existing report.",
+        "createReport"
+      ],
+      "notes": [
+        "Automatically assign an external maintainer to a report.",
+        "Auto-assigns external maintainer to report",
+        "Parameters: #/components/parameters/ReportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 401, 403, 422, 503"
+      ]
+    },
+    {
+      "path": "/reports/{id}/internal-comments",
+      "method": "POST",
+      "operation_id": "createInternalComment",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Comment creation requires an existing report.",
+        "createReport"
+      ],
+      "notes": [
+        "Add an internal operator comment to a report.",
+        "Adds internal operator comment to report",
+        "Parameters: #/components/parameters/ReportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 401, 403, 422, 503"
+      ]
+    },
+    {
+      "path": "/reports/{id}/internal-comments",
+      "method": "GET",
+      "operation_id": "listInternalComments",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Comment listing requires an existing report.",
+        "createReport"
+      ],
+      "notes": [
+        "List internal operator comments for a report.",
+        "Lists internal operator comments for report",
+        "Parameters: #/components/parameters/ReportId",
+        "Documented responses: 200, 401, 403, 422, 503"
+      ]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "POST",
+      "operation_id": "createReportMessage",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Message creation requires an existing report.",
+        "createReport"
+      ],
+      "notes": [
+        "Add a citizen/operator message to a report chat.",
+        "Adds citizen/operator message to report chat",
+        "Parameters: #/components/parameters/ReportId",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 401, 403, 422, 503"
+      ]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "GET",
+      "operation_id": "listReportMessages",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: Message listing requires an existing report.",
+        "createReport"
+      ],
+      "notes": [
+        "List messages for a report chat.",
+        "Lists messages for report chat",
+        "Parameters: #/components/parameters/ReportId",
+        "Documented responses: 200, 401, 422, 503"
+      ]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": "listNotifications",
+      "auth_required": true,
+      "dependencies": [
+        "createSession"
+      ],
+      "notes": [
+        "List notifications for the logged-in citizen.",
+        "Lists notifications for logged-in citizen",
+        "Parameters: limit",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/notifications/unread-count",
+      "method": "GET",
+      "operation_id": "getUnreadNotificationCount",
+      "auth_required": true,
+      "dependencies": [
+        "listNotifications"
+      ],
+      "notes": [
+        "Get unread notification count for the logged-in citizen.",
+        "Gets unread notification count",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/notifications/{id}/seen",
+      "method": "PUT",
+      "operation_id": "markNotificationAsSeen",
+      "auth_required": true,
+      "dependencies": [
+        "listNotifications"
+      ],
+      "notes": [
+        "Mark one notification as seen.",
+        "Marks single notification as seen",
+        "Parameters: #/components/parameters/NotificationId",
+        "Documented responses: 200, 401, 404, 422, 503"
+      ]
+    },
+    {
+      "path": "/notifications/mark-all-seen",
+      "method": "PUT",
+      "operation_id": "markAllNotificationsAsSeen",
+      "auth_required": true,
+      "dependencies": [
+        "listNotifications"
+      ],
+      "notes": [
+        "Mark all citizen notifications as seen.",
+        "Marks all citizen notifications as seen",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/chats",
+      "method": "GET",
+      "operation_id": "listChats",
+      "auth_required": true,
+      "dependencies": [
+        "createSession"
+      ],
+      "notes": [
+        "List chats for the logged-in citizen, technical officer, or maintainer.",
+        "Lists chats for logged-in user",
+        "Documented responses: 200, 401, 403, 503"
+      ]
+    },
+    {
+      "path": "/chats/unread/count",
+      "method": "GET",
+      "operation_id": "getUnreadMessagesCount",
+      "auth_required": true,
+      "dependencies": [
+        "GET /chats: Unread count retrieval requires chat context.",
+        "listChats"
+      ],
+      "notes": [
+        "Get total unread chat message count.",
+        "Gets total unread chat message count",
+        "Documented responses: 200, 401, 503"
+      ]
+    },
+    {
+      "path": "/chats/{reportId}",
+      "method": "GET",
+      "operation_id": "getChatDetails",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "createReport"
+      ],
+      "notes": [
+        "Get chat details and messages for a report.",
+        "Gets chat details and messages for a report",
+        "Parameters: #/components/parameters/ChatReportId",
+        "Documented responses: 200, 401, 403, 404, 422, 503"
+      ]
+    },
+    {
+      "path": "/chats/{reportId}/read",
+      "method": "POST",
+      "operation_id": "markChatAsRead",
+      "auth_required": true,
+      "dependencies": [
+        "POST /reports: A report must exist before an operation can address reportId.",
+        "GET /chats/{reportId}: Marking chat as read requires existing chat context.",
+        "getChatDetails"
+      ],
+      "notes": [
+        "Mark a report chat as read for the logged-in user.",
+        "Marks report chat as read for logged-in user",
+        "Parameters: #/components/parameters/ChatReportId",
+        "Documented responses: 200, 401, 422, 503"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "/sessions POST is the only unauthenticated endpoint; all others require prior session creation or public resource access (registration/upload-url/approved-reports).",
+    "Session state must be maintained via /sessions/current before accessing protected citizen/operator endpoints.",
+    "Operations marked auth_required need an authenticated session during test setup."
+  ],
+  "dependencies": [
+    "createSession -> getCurrentSession -> deleteCurrentSession (session lifecycle)",
+    "registerCitizen -> getCitizenProfile -> updateCitizenProfile (citizen profile lifecycle)",
+    "createCitizenVerificationCode -> verifyCitizenEmail -> getCitizenVerificationToken (email verification flow)",
+    "createReport -> listReports/listAssignedReports/updateReportStatus/assign*/*comments/messages (report lifecycle)",
+    "addOperatorCategory -> removeOperatorCategory/category management",
+    "listOperatorsForAdmin -> createMunicipalityUser -> add/remove categories (operator management)",
+    "POST /reports -> GET /chats/{reportId}: A report must exist before an operation can address reportId.",
+    "POST /reports -> POST /chats/{reportId}/read: A report must exist before an operation can address reportId.",
+    "POST /sessions -> GET /sessions/current: Session creation is required to establish authenticated state for subsequent requests.",
+    "GET /sessions/current -> DELETE /sessions/current: Logout depends on an active session to invalidate.",
+    "POST /registration -> GET /citizens: Citizen profile retrieval requires a registered citizen account.",
+    "GET /citizens -> PUT /citizens: Profile update requires existing profile state.",
+    "GET /citizens -> POST /citizens/verification-code: Verification code generation requires authenticated citizen context.",
+    "POST /citizens/verification-code -> POST /citizens/verify-email: Email verification requires a generated code to be validated.",
+    "POST /citizens/verify-email -> GET /citizens/verification-token: Token expiry check requires prior verification attempt.",
+    "POST /reports -> GET /reports: Report listing requires at least one report to exist.",
+    "POST /reports -> PUT /reports/{id}/status: Status update requires an existing report.",
+    "POST /reports -> PUT /reports/{id}/operator: Operator assignment requires an existing report.",
+    "POST /reports -> POST /reports/{id}/auto-assign-officer: Auto-assignment requires an existing report.",
+    "POST /reports -> PUT /reports/{id}/mainteiner: Maintainer assignment requires an existing report.",
+    "POST /reports -> POST /reports/{id}/auto-assign-maintainer: Auto-maintainer assignment requires an existing report.",
+    "POST /reports -> POST /reports/{id}/internal-comments: Comment creation requires an existing report.",
+    "POST /reports -> GET /reports/{id}/internal-comments: Comment listing requires an existing report.",
+    "POST /reports -> POST /reports/{id}/messages: Message creation requires an existing report.",
+    "POST /reports -> GET /reports/{id}/messages: Message listing requires an existing report.",
+    "POST /admin/createuser -> POST /admin/addcategory: Category addition requires an existing operator user.",
+    "POST /admin/addcategory -> DELETE /admin/removecategory: Category removal requires an existing category assignment.",
+    "GET /chats -> GET /chats/unread/count: Unread count retrieval requires chat context.",
+    "GET /chats/{reportId} -> POST /chats/{reportId}/read: Marking chat as read requires existing chat context."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/chats/{reportId}",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/chats/{reportId}/read",
+      "dependency_type": "resource",
+      "reason": "A report must exist before an operation can address reportId."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/sessions",
+      "dependent_method": "GET",
+      "dependent_path": "/sessions/current",
+      "dependency_type": "state",
+      "reason": "Session creation is required to establish authenticated state for subsequent requests."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/sessions/current",
+      "dependent_method": "DELETE",
+      "dependent_path": "/sessions/current",
+      "dependency_type": "state",
+      "reason": "Logout depends on an active session to invalidate."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/registration",
+      "dependent_method": "GET",
+      "dependent_path": "/citizens",
+      "dependency_type": "resource",
+      "reason": "Citizen profile retrieval requires a registered citizen account."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/citizens",
+      "dependent_method": "PUT",
+      "dependent_path": "/citizens",
+      "dependency_type": "state",
+      "reason": "Profile update requires existing profile state."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/citizens",
+      "dependent_method": "POST",
+      "dependent_path": "/citizens/verification-code",
+      "dependency_type": "state",
+      "reason": "Verification code generation requires authenticated citizen context."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/citizens/verification-code",
+      "dependent_method": "POST",
+      "dependent_path": "/citizens/verify-email",
+      "dependency_type": "state",
+      "reason": "Email verification requires a generated code to be validated."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/citizens/verify-email",
+      "dependent_method": "GET",
+      "dependent_path": "/citizens/verification-token",
+      "dependency_type": "state",
+      "reason": "Token expiry check requires prior verification attempt."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports",
+      "dependency_type": "resource",
+      "reason": "Report listing requires at least one report to exist."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/reports/{id}/status",
+      "dependency_type": "resource",
+      "reason": "Status update requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/reports/{id}/operator",
+      "dependency_type": "resource",
+      "reason": "Operator assignment requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{id}/auto-assign-officer",
+      "dependency_type": "resource",
+      "reason": "Auto-assignment requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/reports/{id}/mainteiner",
+      "dependency_type": "resource",
+      "reason": "Maintainer assignment requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{id}/auto-assign-maintainer",
+      "dependency_type": "resource",
+      "reason": "Auto-maintainer assignment requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{id}/internal-comments",
+      "dependency_type": "resource",
+      "reason": "Comment creation requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{id}/internal-comments",
+      "dependency_type": "resource",
+      "reason": "Comment listing requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "POST",
+      "dependent_path": "/reports/{id}/messages",
+      "dependency_type": "resource",
+      "reason": "Message creation requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/reports/{id}/messages",
+      "dependency_type": "resource",
+      "reason": "Message listing requires an existing report."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/admin/createuser",
+      "dependent_method": "POST",
+      "dependent_path": "/admin/addcategory",
+      "dependency_type": "resource",
+      "reason": "Category addition requires an existing operator user."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/admin/addcategory",
+      "dependent_method": "DELETE",
+      "dependent_path": "/admin/removecategory",
+      "dependency_type": "state",
+      "reason": "Category removal requires an existing category assignment."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/chats",
+      "dependent_method": "GET",
+      "dependent_path": "/chats/unread/count",
+      "dependency_type": "state",
+      "reason": "Unread count retrieval requires chat context."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/chats/{reportId}",
+      "dependent_method": "POST",
+      "dependent_path": "/chats/{reportId}/read",
+      "dependency_type": "state",
+      "reason": "Marking chat as read requires existing chat context."
+    }
+  ],
+  "risks": [
+    "/sessions/current and /sessions/current DELETE share the same path but different methods; ensure client handles both correctly.",
+    "/reports/{id}/mainteiner has a typo in route name ('mainteiner' vs 'maintainer') which may cause confusion or misconfiguration.",
+    "Several endpoints return 423 (Locked) or 409 (Conflict); documentation does not specify exact conditions for these states.",
+    "Auto-assign endpoints rely on backend logic not visible in docs; failure modes are unclear.",
+    "Public endpoints (/upload-url, /reports/approved) lack explicit rate-limiting or abuse-mitigation notes."
+  ]
+}

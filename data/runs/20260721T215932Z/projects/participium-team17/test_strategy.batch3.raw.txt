@@ -1,0 +1,186 @@
+[
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report for a citizen. Include valid latitude and longitude coordinates in the request body. Ensure the category is selected from the available list (e.g., 'Water Supply'). Use a standard citizen role token.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user.",
+      "Fetch available categories via GET /categories to select a valid category_id."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of creating a geolocated report as per PT04."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with detailed description text and ensure the category matches the issue type (e.g., 'Architectural Barriers' for a broken bench). Include valid lat/long coordinates.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user.",
+      "Fetch available categories via GET /categories to select a valid category_id."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates that detailed descriptions and correct classification work together for report creation (PT05)."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports so that only valid reports are processed further.",
+    "api_endpoint": "/pub_relations/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Update the status of an existing report to 'Rejected' by a municipal public relations officer. Include a mandatory explanation field in the request body describing why the report was rejected.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a test report via POST /reports using a citizen token to obtain a valid reportId.",
+      "Authenticate as a municipal public relations officer."
+    ],
+    "cleanup_strategy": "Verify the report status is 'Rejected'. No deletion required by citizen, but ensure no further updates occur.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the approval/rejection workflow and mandatory explanation requirement for PT06."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous so that their name is not shown in the public list of reports.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with the 'anonymous' flag set to true. Ensure the user's real name is hidden from public views while still being visible to staff (verified via internal comment or staff view). Include valid lat/long and category.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the anonymous reporting feature and data visibility rules for PT15."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with invalid latitude coordinates (e.g., 99.99) or missing longitude to test boundary conditions for location selection.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the system's handling of out-of-bounds or missing geolocation data per domain rules for PT04."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports so that only valid reports are processed further.",
+    "api_endpoint": "/pub_relations/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update a report status without providing the mandatory 'explanation' field for a rejected report, violating domain rules.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Create a test report via POST /reports using a citizen token to obtain a valid reportId.",
+      "Authenticate as a municipal public relations officer."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the system enforces the requirement that rejected reports must include an explanation (PT06)."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous so that their name is not shown in the public list of reports.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with 'anonymous' set to false (default) and verify that the reporter's name is included in the response payload for staff viewing, but ensure the public view logic (if simulated) would hide it if anonymous were true.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the toggle behavior for anonymity and data visibility rules for PT15."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them so that they can get an overview of the maintenance to be done.",
+    "api_endpoint": "/tech_officer/reports",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to a technical office staff member. Ensure the response includes only reports where the status is 'Assigned' or similar, filtered by the user's role.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the assignment and listing functionality for technical office staff per PT08."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report without any authentication token to verify that unauthenticated users cannot create reports (unless sprint 4 rules apply, but assume standard auth for this test).",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no authentication token is provided in the request headers."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Confirms that report creation requires authentication as per API analysis and domain rules for PT04."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports so that only valid reports are processed further.",
+    "api_endpoint": "/pub_relations/reports/{reportId}",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update a report status to 'Approved' without first creating the report, using an invalid reportId.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Authenticate as a municipal public relations officer."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Tests error handling for non-existent resources in the approval workflow for PT06."
+  }
+]

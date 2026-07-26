@@ -1,0 +1,183 @@
+[
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Create a new municipality user with a specific role assigned (e.g., 'technical_office_staff') using the admin session. Ensure the payload includes valid email and password fields required for registration.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator to obtain a valid session token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of creating users with roles, which is a prerequisite for other admin operations like assigning categories or modifying roles."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Attempt to create a user with an invalid role string that does not exist in the system's allowed roles list.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator to obtain a valid session token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the system validates role inputs and rejects unauthorized or non-existent roles with appropriate error messages."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update an existing municipality user's role from 'citizen' to 'technical_office_staff' using the admin session. Include all necessary fields for a successful update.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Authenticate as system administrator.",
+      "Create a test user via POST /admin/createuser to have an ID to modify."
+    ],
+    "cleanup_strategy": "Delete the created test user via DELETE /citizens/{id} if it was not intended to persist, or verify no resource was created if the update failed unexpectedly.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the ability of administrators to flexibly modify user roles as per requirement PT10."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a new report with mandatory fields (title, description, category) and optional photos. Ensure the category matches one of the allowed values (e.g., 'Water Supply').",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the report creation flow and ensures mandatory fields are enforced for correct classification."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to create a report with an invalid category value (e.g., 'InvalidCategory') or missing mandatory fields like title.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the system rejects reports with invalid data or missing mandatory fields to maintain data integrity."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Create a report with the 'anonymous' flag set to true. Verify that the response indicates successful creation and that the name is hidden in public views (simulated by checking response metadata).",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the anonymous reporting feature to ensure user privacy options are respected during report creation."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to the current user (who has the 'technical_office_staff' role). Ensure the response includes only reports where the assignee matches the logged-in user.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that staff members can view their assigned reports for maintenance overview."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees the list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Attempt to access /reports/assigned as a citizen user who does not have the 'technical_office_staff' role. Expect an unauthorized response.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Ensures that only authorized staff members can view assigned reports, protecting sensitive maintenance data."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account to manage notifications and virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update a citizen's account settings to enable/disable notifications and adjust virtual presence preferences. Ensure the payload includes valid boolean flags for these options.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the account configuration endpoint to ensure citizens can manage their notification and presence settings."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account to manage notifications and virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Attempt to update a citizen's account with an invalid boolean value (e.g., 'true' as a string instead of true) for notification settings.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the system validates input types for account configuration fields and rejects malformed data."
+  }
+]

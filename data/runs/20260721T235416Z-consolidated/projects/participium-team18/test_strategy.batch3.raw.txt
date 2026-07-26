@@ -1,0 +1,184 @@
+[
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/citizens/report",
+    "http_method": "POST",
+    "prompt": "Create a test case where a verified citizen submits a new report including valid latitude and longitude coordinates. Verify that the response includes the report ID, status 'Pending Approval', and echoes back the provided location data.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen is registered and email verified (via POST /email-verification/verify) to obtain a valid session token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of geolocating reports as per PT04 and domain rules requiring location data."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report so that the problem is classified correctly.",
+    "api_endpoint": "/citizens/report",
+    "http_method": "POST",
+    "prompt": "Submit a report with all mandatory fields (title, description, category) and 1-3 photos. Verify successful creation and correct classification metadata in the response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen is registered and email verified."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Confirms that mandatory fields for reports (PT05) are enforced and accepted correctly."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous so their name is not shown in the public list.",
+    "api_endpoint": "/citizens/report",
+    "http_method": "POST",
+    "prompt": "Submit a report with an 'anonymous' flag set to true. Verify that the response indicates anonymity and that subsequent GET requests to public endpoints (/reports/getById) do not reveal the reporter's name.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen is registered and email verified."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the specific behavior of anonymous reporting defined in PT15 and domain rules regarding visibility to staff vs public."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account to better manage notifications and virtual presence.",
+    "api_endpoint": "/citizens/me",
+    "http_method": "PATCH",
+    "prompt": "Update the authenticated citizen's profile to enable real-time notifications and set a specific notification preference. Verify the updated preferences are reflected in the GET /citizens/me response.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen is registered, email verified, and has a valid session token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability to configure account settings (PT09) as per domain rules on notifications."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/citizens/me",
+    "http_method": "PATCH",
+    "prompt": "Update the citizen's profile to enable 'email_alerts' and set a specific frequency. Verify that the response confirms the new alert settings are active.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen is registered, email verified, and has a valid session token."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the specific configuration of optional email alerts mentioned in PT19."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen attempts to submit a report without providing latitude and longitude coordinates.",
+    "api_endpoint": "/citizens/report",
+    "http_method": "POST",
+    "prompt": "Submit a report payload missing the 'latitude' or 'longitude' fields. Expect the server to reject the request because reports must be tied to a specific location (domain rule). Verify the error response indicates missing required location data.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen is registered and email verified."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Enforces the domain rule that reports must be geolocated (PT04)."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen attempts to submit a report with missing mandatory fields (e.g., no title or description).",
+    "api_endpoint": "/citizens/report",
+    "http_method": "POST",
+    "prompt": "Submit a report payload where 'title' is empty or missing. Verify that the API returns an error stating that mandatory fields for reports are required.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen is registered and email verified."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates the domain rule requiring mandatory fields for reports (PT05)."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen attempts to enable email alerts without having a valid email address configured in their profile.",
+    "api_endpoint": "/citizens/me",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update the citizen's profile to enable 'email_alerts' when the 'email' field is null or empty. Verify that the API rejects this change, as email is mandatory for registration and login (domain rule).",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen is registered but has no email set (simulate by clearing it if possible, or using a user with null email)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the constraint that email is mandatory for registration and cannot be used to enable alerts without it (PT19 context)."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen attempts to modify a submitted report via PATCH /citizens/me.",
+    "api_endpoint": "/citizens/me",
+    "http_method": "PATCH",
+    "prompt": "After creating a report (via POST /citizens/report), attempt to update the citizen's profile in a way that implies modifying the report content or status. Verify that the API blocks this action, as once inserted, a report cannot be modified by the citizen (domain rule).",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "1. Register and verify citizen (POST /citizens/register, POST /email-verification/verify).",
+      "2. Create a report with valid data (POST /citizens/report) to obtain a report ID."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Validates the domain rule that reports cannot be modified after insertion (PT09 context on account management limits)."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen attempts to follow a closed report.",
+    "api_endpoint": "/citizens/me",
+    "http_method": "PATCH",
+    "prompt": "Attempt to update the citizen's profile to 'follow' a report that has a status of 'Resolved' or 'Rejected'. Verify that the API rejects this action, as only not closed reports can be followed (domain rule).",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "1. Register and verify citizen.",
+      "2. Create a report and have it transition to 'Resolved' status (simulate via internal admin or wait for lifecycle)."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the edge case of attempting to follow a closed report as per domain rules."
+  }
+]

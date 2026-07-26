@@ -1,0 +1,1379 @@
+[
+  {
+    "operation_id": "loginUser",
+    "method": "POST",
+    "path": "/auth/users",
+    "summary": "Logs user into the system.",
+    "description": "Log into the system.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "username"
+        },
+        "password": {
+          "type": "string",
+          "format": "password",
+          "example": "secure_word"
+        }
+      },
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "default"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/maintainers",
+    "summary": "Admin creates a maintainer",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/OfficeType"
+          }
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "email",
+        "password",
+        "categories"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/maintainers",
+    "summary": "Officers lists all maintainers",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Maintainers"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/maintainers/by-category/{officeType}",
+    "summary": "List maintainers by office type",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "officeType",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/OfficeType"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Maintainers"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/maintainers/{id}",
+    "summary": "Admin updates a maintainer",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/Maintainer"
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/maintainers/{id}",
+    "summary": "Admin deletes a maintainer",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/officers/assign-report",
+    "summary": "Assign a report to a maintainer",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "reportId": {
+          "type": "integer"
+        },
+        "maintainerId": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "reportId",
+        "maintainerId"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Technical Officers"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "loginOfficer",
+    "method": "POST",
+    "path": "/auth/officers",
+    "summary": "Logs officers into the system.",
+    "description": "Log into the system.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "username"
+        },
+        "password": {
+          "type": "string",
+          "format": "password",
+          "example": "secure_word"
+        }
+      },
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "default"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "loginMaintainer",
+    "method": "POST",
+    "path": "/auth/maintainers",
+    "summary": "Logs maintainer into the system.",
+    "description": "Log into the system.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "maintainer@example.com"
+        },
+        "password": {
+          "type": "string",
+          "format": "password",
+          "example": "secure_word"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "default"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "getAssignedReportsMaintainer",
+    "method": "GET",
+    "path": "/maintainers/assigned",
+    "summary": "Maintainer retrieves assigned reports",
+    "description": "Returns all reports assigned to the authenticated maintainer.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Maintainers"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/maintainers/reports/{id}/status",
+    "summary": "Maintainer updates the status of an assigned report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/components/schemas/State"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Maintainers"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/info-types",
+    "summary": null,
+    "description": "Information about Office",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Info"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "createUser",
+    "method": "POST",
+    "path": "/users",
+    "summary": "Create user.",
+    "description": "This can only be done by the logged in user.",
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/User"
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "generateOtp",
+    "method": "POST",
+    "path": "/users/generateotp",
+    "summary": "Generate OTP for user",
+    "description": "Generate a One-Time Password (OTP) for the user to enhance security during sensitive operations.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "user@example.com"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "403",
+      "default"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "verifyOtp",
+    "method": "POST",
+    "path": "/users/verifyotp",
+    "summary": "Verify OTP for user",
+    "description": "Verify the One-Time Password (OTP) provided by the user to confirm their identity.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "user@example.com"
+        },
+        "otp": {
+          "type": "string",
+          "example": "123456"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "default"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "getMyProfile",
+    "method": "GET",
+    "path": "/users/me",
+    "summary": "Retrieve authenticated user's profile",
+    "description": "Returns the profile of the authenticated user (avatar, telegramUsername, emailNotifications included) + if requested the followedReports",
+    "parameters": [
+      {
+        "name": "include",
+        "in": "query",
+        "description": "Campi aggiuntivi da includere (lista comma-separated). Supportati: `followedReports`.\n",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "style": "form",
+        "explode": false,
+        "example": "followedReports"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "updateMyProfile",
+    "method": "PATCH",
+    "path": "/users/me",
+    "summary": "Update authenticated user's profile",
+    "description": "Update telegram username, email notification preference and optionally upload an avatar image.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "avatar": {
+          "type": "string",
+          "format": "binary"
+        },
+        "telegramUsername": {
+          "type": "string"
+        },
+        "emailNotifications": {
+          "type": "boolean"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "logoutUser",
+    "method": "GET",
+    "path": "/users/logout",
+    "summary": "Logs out current logged in user session.",
+    "description": "Log user out of the system.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "createOfficer",
+    "method": "POST",
+    "path": "/officers",
+    "summary": "Admins create new Officer",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/Officer"
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/officers",
+    "summary": "Admin lists all officers",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/officers/{id}",
+    "summary": "Admin updates officer info",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/Officer"
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/officers/{id}",
+    "summary": "Admin deletes an officer",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "retrieveDocs",
+    "method": "GET",
+    "path": "/publics/retrievedocs",
+    "summary": "Retrieve Reports assigned to him, only the pending ones",
+    "description": "Using the session key, the officer is able to retrieve the docs assigned to him.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Public Relation Officer"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "getAssignedReports",
+    "method": "GET",
+    "path": "/officers/assigned",
+    "summary": "Retrieve reports assigned to the authenticated officer",
+    "description": "Returns all reports whose `assignedOfficerId` equals the authenticated officer id.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Technical Officers"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "getOfficerByOfficeType",
+    "method": "GET",
+    "path": "/officers/OfficerByOfficeType/{officeType}",
+    "summary": "Retrieve reports assigned to the authenticated officer",
+    "description": "Only for admin or Public officers.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Technical Officers"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "reviewDoc",
+    "method": "PATCH",
+    "path": "/officers/reviewdocs/{id_doc}",
+    "summary": "Update Report assigned to him",
+    "description": null,
+    "parameters": [
+      {
+        "name": "id_doc",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/components/schemas/State"
+        },
+        "reason": {
+          "type": "string",
+          "example": "Insufficient evidence"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Technical Officers"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "assignReport",
+    "method": "POST",
+    "path": "/publics/assign-report",
+    "summary": "Public Relation Officer assign new document to an officer",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "reportId": {
+          "type": "integer",
+          "example": 1023
+        },
+        "officerId": {
+          "type": "integer",
+          "example": 652
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Public Relation Officer"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "uploadReport",
+    "method": "POST",
+    "path": "/reports",
+    "summary": "User upload a new Report",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/Report"
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "getReports",
+    "method": "GET",
+    "path": "/reports",
+    "summary": "Retrieve all public Reports for map visualization",
+    "description": "Get all approved Reports to display on the public map",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "getReportStats",
+    "method": "GET",
+    "path": "/reports/stats",
+    "summary": "Get reports statistics",
+    "description": "Retrieve various statistics about reports in the system. The filters can be applied using query parameters. Available filters include date range (`fromDate`, `toDate`), predefined periods (`period`), and report categories (`category`). For multiple categories use multiple `category` parameters, e.g., `category=sanification&category=infrastructure`.",
+    "parameters": [
+      {
+        "in": "query",
+        "name": "fromDate",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "required": false,
+        "description": "Start date for filtering reports (inclusive)"
+      },
+      {
+        "in": "query",
+        "name": "toDate",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "required": false,
+        "description": "End date for filtering reports (inclusive)"
+      },
+      {
+        "in": "query",
+        "name": "period",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "daily",
+            "weekly",
+            "monthly",
+            "yearly"
+          ]
+        },
+        "required": false,
+        "description": "Predefined period for filtering reports"
+      },
+      {
+        "in": "query",
+        "name": "category",
+        "schema": {
+          "$ref": "#/components/schemas/OfficeType"
+        },
+        "required": false,
+        "description": "Filter reports by their state"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "retrieveTelegramAccount",
+    "method": "POST",
+    "path": "/auth/telegram",
+    "summary": "Retrieve user account associated with Telegram username",
+    "description": "Given a Telegram username, retrieve the corresponding user account from the system.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "telegram_user"
+        }
+      },
+      "required": [
+        "username"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Auth"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/notifications",
+    "summary": "List user notifications",
+    "description": "Returns notifications for the authenticated user. Use query param unreadOnly=true to filter unread.",
+    "parameters": [
+      {
+        "in": "query",
+        "name": "unreadOnly",
+        "schema": {
+          "type": "boolean"
+        },
+        "required": false
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/notifications/{id}/read",
+    "summary": "Mark notification as read",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{id}/message",
+    "summary": "Officer sends a message to report author",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Aggiornamento sul tuo report"
+        }
+      },
+      "required": [
+        "message"
+      ]
+    },
+    "response_codes": [
+      "201",
+      "default"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/admin/role/add",
+    "summary": "Admin updates officer roles",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "officerId": {
+          "type": "integer"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "officerRole": {
+                "$ref": "#/components/schemas/OfficerRole"
+              },
+              "officeType": {
+                "$ref": "#/components/schemas/OfficeType"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "officerId",
+        "roles"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/admin/role/remove",
+    "summary": "Admin updates officer roles",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "officerId": {
+          "type": "integer"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "officerRole": {
+                "$ref": "#/components/schemas/OfficerRole"
+              },
+              "officeType": {
+                "$ref": "#/components/schemas/OfficeType"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "officerId",
+        "roles"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/internal-messages",
+    "summary": "Send an internal message",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "reportId": {
+          "type": "integer"
+        },
+        "receiverType": {
+          "$ref": "#/components/schemas/OfficerRole"
+        },
+        "receiverId": {
+          "type": "integer"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reportId",
+        "receiverType",
+        "receiverId",
+        "message"
+      ]
+    },
+    "response_codes": [
+      "201",
+      "default"
+    ],
+    "tags": [
+      "Internal Messages"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/internal-messages/report/{reportId}",
+    "summary": "List internal messages for a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Internal Messages"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{id}/followers",
+    "summary": "List users following a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{id}/follow",
+    "summary": "Follow a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "201",
+      "default"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/reports/{id}/follow",
+    "summary": "Unfollow a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "204",
+      "default"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/telegram/reports",
+    "summary": "Get reports for Telegram notifications",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/telegram/reports",
+    "summary": "Update reports for Telegram notifications",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "reportIds": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "required": [
+        "reportIds"
+      ]
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/telegram/reports/{reportID}",
+    "summary": "Add a report to Telegram notifications",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportID",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/telegram/reports/{reportID}",
+    "summary": "Remove a report from Telegram notifications",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "reportID",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/faqs",
+    "summary": "Get FAQ entries",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Faq"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/faqs",
+    "summary": "Add a new FAQ entry",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string"
+        },
+        "answer": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "question",
+        "answer"
+      ]
+    },
+    "response_codes": [
+      "201",
+      "default"
+    ],
+    "tags": [
+      "Faq"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/faqs/{idFaq}",
+    "summary": "Update a FAQ entry",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "idFaq",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string"
+        },
+        "answer": {
+          "type": "string"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Faq"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/faqs/{idFaq}",
+    "summary": "Delete a FAQ entry",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "idFaq",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "204",
+      "default"
+    ],
+    "tags": [
+      "Faq"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/me/followed-reports",
+    "summary": "Get reports followed by current user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "default"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  }
+]

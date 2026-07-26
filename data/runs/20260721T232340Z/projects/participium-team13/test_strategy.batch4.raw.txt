@@ -1,0 +1,184 @@
+[
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member can view the list of reports assigned to them.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/assigned using an authenticated session for a 'technical office staff member' role. Verify that the response contains a list of report objects where the status is 'Assigned' and the assignee matches the current user's ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member to obtain a valid session cookie."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for staff members to view their workload as per PT08."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Citizen can create a new report through a Telegram bot.",
+    "api_endpoint": "/telegram/reports",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /telegram/reports simulating a Telegram bot payload containing valid report data (title, description, category). Ensure the request body is well-formed JSON. Verify that the system accepts the report and returns a success response with the new report ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure the Telegram bot token is configured in the environment."
+    ],
+    "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the alternative submission channel (Telegram) for citizens as defined in PT12."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Citizen can check their report status through a Telegram bot.",
+    "api_endpoint": "/telegram/{telegramId}/reports/{reportId}",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /telegram/{telegramId}/reports/{reportId} using the specific Telegram ID and a valid Report ID created in a previous step. Verify that the response returns the current status of the report (e.g., 'Pending Approval', 'Assigned').",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a test report via POST /reports or POST /telegram/reports to obtain a valid reportId.",
+      "Ensure the Telegram ID is valid and associated with an active session."
+    ],
+    "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the status tracking capability via Telegram as per PT13, dependent on an existing report."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen can configure their account (notifications and virtual presence).",
+    "api_endpoint": "/citizen/me",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /citizen/me with an authenticated citizen session. Update the 'notification_preferences' field to set 'push_enabled' to true and 'email_alerts' to false. Verify that the response reflects these changes.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user to obtain a valid session cookie."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the account configuration feature for managing notifications as per PT09."
+  },
+  {
+    "requirement_id": "PT17",
+    "requirement_summary": "Citizen receives real-time push notifications via the Telegram bot.",
+    "api_endpoint": "/notifications",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /notifications using an authenticated citizen session where 'push_enabled' is true. Verify that the response includes notification objects with timestamps indicating recent updates (simulated or real) related to report status changes.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user and ensure their profile has 'push_enabled' set to true."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the real-time notification delivery mechanism for citizens as per PT17."
+  },
+  {
+    "requirement_id": "PT19",
+    "requirement_summary": "Citizen receives optional email alerts in addition to platform notifications.",
+    "api_endpoint": "/citizen/me",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /citizen/me with an authenticated citizen session. Update the 'notification_preferences' field to set 'email_alerts' to true while keeping 'push_enabled' as true. Verify that the response confirms both notification channels are active.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate as a citizen user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the configuration of optional email alerts alongside push notifications as per PT19."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Citizen creates a new report through a Telegram bot with invalid category.",
+    "api_endpoint": "/telegram/reports",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /telegram/reports simulating a Telegram bot payload containing valid report data but an invalid 'category' value (e.g., 'UnknownCategory'). Verify that the system rejects the request with an appropriate error message indicating the category is not recognized.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure the Telegram bot token is configured in the environment."
+    ],
+    "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests input validation for report categories to prevent data integrity issues as per PT12."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member views assigned reports but filters by non-existent status.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/assigned using an authenticated session for a 'technical office staff member' role. Include a query parameter or filter (if supported) that requests reports with a status that does not exist in the system (e.g., 'InvalidStatus'). Verify that the response handles this gracefully, either returning an empty list or a 400 error if filtering is strict.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate as a technical office staff member to obtain a valid session cookie."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200",
+      "400"
+    ],
+    "rationale": "Tests the robustness of the list view when filtering by invalid criteria as per PT08."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "Citizen checks report status through Telegram bot for a non-existent report ID.",
+    "api_endpoint": "/telegram/{telegramId}/reports/{reportId}",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /telegram/{telegramId}/reports/{reportId} using a valid Telegram ID but an invalid or non-existent Report ID (e.g., '99999'). Verify that the system returns a 404 Not Found error.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure the Telegram ID is valid."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Tests error handling for accessing non-existent resources via the Telegram integration as per PT13."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen attempts to configure account without authentication.",
+    "api_endpoint": "/citizen/me",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to /citizen/me without providing any authentication headers or cookies. Verify that the system rejects the request with a 401 Unauthorized error.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no valid session cookie is present in the request context."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Tests security enforcement for protected account configuration endpoints as per PT09."
+  }
+]

@@ -1,0 +1,451 @@
+{
+  "run_id": "20260721T190730Z",
+  "assessment_basis": "openapi_documentation",
+  "projects": {
+    "participium-team07": {
+      "project_name": "participium-team07",
+      "openapi_path": "projects\\participium-team07\\swagger.yaml",
+      "assessment_basis": "openapi_documentation",
+      "requirements_total": 30,
+      "status_counts": {
+        "implemented": 10,
+        "partially_implemented": 2,
+        "not_implemented": 15,
+        "not_assessable": 3
+      },
+      "matches": [
+        {
+          "requirement_id": "PT28",
+          "status": "not_assessable",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Interactive map visualization for approved reports"
+          ],
+          "rationale": "Map visualization is UI behavior not exposed in REST contract; only /reports/approved exists but doesn't cover map feature"
+        },
+        {
+          "requirement_id": "PT24",
+          "status": "implemented",
+          "matched_operations": [
+            {
+              "method": "POST",
+              "path": "/reports/assignExternal",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Assign a report to an external office"
+          ],
+          "missing_behaviors": [],
+          "rationale": "POST /reports/assignExternal documents assigning reports to external maintainers"
+        },
+        {
+          "requirement_id": "PT25",
+          "status": "implemented",
+          "matched_operations": [
+            {
+              "method": "GET",
+              "path": "/reports/external-maintainer-my",
+              "operation_id": null
+            },
+            {
+              "method": "PATCH",
+              "path": "/reports/external-maintainer/:id",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Retrieve reports assigned to external maintainer",
+            "Update the status of the report"
+          ],
+          "missing_behaviors": [],
+          "rationale": "GET retrieves assigned reports, PATCH updates status for external maintainers"
+        },
+        {
+          "requirement_id": "PT26",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Internal comments/messages exchange between staff and maintainers"
+          ],
+          "rationale": "No messaging or comment endpoint exists for internal coordination"
+        },
+        {
+          "requirement_id": "PT01",
+          "status": "implemented",
+          "matched_operations": [
+            {
+              "method": "POST",
+              "path": "/users/temporary",
+              "operation_id": null
+            },
+            {
+              "method": "POST",
+              "path": "/users/temporary/verify",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Create a new temporary user",
+            "Verify OTP and create user"
+          ],
+          "missing_behaviors": [],
+          "rationale": "Temporary user creation and verification covers registration flow"
+        },
+        {
+          "requirement_id": "PT27",
+          "status": "implemented",
+          "matched_operations": [
+            {
+              "method": "POST",
+              "path": "/otp/resend",
+              "operation_id": null
+            },
+            {
+              "method": "POST",
+              "path": "/users/temporary/verify",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Resend OTP email",
+            "Verify OTP and create user"
+          ],
+          "missing_behaviors": [],
+          "rationale": "OTP resend and verification endpoints cover registration confirmation"
+        },
+        {
+          "requirement_id": "PT02",
+          "status": "implemented",
+          "matched_operations": [
+            {
+              "method": "POST",
+              "path": "/employees",
+              "operation_id": null
+            },
+            {
+              "method": "POST",
+              "path": "/employees/assign",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Create a new employee",
+            "Assign an employee to an office"
+          ],
+          "missing_behaviors": [],
+          "rationale": "Employee creation and assignment endpoints cover municipality user setup"
+        },
+        {
+          "requirement_id": "PT03",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Role assignment to municipality users"
+          ],
+          "rationale": "Only /roles GET exists for retrieving roles, no role assignment endpoint"
+        },
+        {
+          "requirement_id": "PT04",
+          "status": "not_assessable",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Location selection on city map for geolocation"
+          ],
+          "rationale": "Map/geolocation is UI behavior not exposed in REST contract"
+        },
+        {
+          "requirement_id": "PT05",
+          "status": "implemented",
+          "matched_operations": [
+            {
+              "method": "POST",
+              "path": "/users/reports",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Create a new report"
+          ],
+          "missing_behaviors": [],
+          "rationale": "Report creation endpoint covers providing details for reports"
+        },
+        {
+          "requirement_id": "PT06",
+          "status": "implemented",
+          "matched_operations": [
+            {
+              "method": "GET",
+              "path": "/reports/approved",
+              "operation_id": null
+            },
+            {
+              "method": "POST",
+              "path": "/reports/reject",
+              "operation_id": null
+            },
+            {
+              "method": "PATCH",
+              "path": "/reports/{reportID}",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Retrieve approved reports",
+            "Reject a report",
+            "Update the status of the report"
+          ],
+          "missing_behaviors": [],
+          "rationale": "Endpoints cover review, approve/reject, and status updates for reports"
+        },
+        {
+          "requirement_id": "PT07",
+          "status": "not_assessable",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Interactive map visualization for approved reports"
+          ],
+          "rationale": "Map visualization is UI behavior not exposed in REST contract"
+        },
+        {
+          "requirement_id": "PT15",
+          "status": "partially_implemented",
+          "matched_operations": [
+            {
+              "method": "POST",
+              "path": "/users/reports",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Create a new report"
+          ],
+          "missing_behaviors": [
+            "Anonymous flag configuration for reports"
+          ],
+          "rationale": "Report creation exists but anonymity setting not explicitly documented in operation metadata"
+        },
+        {
+          "requirement_id": "PT08",
+          "status": "implemented",
+          "matched_operations": [
+            {
+              "method": "GET",
+              "path": "/reports/assigned",
+              "operation_id": null
+            },
+            {
+              "method": "GET",
+              "path": "/reports/officers/{officerId}/office/{officeId}",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Retrieve assigned reports",
+            "Retrieve reports assigned to specific officer and office"
+          ],
+          "missing_behaviors": [],
+          "rationale": "Endpoints cover retrieving lists of assigned reports for technical office staff"
+        },
+        {
+          "requirement_id": "PT09",
+          "status": "implemented",
+          "matched_operations": [
+            {
+              "method": "PUT",
+              "path": "/api/user/profile",
+              "operation_id": null
+            },
+            {
+              "method": "DELETE",
+              "path": "/api/user/profile/photo",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Update user profile",
+            "Delete user profile photo"
+          ],
+          "missing_behaviors": [],
+          "rationale": "Profile update endpoint covers account configuration for notifications and presence"
+        },
+        {
+          "requirement_id": "PT30",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Search reports by address/location"
+          ],
+          "rationale": "No search or geolocation-based filtering endpoint exists in OpenAPI contract"
+        },
+        {
+          "requirement_id": "PT10",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Modify roles for municipality users"
+          ],
+          "rationale": "Only /roles GET exists, no role modification endpoint documented"
+        },
+        {
+          "requirement_id": "PT11",
+          "status": "implemented",
+          "matched_operations": [
+            {
+              "method": "PATCH",
+              "path": "/reports/{reportID}",
+              "operation_id": null
+            },
+            {
+              "method": "GET",
+              "path": "/reports/statuses",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Update the status of the report",
+            "Retrieve report statuses"
+          ],
+          "missing_behaviors": [],
+          "rationale": "PATCH endpoint covers status updates, GET retrieves available statuses"
+        },
+        {
+          "requirement_id": "PT12",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Telegram bot integration for report creation"
+          ],
+          "rationale": "No Telegram-specific endpoint for report creation exists in OpenAPI contract"
+        },
+        {
+          "requirement_id": "PT13",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Telegram bot integration for status checking"
+          ],
+          "rationale": "No Telegram-specific endpoint for status checking exists in OpenAPI contract"
+        },
+        {
+          "requirement_id": "PT14",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Telegram bot help commands"
+          ],
+          "rationale": "No Telegram-specific endpoint for help/commands exists in OpenAPI contract"
+        },
+        {
+          "requirement_id": "PT18",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Reply to messages from municipal operators"
+          ],
+          "rationale": "No messaging/reply endpoint exists for platform communication"
+        },
+        {
+          "requirement_id": "PT16",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Follow reports functionality"
+          ],
+          "rationale": "No subscription/follow endpoint exists for tracking other citizens' reports"
+        },
+        {
+          "requirement_id": "PT17",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Telegram bot push notifications"
+          ],
+          "rationale": "No Telegram-specific notification endpoint exists in OpenAPI contract"
+        },
+        {
+          "requirement_id": "PT19",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Email alert configuration"
+          ],
+          "rationale": "No email notification configuration endpoint exists in OpenAPI contract"
+        },
+        {
+          "requirement_id": "PT20",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Public statistics about reports"
+          ],
+          "rationale": "No statistics endpoint exists in OpenAPI contract"
+        },
+        {
+          "requirement_id": "PT21",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Detailed private statistics"
+          ],
+          "rationale": "No statistics endpoint exists in OpenAPI contract"
+        },
+        {
+          "requirement_id": "PT29",
+          "status": "partially_implemented",
+          "matched_operations": [
+            {
+              "method": "POST",
+              "path": "/reports/assign",
+              "operation_id": null
+            }
+          ],
+          "evidence": [
+            "Assign a report to an office and an employee"
+          ],
+          "missing_behaviors": [
+            "Automatic assignment configuration for categories"
+          ],
+          "rationale": "Manual assignment exists but automatic assignment configuration not documented"
+        },
+        {
+          "requirement_id": "PT22",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Browse summary table with filters"
+          ],
+          "rationale": "No filtering endpoint exists for browsing reports with filters"
+        },
+        {
+          "requirement_id": "PT23",
+          "status": "not_implemented",
+          "matched_operations": [],
+          "evidence": [],
+          "missing_behaviors": [
+            "Download summary table of reports"
+          ],
+          "rationale": "No export/download endpoint exists for downloading report tables"
+        }
+      ],
+      "validation_warnings": []
+    }
+  }
+}

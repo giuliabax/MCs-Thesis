@@ -1,0 +1,773 @@
+{
+  "run_id": "20260721T182119Z",
+  "project_name": "participium-team04",
+  "requirements_summary": {
+    "summary": "Participium is a web application for the Municipality of Turin enabling citizens to report urban issues (e.g., potholes, trash) via an interactive map or Telegram bot. Reports undergo a lifecycle: Pending Approval -> Assigned (to technical offices) -> In Progress -> Resolved/Rejected/Suspended. The system supports external maintainers (with or without platform access), internal communication channels, notifications (email/push), and detailed statistics for administrators.",
+    "requirements": [
+      {
+        "id": "PT26",
+        "source": "user_stories_xlsx",
+        "text": "As a technical office staff member/external maintainer\nI want to exchange information and comments on the report internally\nSo that coordination happens without exposing internal notes to citizens",
+        "role": "technical office staff member/external maintainer",
+        "business_value": 970,
+        "constraints": [],
+        "expected_behaviors": [
+          "coordination happens without exposing internal notes to citizens"
+        ]
+      },
+      {
+        "id": "PT01",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen\nI want to register with my name and username \nSo that I can access the Participium system and submit reports.",
+        "role": "citizen",
+        "business_value": 950,
+        "constraints": [
+          "Registration is required before submitting reports."
+        ],
+        "expected_behaviors": [
+          "I can access the Participium system and submit reports"
+        ]
+      },
+      {
+        "id": "PT12",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen\nI want to create a new report through a Telegram bot\nSo that I can quickly notify the public administration about an issue in my area.",
+        "role": "citizen",
+        "business_value": 875,
+        "constraints": [
+          "Allows the citizen to open a new report by selecting a location on the Turin map, entering a title, description, choosing a category, and attaching up to three photos. The bot also asks if the report should be anonymous.\n\nExample command:\n\n/newreport → Starts the guided process to create a new issue report with location, title, description, category, photos, and anonymity preference."
+        ],
+        "expected_behaviors": [
+          "I can quickly notify the public administration about an issue in my area"
+        ]
+      },
+      {
+        "id": "PT13",
+        "source": "user_stories_xlsx",
+        "text": "As a citizen \nI want to check my report status through a Telegram bot \nSo that I can quickly get updates.",
+        "role": "citizen",
+        "business_value": 865,
+        "constraints": [
+          "Check the status of their own reports, receiving an updated list with any changes.\nExample commands:\n\n/myreports → Lists all your submitted reports with their current status.\n\n/reportstatus 12345 → Shows details and current status of report ID 12345."
+        ],
+        "expected_behaviors": [
+          "I can quickly get updates"
+        ]
+      }
+    ],
+    "roles": [
+      "unregistered user",
+      "technical office staff member",
+      "external maintainer",
+      "technical office staff member/external maintainer",
+      "citizen",
+      "system administrator",
+      "municipal public relations officer",
+      "citizen/unregistered user",
+      "citizen /unregistered user",
+      "municipal administrator"
+    ],
+    "domain_rules": [
+      "Reports must be in 'Pending Approval' state until the Organization Office performs preliminary verification.",
+      "Accepted reports move to 'Assigned' state and are sent to the competent technical office depending on the problem category.",
+      "Rejected reports require an explanation from the Municipality Organization Office.",
+      "Once approved, accepted reports immediately become visible on the Participium portal (map and table).",
+      "Unregistered users can view reports on maps but cannot submit new reports.",
+      "Once a report has been inserted, it cannot be modified or deleted by the citizen.",
+      "An anonymous user's name is still visible to staff and only hidden in the Turin map of reports for citizens.",
+      "Only technical office staff members can have multiple roles.",
+      "The roles 'municipal public relations officer' and 'municipal administrator' are automatically associated with the Organization Office.",
+      "Email is a mandatory field for registration and can also be used for login.",
+      "External maintainers are added by the system administrator.",
+      "Each maintainer should have their own individual account.",
+      "Assignment logic is left to the teams, as done for municipality technical offices.",
+      "Comments/information exchanged between a technical office and an external maintainer are report-specific and reserved (not visible to citizens).",
+      "Communication between a technical office and external maintainers without access to Participium is out of scope.",
+      "Notifications/messages can be set to either be sent in real time or when the page is refreshed, depending on user preference."
+    ],
+    "edge_cases": [
+      "If a report is rejected, it must include an explanation from the Municipality Organization Office.",
+      "If a citizen chooses anonymity, their name is hidden in public views but visible to staff.",
+      "When zooming out on the map, reports can be grouped into a cumulative report showing total numbers.",
+      "When downloading the summary table, if filters are active, only filtered data is included in the CSV.",
+      "External maintainers without platform access (Case 2) update the technical office out of Participium; the technical office staff member moves the report to 'Resolved' manually.",
+      "Automatic assignment of issues of a certain category is possible only if previously set by the municipal administrator."
+    ],
+    "assumptions": [
+      "The system uses OpenStreetMap as the standard layer for geolocation.",
+      "The Municipality of Turin's organizational structure (technical offices) follows the official chart provided in the description.",
+      "Telegram bot integration requires the user to have configured a Telegram username in their profile.",
+      "Email notifications are sent by default unless explicitly disabled in the configuration panel.",
+      "The 'Organization Office' acts as the initial reviewer for all reports before assignment."
+    ]
+  },
+  "api_summary": {
+    "summary": "API supporting NextAuth authentication, Telegram bot integration for user registration and report submission, report retrieval, and static file serving.",
+    "operations": [
+      {
+        "path": "/api/auth/{nextauth}",
+        "method": "GET",
+        "operation_id": null,
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "NextAuth GET routes",
+          "Handles NextAuth GET endpoints: session, csrf, providers, signin, signout, callback.",
+          "Parameters: nextauth",
+          "Documented responses: 200"
+        ]
+      },
+      {
+        "path": "/api/auth/{nextauth}",
+        "method": "POST",
+        "operation_id": null,
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "NextAuth POST routes",
+          "Handles NextAuth POST endpoints: callback/credentials (login), signout. Requires identifier and password.",
+          "Parameters: nextauth",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 401"
+        ]
+      },
+      {
+        "path": "/api/messages",
+        "method": "GET",
+        "operation_id": null,
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "Get messages of a report",
+          "Requires reportId query parameter to fetch messages for a specific report.",
+          "Parameters: reportId",
+          "Documented responses: 200, 400, 404, 500"
+        ]
+      },
+      {
+        "path": "/api/telegram/isAuthenticated",
+        "method": "POST",
+        "operation_id": null,
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "Check whether a Telegram chat is linked to a registered user",
+          "Checks if a Telegram chat is linked to a registered user. Requires chatId.",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 400, 500"
+        ]
+      },
+      {
+        "path": "/api/telegram/registration",
+        "method": "POST",
+        "operation_id": null,
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "Link a Telegram account to a Participium user via auth token",
+          "Links Telegram account to Participium user. Requires authToken and chatId.",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 400, 500"
+        ]
+      },
+      {
+        "path": "/api/telegram/reports",
+        "method": "GET",
+        "operation_id": null,
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "Get reports for a Telegram user",
+          "Fetches reports for a Telegram user. Requires chatId query parameter.",
+          "Parameters: chatId",
+          "Documented responses: 200"
+        ]
+      },
+      {
+        "path": "/api/telegram/reports",
+        "method": "POST",
+        "operation_id": null,
+        "auth_required": null,
+        "dependencies": [
+          "POST /api/auth/{nextauth}: Report creation returns 401, implying prior authentication is required."
+        ],
+        "notes": [
+          "Create a report via the Telegram bot",
+          "Creates a report via Telegram bot. Requires title, description, latitude, longitude, category, chatId.",
+          "Request body is documented in OpenAPI",
+          "Documented responses: 200, 400, 401, 500"
+        ]
+      },
+      {
+        "path": "/api/telegram/reports/{id}",
+        "method": "GET",
+        "operation_id": null,
+        "auth_required": null,
+        "dependencies": [
+          "POST /api/telegram/registration: User must be registered to access their reports."
+        ],
+        "notes": [
+          "Get a single report for a Telegram user",
+          "Fetches a single report. Requires id (path) and chatId (query).",
+          "Parameters: id, chatId",
+          "Documented responses: 200, 400, 500"
+        ]
+      },
+      {
+        "path": "/api/uploads/{filename}",
+        "method": "GET",
+        "operation_id": null,
+        "auth_required": null,
+        "dependencies": [],
+        "notes": [
+          "Serve an uploaded image file",
+          "Serves an uploaded image file. Requires filename (path).",
+          "Parameters: filename",
+          "Documented responses: 200, 403, 404"
+        ]
+      }
+    ],
+    "authentication_notes": [
+      "NextAuth endpoints at /api/auth/{nextauth} handle session management and login callbacks but do not enforce auth_required in the schema.",
+      "Telegram report creation (/api/telegram/reports POST) returns 401, suggesting authentication may be enforced at runtime despite auth_required being null."
+    ],
+    "dependencies": [
+      "User must register Telegram account via /api/telegram/registration before using /api/telegram/isAuthenticated or fetching reports.",
+      "Report creation (/api/telegram/reports POST) likely depends on prior user registration and potentially authentication (indicated by 401 response).",
+      "POST /api/telegram/registration -> GET /api/telegram/reports/{id}: User must be registered to access their reports.",
+      "POST /api/auth/{nextauth} -> POST /api/telegram/reports: Report creation returns 401, implying prior authentication is required."
+    ],
+    "dependency_edges": [
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/api/telegram/registration",
+        "dependent_method": "GET",
+        "dependent_path": "/api/telegram/reports/{id}",
+        "dependency_type": "state",
+        "reason": "User must be registered to access their reports."
+      },
+      {
+        "prerequisite_method": "POST",
+        "prerequisite_path": "/api/auth/{nextauth}",
+        "dependent_method": "POST",
+        "dependent_path": "/api/telegram/reports",
+        "dependency_type": "authorization",
+        "reason": "Report creation returns 401, implying prior authentication is required."
+      }
+    ],
+    "risks": [
+      "auth_required field is null for all operations, but some (e.g., report creation) return 401, creating ambiguity about when auth is actually enforced.",
+      "NextAuth endpoints are catch-all routes; specific behavior depends on the path segment (e.g., session vs callback), which is not explicitly detailed beyond generic descriptions."
+    ]
+  },
+  "strategy_items": [
+    {
+      "requirement_id": "PT01",
+      "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+      "api_endpoint": "/api/telegram/registration",
+      "http_method": "POST",
+      "prompt": "Execute registration for a new citizen user. Validate successful creation of the Telegram bot session linked to the user account.",
+      "test_type": "happy_path",
+      "priority": "high",
+      "auth_role": null,
+      "setup_needed": [],
+      "cleanup_strategy": "Delete created resources or restore their previous state.",
+      "expected_status_codes": [
+        "200"
+      ],
+      "rationale": "Core functionality: establishing the user's presence in the system via Telegram."
+    },
+    {
+      "requirement_id": "PT12",
+      "requirement_summary": "As a citizen I want to create a new report through a Telegram bot So that I can quickly notify the public administration about an issue in my area.",
+      "api_endpoint": "/api/telegram/reports",
+      "http_method": "POST",
+      "prompt": "Submit a valid report payload containing location, description, and category to create a new incident record.",
+      "test_type": "happy_path",
+      "priority": "high",
+      "auth_role": null,
+      "setup_needed": [],
+      "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+      "expected_status_codes": [
+        "201"
+      ],
+      "rationale": "Core functionality: creating a new report instance."
+    },
+    {
+      "requirement_id": "PT13",
+      "requirement_summary": "As a citizen I want to check my report status through a Telegram bot So that I can quickly get updates.",
+      "api_endpoint": "/api/telegram/reports/{id}",
+      "http_method": "GET",
+      "prompt": "Retrieve the details of a specific report using its unique identifier to verify status and content.",
+      "test_type": "happy_path",
+      "priority": "high",
+      "auth_role": null,
+      "setup_needed": [
+        "Create a valid report via POST /api/telegram/reports first"
+      ],
+      "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+      "expected_status_codes": [
+        "200"
+      ],
+      "rationale": "Core functionality: reading existing report data."
+    },
+    {
+      "requirement_id": "PT26",
+      "requirement_summary": "As a technical office staff member/external maintainer I want to exchange information and comments on the report internally So that coordination happens without exposing internal notes to citizens",
+      "api_endpoint": "/api/messages",
+      "http_method": "GET",
+      "prompt": "Fetch internal messages or comments associated with a specific report ID to verify internal coordination data is accessible.",
+      "test_type": "stateful",
+      "priority": "high",
+      "auth_role": "technical office staff member/external maintainer",
+      "setup_needed": [
+        "Ensure a report exists (via PT12) and that the system has generated or populated internal messages/comments for it"
+      ],
+      "cleanup_strategy": null,
+      "expected_status_codes": [
+        "200"
+      ],
+      "rationale": "Stateful workflow: requires an existing report to fetch associated internal comments/messages."
+    },
+    {
+      "requirement_id": "PT12",
+      "requirement_summary": "As a citizen I want to create a new report through a Telegram bot So that I can quickly notify the public administration about an issue in my area.",
+      "api_endpoint": "/api/telegram/reports",
+      "http_method": "POST",
+      "prompt": "Attempt to submit a report with missing required fields (e.g., empty description or null location) to trigger validation errors.",
+      "test_type": "edge_case",
+      "priority": "medium",
+      "auth_role": null,
+      "setup_needed": [],
+      "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+      "expected_status_codes": [
+        "400"
+      ],
+      "rationale": "Edge case: testing input validation boundaries where required fields are omitted or empty."
+    },
+    {
+      "requirement_id": "PT12",
+      "requirement_summary": "As a citizen I want to create a new report through a Telegram bot So that I can quickly notify the public administration about an issue in my area.",
+      "api_endpoint": "/api/telegram/reports",
+      "http_method": "POST",
+      "prompt": "Submit a report with invalid data types (e.g., non-numeric coordinates, malformed JSON structure) to test server resilience and error handling.",
+      "test_type": "negative",
+      "priority": "medium",
+      "auth_role": null,
+      "setup_needed": [],
+      "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+      "expected_status_codes": [
+        "400"
+      ],
+      "rationale": "Negative test: ensuring the API rejects malformed payloads gracefully without crashing."
+    },
+    {
+      "requirement_id": "PT13",
+      "requirement_summary": "As a citizen I want to check my report status through a Telegram bot So that I can quickly get updates.",
+      "api_endpoint": "/api/telegram/reports/{id}",
+      "http_method": "GET",
+      "prompt": "Attempt to retrieve a report using an invalid or non-existent ID (e.g., '999999') to verify 404 handling.",
+      "test_type": "negative",
+      "priority": "medium",
+      "auth_role": null,
+      "setup_needed": [
+        "Create or locate the resource referenced by the path parameter."
+      ],
+      "cleanup_strategy": null,
+      "expected_status_codes": [
+        "404"
+      ],
+      "rationale": "Negative test: verifying correct error response for non-existent resources."
+    },
+    {
+      "requirement_id": "PT26",
+      "requirement_summary": "As a technical office staff member/external maintainer I want to exchange information and comments on the report internally So that coordination happens without exposing internal notes to citizens",
+      "api_endpoint": "/api/messages",
+      "http_method": "GET",
+      "prompt": "Attempt to access internal messages without providing the required authentication token or role header.",
+      "test_type": "negative",
+      "priority": "medium",
+      "auth_role": null,
+      "setup_needed": [],
+      "cleanup_strategy": null,
+      "expected_status_codes": [
+        "401"
+      ],
+      "rationale": "Negative test: verifying that unauthorized access to internal coordination data is blocked."
+    },
+    {
+      "requirement_id": "PT01",
+      "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+      "api_endpoint": "/api/telegram/registration",
+      "http_method": "POST",
+      "prompt": "Attempt to register a user with an already existing username to test duplicate key handling.",
+      "test_type": "edge_case",
+      "priority": "low",
+      "auth_role": null,
+      "setup_needed": [
+        "Perform a successful registration for a specific username first"
+      ],
+      "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+      "expected_status_codes": [
+        "409"
+      ],
+      "rationale": "Edge case: testing system behavior when attempting to create duplicate user accounts."
+    }
+  ],
+  "assumptions": [
+    "The system uses OpenStreetMap as the standard layer for geolocation.",
+    "The Municipality of Turin's organizational structure (technical offices) follows the official chart provided in the description.",
+    "Telegram bot integration requires the user to have configured a Telegram username in their profile.",
+    "Email notifications are sent by default unless explicitly disabled in the configuration panel.",
+    "The 'Organization Office' acts as the initial reviewer for all reports before assignment."
+  ],
+  "risks": [
+    "auth_required field is null for all operations, but some (e.g., report creation) return 401, creating ambiguity about when auth is actually enforced.",
+    "NextAuth endpoints are catch-all routes; specific behavior depends on the path segment (e.g., session vs callback), which is not explicitly detailed beyond generic descriptions.",
+    "Requirement coverage is inferred from OpenAPI documentation and must be verified against the running SUT during execution."
+  ],
+  "created_at": "2026-07-21T18:32:16.172337Z",
+  "sut_base_url": "http://localhost:8083",
+  "requirement_coverage": {
+    "project_name": "participium-team04",
+    "openapi_path": "projects\\participium-team04\\swagger.yaml",
+    "assessment_basis": "openapi_documentation",
+    "requirements_total": 30,
+    "status_counts": {
+      "implemented": 3,
+      "partially_implemented": 1,
+      "not_implemented": 25,
+      "not_assessable": 1
+    },
+    "matches": [
+      {
+        "requirement_id": "PT28",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Interactive map view for unregistered users",
+          "Public report listing endpoint"
+        ],
+        "rationale": "No public map or report listing endpoint exists in the OpenAPI contract. Only Telegram-specific endpoints are available."
+      },
+      {
+        "requirement_id": "PT24",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Assign reports to external maintainers endpoint"
+        ],
+        "rationale": "No endpoint for assigning users or changing report assignees is documented."
+      },
+      {
+        "requirement_id": "PT25",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Update report status endpoint"
+        ],
+        "rationale": "No PUT/PATCH endpoint for updating report statuses is documented."
+      },
+      {
+        "requirement_id": "PT26",
+        "status": "partially_implemented",
+        "matched_operations": [
+          {
+            "method": "GET",
+            "path": "/api/messages",
+            "operation_id": null
+          }
+        ],
+        "evidence": [
+          "GET /api/messages: Get messages of a report"
+        ],
+        "missing_behaviors": [
+          "Posting comments or exchanging information (write capability)"
+        ],
+        "rationale": "Read-only message retrieval is available, but writing comments/exchanging info requires a POST/PUT endpoint which is missing."
+      },
+      {
+        "requirement_id": "PT01",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/api/auth/{nextauth}",
+            "operation_id": null
+          }
+        ],
+        "evidence": [
+          "POST /api/auth/{nextauth}: NextAuth POST routes"
+        ],
+        "missing_behaviors": [],
+        "rationale": "Auth POST route typically covers registration and login actions required for citizen access."
+      },
+      {
+        "requirement_id": "PT27",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Verification code handling endpoint"
+        ],
+        "rationale": "No specific endpoint for verifying registration codes is documented in the OpenAPI contract."
+      },
+      {
+        "requirement_id": "PT02",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "User setup/creation endpoint for administrators"
+        ],
+        "rationale": "No user management or creation endpoints are visible in the contract."
+      },
+      {
+        "requirement_id": "PT03",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Role assignment endpoint"
+        ],
+        "rationale": "No endpoint for assigning roles to users is documented."
+      },
+      {
+        "requirement_id": "PT04",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Map interaction/location selection endpoint"
+        ],
+        "rationale": "No endpoint for selecting location on a map or geolocation submission is documented."
+      },
+      {
+        "requirement_id": "PT05",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Standard report creation endpoint with details"
+        ],
+        "rationale": "Only Telegram-specific report creation is available; standard citizen report submission endpoint is missing."
+      },
+      {
+        "requirement_id": "PT06",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Report approval/rejection endpoint"
+        ],
+        "rationale": "No endpoint for changing report status (approve/reject) is documented."
+      },
+      {
+        "requirement_id": "PT07",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Interactive map view for citizens"
+        ],
+        "rationale": "No public report listing or map visualization endpoint is documented."
+      },
+      {
+        "requirement_id": "PT15",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Anonymous report creation option in standard flow"
+        ],
+        "rationale": "Only Telegram bot creation endpoint exists; standard citizen report creation with anonymity setting is not documented."
+      },
+      {
+        "requirement_id": "PT08",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Assigned reports list endpoint for staff"
+        ],
+        "rationale": "No endpoint for listing assigned reports to a specific user role is documented."
+      },
+      {
+        "requirement_id": "PT09",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Account configuration endpoint"
+        ],
+        "rationale": "No endpoint for configuring account settings or notifications is documented."
+      },
+      {
+        "requirement_id": "PT30",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Report search by address endpoint"
+        ],
+        "rationale": "No search or filter endpoint for reports is documented."
+      },
+      {
+        "requirement_id": "PT10",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Role modification endpoint"
+        ],
+        "rationale": "No endpoint for modifying user roles is documented."
+      },
+      {
+        "requirement_id": "PT11",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Report status update endpoint"
+        ],
+        "rationale": "No PUT/PATCH endpoint for updating report statuses is documented."
+      },
+      {
+        "requirement_id": "PT12",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "POST",
+            "path": "/api/telegram/reports",
+            "operation_id": null
+          }
+        ],
+        "evidence": [
+          "POST /api/telegram/reports: Create a report via the Telegram bot"
+        ],
+        "missing_behaviors": [],
+        "rationale": "The OpenAPI contract explicitly documents creating a report via the Telegram bot."
+      },
+      {
+        "requirement_id": "PT13",
+        "status": "implemented",
+        "matched_operations": [
+          {
+            "method": "GET",
+            "path": "/api/telegram/reports/{id}",
+            "operation_id": null
+          }
+        ],
+        "evidence": [
+          "GET /api/telegram/reports/{id}: Get a single report for a Telegram user"
+        ],
+        "missing_behaviors": [],
+        "rationale": "The OpenAPI contract explicitly documents retrieving a specific report via the Telegram bot."
+      },
+      {
+        "requirement_id": "PT14",
+        "status": "not_assessable",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Help command handling logic"
+        ],
+        "rationale": "Bot help commands are typically handled by the bot framework logic rather than REST API endpoints."
+      },
+      {
+        "requirement_id": "PT18",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Reply to messages endpoint"
+        ],
+        "rationale": "Only GET /api/messages is available; no endpoint for sending replies is documented."
+      },
+      {
+        "requirement_id": "PT16",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Follow report subscription endpoint"
+        ],
+        "rationale": "No endpoint for following or subscribing to other reports is documented."
+      },
+      {
+        "requirement_id": "PT17",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Push notification subscription endpoint"
+        ],
+        "rationale": "No endpoint for configuring or subscribing to push notifications is documented."
+      },
+      {
+        "requirement_id": "PT19",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Email alert configuration endpoint"
+        ],
+        "rationale": "No endpoint for configuring email alerts is documented."
+      },
+      {
+        "requirement_id": "PT20",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Public statistics endpoint"
+        ],
+        "rationale": "No endpoint for viewing public report statistics is documented."
+      },
+      {
+        "requirement_id": "PT21",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Private statistics endpoint"
+        ],
+        "rationale": "No endpoint for viewing detailed private statistics is documented."
+      },
+      {
+        "requirement_id": "PT29",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Automatic assignment configuration endpoint"
+        ],
+        "rationale": "No endpoint for configuring automatic report assignment rules is documented."
+      },
+      {
+        "requirement_id": "PT22",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Public report list with filters endpoint"
+        ],
+        "rationale": "No public report listing or filtering endpoint is documented."
+      },
+      {
+        "requirement_id": "PT23",
+        "status": "not_implemented",
+        "matched_operations": [],
+        "evidence": [],
+        "missing_behaviors": [
+          "Report export/download endpoint"
+        ],
+        "rationale": "No endpoint for downloading report summaries is documented."
+      }
+    ],
+    "validation_warnings": []
+  }
+}

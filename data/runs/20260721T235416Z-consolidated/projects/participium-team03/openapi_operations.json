@@ -1,0 +1,1404 @@
+[
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/comment/{id}/comments",
+    "summary": "Add an internal comment to a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "schema": {
+          "type": "integer"
+        },
+        "required": true,
+        "description": "Report identifier"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "comment"
+      ],
+      "properties": {
+        "comment": {
+          "type": "string",
+          "example": "This issue requires immediate attention"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Comments"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/comment/{id}/comments",
+    "summary": "Get internal comments for a report",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Report identifier"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Comments"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/api/categories",
+    "summary": "Get report categories",
+    "description": "Retrieves the list of available report categories",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "500"
+    ],
+    "tags": [
+      "Constants"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/{id}/messages",
+    "summary": "Invia un messaggio (Cittadino o Staff)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "description": "ID della segnalazione",
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Buongiorno, ci sono aggiornamenti?"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Messages"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{id}/messages",
+    "summary": "Recupera la chat della segnalazione",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "description": "ID della segnalazione",
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "404"
+    ],
+    "tags": [
+      "Messages"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/notifications",
+    "summary": "Get all notifications for the logged-in user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/notifications/unread",
+    "summary": "Get unread notifications for the logged-in user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/notifications/{id}/read",
+    "summary": "Mark a notification as read",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Notification identifier"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/notifications/read-all",
+    "summary": "Mark all notifications as read for the logged-in user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/notifications/{id}",
+    "summary": "Delete a notification",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Notification identifier"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/me",
+    "summary": "Get all reports created by the logged-in citizen",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports",
+    "summary": "Add one new report (with photos upload)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "latitude",
+        "longitude",
+        "title",
+        "description",
+        "category",
+        "photos",
+        "anonymous"
+      ],
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "example": 45.062394
+        },
+        "longitude": {
+          "type": "number",
+          "example": 7.662697
+        },
+        "title": {
+          "type": "string",
+          "example": "Pothole in via Garibaldi"
+        },
+        "description": {
+          "type": "string",
+          "example": "Large pothole causing danger for cyclists"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Water Supply – Drinking Water",
+            "Architectural Barriers",
+            "Sewer System",
+            "Public Lighting",
+            "Waste",
+            "Road Signs and Traffic Lights",
+            "Roads and Urban Furnishings",
+            "Public Green Areas and Playgrounds",
+            "Other"
+          ]
+        },
+        "photos": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "description": "Attach 1–3 images using the same key 'photos'.",
+          "items": {
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports/anonymous",
+    "summary": "Add one new anonymous report (with photos upload)",
+    "description": "Create a report without userId.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "latitude",
+        "longitude",
+        "title",
+        "description",
+        "category",
+        "photos"
+      ],
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "example": 45.062394
+        },
+        "longitude": {
+          "type": "number",
+          "example": 7.662697
+        },
+        "title": {
+          "type": "string",
+          "example": "Pothole in via Garibaldi"
+        },
+        "description": {
+          "type": "string",
+          "example": "Large pothole causing danger for cyclists"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Water Supply – Drinking Water",
+            "Architectural Barriers",
+            "Sewer System",
+            "Public Lighting",
+            "Waste",
+            "Road Signs and Traffic Lights",
+            "Roads and Urban Furnishings",
+            "Public Green Areas and Playgrounds",
+            "Other"
+          ]
+        },
+        "photos": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "description": "Attach 1–3 images using the same key 'photos'.",
+          "items": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "anonymous": {
+          "type": "boolean",
+          "example": true,
+          "description": "Must be true for anonymous reports"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": false
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/pending",
+    "summary": "List all pending reports for review",
+    "description": "Returns all reports with status \"pending\" that must be reviewed by a municipal public relations officer / admin.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/approved",
+    "summary": "Get approved reports for the public map",
+    "description": "Returns all reports with status \"accepted\". Optional bounding box parameters (`north`, `south`, `east`, `west`) can be provided to limit the results to the visible map area.\n",
+    "parameters": [
+      {
+        "in": "query",
+        "name": "north",
+        "schema": {
+          "type": "number"
+        },
+        "description": "Northern latitude of the bounding box"
+      },
+      {
+        "in": "query",
+        "name": "south",
+        "schema": {
+          "type": "number"
+        },
+        "description": "Southern latitude of the bounding box"
+      },
+      {
+        "in": "query",
+        "name": "east",
+        "schema": {
+          "type": "number"
+        },
+        "description": "Eastern longitude of the bounding box"
+      },
+      {
+        "in": "query",
+        "name": "west",
+        "schema": {
+          "type": "number"
+        },
+        "description": "Western longitude of the bounding box"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/citizen",
+    "summary": "Get reports visible to citizens",
+    "description": "Returns a list of reports (excluding pending and rejected) for citizens.",
+    "parameters": [
+      {
+        "in": "query",
+        "name": "north",
+        "schema": {
+          "type": "number"
+        },
+        "description": "Northern latitude"
+      },
+      {
+        "in": "query",
+        "name": "south",
+        "schema": {
+          "type": "number"
+        },
+        "description": "Southern latitude"
+      },
+      {
+        "in": "query",
+        "name": "east",
+        "schema": {
+          "type": "number"
+        },
+        "description": "Eastern longitude"
+      },
+      {
+        "in": "query",
+        "name": "west",
+        "schema": {
+          "type": "number"
+        },
+        "description": "Western longitude"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/assigned",
+    "summary": "Get reports assigned to the logged-in technical office staff member",
+    "description": "Returns all reports assigned the authenticated user. Only technical office staff members can access this endpoint.\n",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/{id}",
+    "summary": "Get a single report by ID",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Report identifier"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "404"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/reports/{id}/review",
+    "summary": "Review (accept or reject) a report",
+    "description": "Allows a municipal public relations officer (or admin) to approve or reject a report. - If `status` is `\"accepted\"`, a valid `technicalOffice` must be provided. - If `status` is `\"rejected\"`, an `explanation` must be provided.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Report identifier"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "rejected"
+          ],
+          "example": "accepted"
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Required when status is \"rejected\".",
+          "example": "The issue has already been resolved."
+        },
+        "technicalOffice": {
+          "type": "string",
+          "description": "Required when status is \"accepted\". Must be one of the allowed technical officer roles (e.g. 'urban_planner', 'public_works_engineer', 'environment_technician', ...).\n",
+          "enum": [
+            "urban_planner",
+            "building_permit_officer",
+            "building_inspector",
+            "suap_officer",
+            "public_works_engineer",
+            "mobility_traffic_engineer",
+            "environment_technician"
+          ],
+          "example": "public_works_engineer"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/reports/{id}/assign-external",
+    "summary": "Assign a report to an external maintainer",
+    "description": "Allows a technical office staff member to assign a report that is assigned to them to an external maintainer. The report must be in \"assigned\" status and assigned to the requesting technical office staff member.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Report identifier"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "externalMaintainerId"
+      ],
+      "properties": {
+        "externalMaintainerId": {
+          "type": "integer",
+          "description": "ID of the external maintainer to assign the report to",
+          "example": 5
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/reports/{id}/status",
+    "summary": "Update report status (External Maintainer)",
+    "description": "Allows an External Maintainer to update the status of a report assigned to them. Allowed statuses: \"progress\", \"suspended\", \"resolved\".\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Report identifier"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "progress",
+            "suspended",
+            "resolved"
+          ],
+          "example": "progress"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports/external/assigned",
+    "summary": "Get reports assigned to the logged-in external maintainer",
+    "description": "Returns all reports assigned to the authenticated external maintainer. Only users with type 'external_maintainer' can access this endpoint.\n",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/streets",
+    "summary": "Search for streets in the database (Autocomplete)",
+    "description": "Returns a list of streets matching the query string for autocomplete purposes.",
+    "parameters": [
+      {
+        "in": "query",
+        "name": "q",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Part of the street name to search for",
+        "example": "Via Ro"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "500"
+    ],
+    "tags": [
+      "Streets"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/streets/{name}/reports",
+    "summary": "Get reports and map focus for a specific street",
+    "description": "Given a street name, it returns the geographic boundaries (bounding box) and all existing reports within that area. Use the mapFocus data to center and zoom the map.\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "name",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Exact name of the street",
+        "example": "Via Roma"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Streets"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/sessions",
+    "summary": "Login user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "citizen1"
+        },
+        "password": {
+          "type": "string",
+          "example": "test123"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Sessions"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/sessions/current",
+    "summary": "Get current logged-in user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Sessions"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/sessions/current",
+    "summary": "Logout user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Sessions"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/telegram/webhook",
+    "summary": "Telegram webhook endpoint",
+    "description": "Receives updates from Telegram Bot API",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "description": "Telegram Update object"
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": false
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/telegram/info",
+    "summary": "Get Telegram bot information",
+    "description": "Returns information about the configured Telegram bot",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "503"
+    ],
+    "tags": [
+      "Telegram"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users",
+    "summary": "Register a new user (citizen)",
+    "description": "Register a new citizen account. A confirmation code will be sent to the provided email address. The account must be confirmed within 30 minutes.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "email",
+        "name",
+        "surname",
+        "password"
+      ],
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "newcitizen"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "newcitizen@example.org"
+        },
+        "name": {
+          "type": "string",
+          "example": "Anna"
+        },
+        "surname": {
+          "type": "string",
+          "example": "Neri"
+        },
+        "password": {
+          "type": "string",
+          "example": "strongPassword123!"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "409"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/confirm",
+    "summary": "Confirm user registration with code",
+    "description": "Confirm a citizen account using the confirmation code sent via email. The code is valid for 30 minutes.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "email",
+        "code"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "newcitizen@example.org"
+        },
+        "code": {
+          "type": "string",
+          "example": "123456",
+          "description": "6-digit confirmation code"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "404"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/resend-confirmation",
+    "summary": "Resend confirmation code",
+    "description": "Request a new confirmation code if the previous one expired or was lost. A new code will be sent to the email address.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "email"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "newcitizen@example.org"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "404"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/admin",
+    "summary": "Create a new user (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "email",
+        "name",
+        "surname",
+        "password",
+        "type"
+      ],
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "newuser"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "newuser@example.com"
+        },
+        "name": {
+          "type": "string",
+          "example": "Mario"
+        },
+        "surname": {
+          "type": "string",
+          "example": "Rossi"
+        },
+        "password": {
+          "type": "string",
+          "example": "securePass123!"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "citizen",
+            "admin",
+            "municipal_public_relations_officer",
+            "municipal_administrator",
+            "urban_planner",
+            "building_permit_officer",
+            "building_inspector",
+            "suap_officer",
+            "public_works_engineer",
+            "mobility_traffic_engineer",
+            "environment_technician",
+            "technical_office_staff_member"
+          ],
+          "example": "urban_planner"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "409"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/roles",
+    "summary": "Get allowed roles (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/municipality",
+    "summary": "List all municipality users (non-citizen, non-admin)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/users/{id}/update",
+    "summary": "Update user profile information",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "User ID"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "telegram_nickname": {
+          "type": "string",
+          "example": "@myTelegramHandle",
+          "description": "Telegram nickname"
+        },
+        "personal_photo": {
+          "type": "File",
+          "example": "/uploads/photos/user123.jpg",
+          "description": "Path to user's personal photo"
+        },
+        "mail_notifications": {
+          "type": "boolean",
+          "example": true,
+          "description": "Enable/disable email notifications"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/external-maintainers",
+    "summary": "Create a new external maintainer (admin only)",
+    "description": "Creates a new external maintainer user with associated company. The user type and role are automatically set to 'external_maintainer'.",
+    "parameters": [],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "email",
+        "name",
+        "surname",
+        "password",
+        "company_id"
+      ],
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "fixroads_john"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "john@fixroads.it"
+        },
+        "name": {
+          "type": "string",
+          "example": "John"
+        },
+        "surname": {
+          "type": "string",
+          "example": "Doe"
+        },
+        "password": {
+          "type": "string",
+          "example": "securePass123!"
+        },
+        "company_id": {
+          "type": "integer",
+          "example": 1,
+          "description": "ID of the company the maintainer works for"
+        }
+      }
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "409"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/external-maintainers",
+    "summary": "Get all external maintainers",
+    "description": "Returns a list of all external maintainers. Available to technical office staff members.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/{id}/assign-role",
+    "summary": "Assign a role to a municipality user (admin only)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "User ID of the municipality user to assign role to",
+        "example": 5
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "role"
+      ],
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "municipal_public_relations_officer",
+            "municipal_administrator",
+            "urban_planner",
+            "building_permit_officer",
+            "building_inspector",
+            "suap_officer",
+            "public_works_engineer",
+            "mobility_traffic_engineer",
+            "environment_technician",
+            "technical_office_staff_member",
+            "external_maintainer"
+          ],
+          "example": "urban_planner",
+          "description": "Role to assign to the municipality user"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "DELETE",
+    "path": "/users/{id}/remove-role",
+    "summary": "Remove a role from a municipality user (admin only)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "User ID of the municipality user to remove role from",
+        "example": 5
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "role"
+      ],
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "municipal_public_relations_officer",
+            "municipal_administrator",
+            "urban_planner",
+            "building_permit_officer",
+            "building_inspector",
+            "suap_officer",
+            "public_works_engineer",
+            "mobility_traffic_engineer",
+            "environment_technician",
+            "technical_office_staff_member",
+            "external_maintainer"
+          ],
+          "example": "urban_planner",
+          "description": "Role to remove from the municipality user"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/companies",
+    "summary": "Get all companies",
+    "description": "Returns a list of all registered companies (external maintainer companies). Available to admin users.",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  }
+]

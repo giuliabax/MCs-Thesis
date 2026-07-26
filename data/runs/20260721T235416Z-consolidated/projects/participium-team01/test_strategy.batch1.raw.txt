@@ -1,0 +1,179 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without any authentication headers. Verify that the response contains a list of reports where status is 'Resolved' or equivalent approved states, and that no 'Pending Approval' reports are included.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core requirement for public visibility of approved reports without authentication."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without authentication. Verify that the response excludes any reports currently in 'Pending Approval' state, ensuring only fully processed reports are visible.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the filtering logic to ensure pending reports are hidden from unauthenticated users as per domain rules."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can see approved reports on an interactive map.",
+    "api_endpoint": "/reports/approved",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports/approved without authentication. Verify that the response returns a 401 Unauthorized status code if the endpoint is strictly protected and not public, or confirm that the system correctly handles unauthenticated access as defined in requirements.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["401"],
+    "rationale": "Tests the boundary condition where unauthenticated access might be restricted despite the requirement implying visibility."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member can assign reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "First, create a test report via POST /reports. Then, authenticate as a technical office staff member. Execute PUT /reports/{id}/mainteiner with a valid external maintainer ID. Verify the report's assigned maintainer is updated correctly.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /reports to create a new report resource",
+      "POST /sessions to obtain an authenticated session for technical_office_staff"
+    ],
+    "cleanup_strategy": "DELETE the created report via POST /reports/{id}/delete if it exists; otherwise, verify no resource was created.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the ability of staff to assign external maintainers to reports."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member can assign reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a technical office staff member. Execute PUT /reports/{id}/mainteiner with an invalid or non-existent external maintainer ID. Verify that the system returns an appropriate error (e.g., 400 Bad Request) indicating the maintainer does not exist.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /reports to create a new report resource",
+      "POST /sessions to obtain an authenticated session for technical_office_staff"
+    ],
+    "cleanup_strategy": "DELETE the created report via POST /reports/{id}/delete if it exists; otherwise, verify no resource was created.",
+    "expected_status_codes": ["400"],
+    "rationale": "Tests error handling when attempting to assign a non-existent maintainer."
+  },
+  {
+    "requirement_id": "PT29",
+    "requirement_summary": "Municipal administrator can configure automatic assignment of all reports in a certain category.",
+    "api_endpoint": "/reports/{id}/auto-assign-officer",
+    "http_method": "POST",
+    "prompt": "Authenticate as a municipal administrator. Execute POST /reports/{id}/auto-assign-officer to assign a report automatically based on its category configuration. Verify that the assignment is successful and the report status changes appropriately.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal_administrator",
+    "setup_needed": [
+      "POST /reports to create a new report resource with a specific category",
+      "POST /sessions to obtain an authenticated session for municipal_administrator"
+    ],
+    "cleanup_strategy": "DELETE the created report via POST /reports/{id}/delete if it exists; otherwise, verify no resource was created.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the automatic assignment functionality configured by administrators."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer can review and approve or reject reports.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a municipal public relations officer. Execute PUT /reports/{id}/mainteiner to assign a report to an external maintainer for review. Verify that the assignment is successful and the report status reflects the new state.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal_public_relations_officer",
+    "setup_needed": [
+      "POST /reports to create a new report resource",
+      "POST /sessions to obtain an authenticated session for municipal_public_relations_officer"
+    ],
+    "cleanup_strategy": "DELETE the created report via POST /reports/{id}/delete if it exists; otherwise, verify no resource was created.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the ability of PR officers to assign reports for review."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer can review and approve or reject reports.",
+    "api_endpoint": "/reports/{id}/mainteiner",
+    "http_method": "PUT",
+    "prompt": "Authenticate as a municipal public relations officer. Execute PUT /reports/{id}/mainteiner with an invalid maintainer ID to attempt assignment. Verify that the system returns an appropriate error (e.g., 400 Bad Request) indicating the maintainer does not exist.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal_public_relations_officer",
+    "setup_needed": [
+      "POST /reports to create a new report resource",
+      "POST /sessions to obtain an authenticated session for municipal_public_relations_officer"
+    ],
+    "cleanup_strategy": "DELETE the created report via POST /reports/{id}/delete if it exists; otherwise, verify no resource was created.",
+    "expected_status_codes": ["400"],
+    "rationale": "Tests error handling when attempting to assign a non-existent maintainer."
+  },
+  {
+    "requirement_id": "PT29",
+    "requirement_summary": "Municipal administrator can configure automatic assignment of all reports in a certain category.",
+    "api_endpoint": "/reports/{id}/auto-assign-officer",
+    "http_method": "POST",
+    "prompt": "Authenticate as a municipal administrator. Execute POST /reports/{id}/auto-assign-officer with an invalid report ID to attempt automatic assignment. Verify that the system returns an appropriate error (e.g., 404 Not Found) indicating the report does not exist.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal_administrator",
+    "setup_needed": [
+      "POST /sessions to obtain an authenticated session for municipal_administrator"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["404"],
+    "rationale": "Tests error handling when attempting to assign a non-existent report."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member can assign reports to external maintainers.",
+    "api_endpoint": "/reports/{id}/auto-assign-maintainer",
+    "http_method": "POST",
+    "prompt": "Authenticate as a technical office staff member. Execute POST /reports/{id}/auto-assign-maintainer to automatically assign a report to an external maintainer based on category configuration. Verify that the assignment is successful and the report status changes appropriately.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /reports to create a new report resource with a specific category",
+      "POST /sessions to obtain an authenticated session for technical_office_staff"
+    ],
+    "cleanup_strategy": "DELETE the created report via POST /reports/{id}/delete if it exists; otherwise, verify no resource was created.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the automatic assignment functionality configured by administrators."
+  },
+  {
+    "requirement_id": "PT29",
+    "requirement_summary": "Municipal administrator can configure automatic assignment of all reports in a certain category.",
+    "api_endpoint": "/reports/{id}/auto-assign-officer",
+    "http_method": "POST",
+    "prompt": "Authenticate as a municipal administrator. Execute POST /reports/{id}/auto-assign-officer to assign a report automatically based on its category configuration. Verify that the assignment is successful and the report status changes appropriately.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "municipal_administrator",
+    "setup_needed": [
+      "POST /reports to create a new report resource with a specific category",
+      "POST /sessions to obtain an authenticated session for municipal_administrator"
+    ],
+    "cleanup_strategy": "DELETE the created report via POST /reports/{id}/delete if it exists; otherwise, verify no resource was created.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the automatic assignment functionality configured by administrators."
+  }
+]

@@ -1,0 +1,174 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "As an unregistered user I want to see approved reports on an interactive map So that I can know about issues in my area and beyond.",
+    "api_endpoint": "/reports/reports-map",
+    "http_method": "GET",
+    "prompt": "Execute a happy path test for viewing the interactive map of approved reports. Verify that unregistered users can access the endpoint without authentication and see a list of valid report markers on the map.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates public access to the map feature for unauthenticated users."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "As an external maintainer I want to update the status of a report assigned to me So that I can updated citizens about the intervention.",
+    "api_endpoint": "/reports/{id}",
+    "http_method": "POST",
+    "prompt": "Execute a happy path test for updating a report status. Authenticate as an external maintainer, select a valid report ID, and submit a PATCH/POST request to update the status (e.g., 'in_progress' to 'completed'). Verify the response confirms the update.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "Ensure a report exists with ID {id} and is assigned to the current user."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the core workflow of an external maintainer updating their assigned report."
+  },
+  {
+    "requirement_id": "PT07",
+    "requirement_summary": "As a citizen I want to see approved reports on an interactive map So that I can know about issues in my area and beyond.",
+    "api_endpoint": "/reports/reports-map",
+    "http_method": "GET",
+    "prompt": "Execute an edge case test for the reports map. Filter the response or query parameters to include only reports within a specific geographic bounding box or filter by a specific category (e.g., 'water'). Verify that the map renders correctly with the filtered subset of data.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure there are reports available in the system to filter."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that the map endpoint handles filtering parameters and partial data sets correctly."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "As a technical office staff member I want to assign reports to external maintainers So that specialized maintainers can handle and update the intervention.",
+    "api_endpoint": "/reports/{report_id}/external-maintainers",
+    "http_method": "POST",
+    "prompt": "Execute a negative test for assigning external maintainers. Attempt to POST an assignment request with an invalid user ID or a malformed JSON payload (e.g., missing required fields). Verify that the API returns a 400 Bad Request error and does not create the association.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure a valid report ID exists."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures the API rejects invalid assignment requests and maintains data integrity."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+    "api_endpoint": "/users",
+    "http_method": "POST",
+    "prompt": "Execute a happy path test for user registration. Submit a POST request to /users with valid citizen data (name, username, email). Verify that the system creates the user account and returns a success response or a verification token.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the fundamental user onboarding flow for citizens."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "As a system administrator I want to set up municipality users",
+    "api_endpoint": "/users/municipality-users",
+    "http_method": "POST",
+    "prompt": "Execute a happy path test for creating municipality users. Authenticate as a system administrator and POST a new municipality user object with valid attributes (username, role). Verify the user is created successfully.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the admin capability to provision internal staff accounts."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "As a system administrator I want to assign roles to municipality users",
+    "api_endpoint": "/users/municipality-users/roles",
+    "http_method": "POST",
+    "prompt": "Execute a happy path test for assigning roles. Authenticate as a system administrator, select an existing municipality user ID, and POST a role assignment (e.g., 'report_approver'). Verify the role is successfully attached to the user.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure at least one municipality user exists."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the role management functionality for system administrators."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "As a citizen I want to confirm my registration with a code So that my account becomes valid and I can start using the system.",
+    "api_endpoint": "/auth/verify",
+    "http_method": "POST",
+    "prompt": "Execute a stateful test for account verification. First, register a user (using PT01) to receive a verification code. Then, POST the verification code to /auth/verify. Verify that the user's status changes to 'verified' and they can now access protected resources.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Register a new user via POST /users to obtain a verification code."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the multi-step registration flow where account validity depends on prior state (registration)."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "As a citizen I want to provide details for my report So that the the problem is classified correctly.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Execute a happy path test for creating a new report. Authenticate as a citizen and POST a new report object with required fields (title, description, location). Verify the report is created and assigned a unique ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the core functionality of submitting a new issue report."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "As a technical office staff member I want to see the list of reports assigned to me So that I can get an overview of the maintenance to be done",
+    "api_endpoint": "/reports/municipality-users/{municipalityUserId}",
+    "http_method": "GET",
+    "prompt": "Execute a happy path test for viewing assigned reports. Authenticate as a technical office staff member and GET the list of reports associated with their municipality user ID. Verify that only reports assigned to this specific user are returned.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure a report exists and is assigned to the current municipality user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates that staff members can view their specific workload."
+  }
+]

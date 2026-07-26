@@ -1,0 +1,803 @@
+[
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/tech-lead/report/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Assign a report to an external maintainer using the authenticated session of a technical office staff member. Ensure the request body includes the valid external maintainer ID and sets the appropriate assignment status.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login as technical office staff member to obtain session token",
+      "Ensure a report exists in 'Assigned' state (via prior creation or setup)"
+    ],
+    "cleanup_strategy": "Verify assignment was recorded; no resource deletion required for assignment action itself, but ensure subsequent tests do not rely on this specific assignment if it conflicts with other scenarios.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core workflow of assigning reports to external maintainers as per requirement PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update the status of an assigned report to 'In Progress' using the authenticated session of an external maintainer. Include any necessary comments or notes in the request body if supported by the API.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /login as external maintainer to obtain session token",
+      "Ensure a report exists in 'Assigned' state and is assigned to this external maintainer"
+    ],
+    "cleanup_strategy": "Verify status update was successful; no resource deletion required.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability of an external maintainer to update report status as per requirement PT25."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange information and comments on a report.",
+    "api_endpoint": "/messages/{chatId}",
+    "http_method": "POST",
+    "prompt": "Post a message to the chat associated with a specific report using the authenticated session of either a technical office staff member or an external maintainer. Ensure the message is reserved and not visible to citizens.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member/external maintainer",
+    "setup_needed": [
+      "POST /login as technical office staff member or external maintainer to obtain session token",
+      "Ensure a report exists and has an associated chat context (chatId)"
+    ],
+    "cleanup_strategy": "Verify message was posted successfully; no resource deletion required.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the internal communication feature between technical office staff and external maintainers as per requirement PT26."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Approve a report by updating its status to 'Accepted' using the authenticated session of a municipal public relations officer. Ensure the request includes any necessary approval notes if required by the API.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "POST /login as municipal public relations officer to obtain session token",
+      "Ensure a report exists in 'Pending Approval' state"
+    ],
+    "cleanup_strategy": "Verify approval was successful; no resource deletion required.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability of a municipal public relations officer to approve reports as per requirement PT06."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update a report status from 'In Progress' to 'Resolved' using the authenticated session of a technical office staff member. Ensure the request includes any necessary resolution notes if required by the API.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login as technical office staff member to obtain session token",
+      "Ensure a report exists in 'In Progress' state"
+    ],
+    "cleanup_strategy": "Verify status update was successful; no resource deletion required.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the ability of a technical office staff member to update report statuses as per requirement PT11."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/messages/{chatId}",
+    "http_method": "POST",
+    "prompt": "Post a reply message to the chat associated with a specific report using the authenticated session of a citizen. Ensure the message is visible to all participants and does not expose internal notes.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login as citizen to obtain session token",
+      "Ensure a report exists and has an associated chat context (chatId)"
+    ],
+    "cleanup_strategy": "Verify message was posted successfully; no resource deletion required.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the ability of a citizen to reply to messages as per requirement PT18."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/tech-lead/report/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Attempt to assign a report to an external maintainer without providing a valid external maintainer ID in the request body. This should trigger a validation error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login as technical office staff member to obtain session token",
+      "Ensure a report exists in 'Assigned' state"
+    ],
+    "cleanup_strategy": "Verify no assignment was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates that the system correctly handles invalid input for assigning reports to external maintainers as per requirement PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Attempt to update the status of a report that is not assigned to the external maintainer. This should trigger an authorization error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /login as external maintainer to obtain session token",
+      "Ensure a report exists but is not assigned to this external maintainer"
+    ],
+    "cleanup_strategy": "Verify no status change was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Validates that the system correctly prevents unauthorized status updates as per requirement PT25."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange information and comments on a report.",
+    "api_endpoint": "/messages/{chatId}",
+    "http_method": "POST",
+    "prompt": "Attempt to post a message to a chat context that does not exist or is not associated with the authenticated user's role. This should trigger an authorization error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member/external maintainer",
+    "setup_needed": [
+      "POST /login as technical office staff member or external maintainer to obtain session token",
+      "Ensure a report exists but does not have an associated chat context (chatId)"
+    ],
+    "cleanup_strategy": "Verify no message was posted; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Validates that the system correctly prevents unauthorized access to chat contexts as per requirement PT26."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Attempt to reject a report without providing an explanation in the request body. This should trigger a validation error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "POST /login as municipal public relations officer to obtain session token",
+      "Ensure a report exists in 'Pending Approval' state"
+    ],
+    "cleanup_strategy": "Verify no rejection was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates that the system correctly enforces mandatory explanation for rejected reports as per requirement PT06."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Attempt to update the status of a report that is not in a state allowing status changes (e.g., 'Resolved'). This should trigger an authorization error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login as technical office staff member to obtain session token",
+      "Ensure a report exists in 'Resolved' state"
+    ],
+    "cleanup_strategy": "Verify no status change was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Validates that the system correctly prevents unauthorized status updates for reports in final states as per requirement PT11."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/messages/{chatId}",
+    "http_method": "POST",
+    "prompt": "Attempt to post a message to a chat context that is reserved for internal use (e.g., between technical office staff and external maintainer). This should trigger an authorization error.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login as citizen to obtain session token",
+      "Ensure a report exists and has an associated chat context (chatId) reserved for internal use"
+    ],
+    "cleanup_strategy": "Verify no message was posted; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Validates that the system correctly prevents citizens from accessing reserved chat contexts as per requirement PT18."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/tech-lead/report/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Assign a report to an external maintainer who does not exist in the system. This should trigger a validation error.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login as technical office staff member to obtain session token",
+      "Ensure a report exists in 'Assigned' state"
+    ],
+    "cleanup_strategy": "Verify no assignment was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Validates that the system correctly handles attempts to assign reports to non-existent external maintainers as per requirement PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update the status of a report to an invalid status value (e.g., 'InvalidStatus'). This should trigger a validation error.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "external maintainer",
+    "setup_needed": [
+      "POST /login as external maintainer to obtain session token",
+      "Ensure a report exists in 'Assigned' state and is assigned to this external maintainer"
+    ],
+    "cleanup_strategy": "Verify no status change was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates that the system correctly handles attempts to set invalid status values as per requirement PT25."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange information and comments on a report.",
+    "api_endpoint": "/messages/{chatId}",
+    "http_method": "POST",
+    "prompt": "Post a message to a chat context with an invalid chat ID. This should trigger a validation error.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member/external maintainer",
+    "setup_needed": [
+      "POST /login as technical office staff member or external maintainer to obtain session token"
+    ],
+    "cleanup_strategy": "Verify no message was posted; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Validates that the system correctly handles attempts to post messages to non-existent chat contexts as per requirement PT26."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Attempt to approve a report that is already in 'Accepted' state. This should trigger an authorization error.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "POST /login as municipal public relations officer to obtain session token",
+      "Ensure a report exists in 'Accepted' state"
+    ],
+    "cleanup_strategy": "Verify no status change was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Validates that the system correctly prevents redundant status updates as per requirement PT06."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Attempt to update the status of a report that is in 'Suspended' state. This should trigger an authorization error.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "POST /login as technical office staff member to obtain session token",
+      "Ensure a report exists in 'Suspended' state"
+    ],
+    "cleanup_strategy": "Verify no status change was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Validates that the system correctly prevents status updates for suspended reports as per requirement PT11."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/messages/{chatId}",
+    "http_method": "POST",
+    "prompt": "Post a message to a chat context with an empty or null chat ID. This should trigger a validation error.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login as citizen to obtain session token"
+    ],
+    "cleanup_strategy": "Verify no message was posted; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates that the system correctly handles attempts to post messages with invalid chat IDs as per requirement PT18."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/tech-lead/report/{reportId}",
+    "http_method": "PUT",
+    "prompt": "Assign a report to an external maintainer without logging in first. This should trigger an authorization error.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no session token is present (logout or use unauthenticated request)"
+    ],
+    "cleanup_strategy": "Verify no assignment was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that the system correctly enforces authentication for report assignment as per requirement PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update the status of a report without logging in first. This should trigger an authorization error.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no session token is present (logout or use unauthenticated request)"
+    ],
+    "cleanup_strategy": "Verify no status change was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that the system correctly enforces authentication for status updates as per requirement PT25."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff member and external maintainer exchange information and comments on a report.",
+    "api_endpoint": "/messages/{chatId}",
+    "http_method": "POST",
+    "prompt": "Post a message to a chat context without logging in first. This should trigger an authorization error.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no session token is present (logout or use unauthenticated request)"
+    ],
+    "cleanup_strategy": "Verify no message was posted; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that the system correctly enforces authentication for chat messages as per requirement PT26."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Municipal public relations officer reviews and approves or rejects reports.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Approve a report without logging in first. This should trigger an authorization error.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no session token is present (logout or use unauthenticated request)"
+    ],
+    "cleanup_strategy": "Verify no status change was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that the system correctly enforces authentication for report approval as per requirement PT06."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{id}/status",
+    "http_method": "PUT",
+    "prompt": "Update a report status without logging in first. This should trigger an authorization error.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no session token is present (logout or use unauthenticated request)"
+    ],
+    "cleanup_strategy": "Verify no status change was made; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that the system correctly enforces authentication for status updates as per requirement PT11."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "Citizen replies to messages from municipal operators in the platform.",
+    "api_endpoint": "/messages/{chatId}",
+    "http_method": "POST",
+    "prompt": "Post a reply message without logging in first. This should trigger an authorization error.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no session token is present (logout or use unauthenticated request)"
+    ],
+    "cleanup_strategy": "Verify no message was posted; if any partial state change occurred, revert it.",
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Validates that the system correctly enforces authentication for chat messages as per requirement PT18."
+  }
+]
+
+---
+
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/register",
+    "http_method": "POST",
+    "prompt": "Execute a happy path registration for a citizen. Provide a unique name, valid email, and username. Verify that the response includes a confirmation code or token required for the next step (PT27). Ensure no prior session exists.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core entry point for new users as defined in PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/verify",
+    "http_method": "POST",
+    "prompt": "Execute verification using the confirmation code received from the previous registration step (PT01). Ensure the session token or state is updated to 'active' so that subsequent authenticated operations (like PT05) succeed.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute POST /register with valid citizen data and capture the returned confirmation code."
+    ],
+    "cleanup_strategy": "Verify account status is 'active'; if verification fails due to expired code (edge case), reset user state by re-registering.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the state transition from unverified to verified user, linking PT01 and PT27."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report including classification.",
+    "api_endpoint": "/users/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with valid details (title, description, category) and an image file. Ensure the user is authenticated via a prior login or verified session. Verify the response indicates the report was created in 'Pending Approval' state.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Execute POST /login to obtain a valid session token for the authenticated user."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (though domain rules state citizens cannot delete, admin might need to handle cleanup).",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates report creation and initial state assignment per PT05."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the system.",
+    "api_endpoint": "/register",
+    "http_method": "POST",
+    "prompt": "Attempt registration without providing an email address, which is a mandatory field per domain rules. Verify that the system rejects the request with an appropriate error code indicating missing mandatory fields.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["400"],
+    "rationale": "Tests input validation for mandatory fields in PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate account.",
+    "api_endpoint": "/verify",
+    "http_method": "POST",
+    "prompt": "Attempt verification using an expired confirmation code (simulate by waiting >30 minutes or using a hardcoded expired timestamp if supported). Verify that the system rejects the request and does not activate the account.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Execute POST /register to obtain a confirmation code, then wait for it to expire."
+    ],
+    "cleanup_strategy": "Reset user state by re-registering with fresh data.",
+    "expected_status_codes": ["400", "410"],
+    "rationale": "Tests the edge case of expired verification codes per domain rules and edge_cases list."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report including classification.",
+    "api_endpoint": "/users/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to modify an existing report by sending a PUT or PATCH request to the same endpoint with updated details. Verify that the system denies this action as per domain rules ('Once a report has been inserted, it cannot be modified or deleted by the citizen').",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Execute POST /login to obtain a valid session token.",
+      "Execute POST /users/reports to create an existing report and capture its ID."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (admin cleanup).",
+    "expected_status_codes": ["403", "405"],
+    "rationale": "Tests the negative constraint on modifying reports after creation per domain rules."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/accounts/register",
+    "http_method": "POST",
+    "prompt": "Register a new municipality user (officer) via the admin endpoint. Ensure the request includes valid officer details and that the response confirms successful creation of the account resource.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure an authenticated admin session exists (via /login or equivalent)."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["201"],
+    "rationale": "Validates the creation of municipality users as per PT02."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/accounts/assign",
+    "http_method": "PUT",
+    "prompt": "Assign a role to an existing municipality user created via PT02. Verify that the response confirms the role assignment and that the user now possesses the assigned role.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute POST /admin/accounts/register to create a municipality user account.",
+      "Ensure an authenticated admin session exists."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates role assignment functionality as per PT03, dependent on user creation."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users.",
+    "api_endpoint": "/admin/accounts/assign",
+    "http_method": "PUT",
+    "prompt": "Modify the role of an existing municipality user by sending a PUT request with a new role. Verify that the system updates the user's role successfully and reflects the change immediately.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Execute POST /admin/accounts/register to create a municipality user account.",
+      "Ensure an authenticated admin session exists."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates role modification functionality as per PT10, dependent on user creation."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for a report including classification.",
+    "api_endpoint": "/users/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to submit a report without being authenticated (omit session token). Verify that the system blocks submission and returns an error indicating unauthorized access, as report creation requires authentication.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["401"],
+    "rationale": "Tests the negative constraint on unauthenticated report submission per API analysis."
+  }
+]
+
+---
+
+[
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member can see the list of reports assigned to them.",
+    "api_endpoint": "/tech/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as a technical office staff member. Ensure the user is logged in and has the appropriate role. Verify that the response contains a list of reports where the 'assigned_to' field matches the current user's ID or the specific technical office they belong to.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /login with valid credentials for a technical office staff member",
+      "Ensure at least one report exists in the system with status 'Assigned' and assigned to this user/office"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for staff members to view their workload as per PT08."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen can configure their account (notifications, virtual presence).",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute as a citizen. Ensure the user is logged in. Update the profile to change notification preferences (e.g., set 'real_time' to false) and add a Telegram username. Verify the response reflects these changes.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login with valid citizen credentials",
+      "Ensure the user has an existing profile to update"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the ability of a citizen to manage their account settings as defined in PT09."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user can browse a summary table of reports with filters.",
+    "api_endpoint": "/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as an unauthenticated user (or authenticated citizen). Call the endpoint without authentication headers. Verify that the response returns a list of reports in 'Pending Approval' or 'Resolved' states, excluding internal details like reserved comments. Apply query parameters for filters if supported.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure at least one report exists with status 'Pending Approval' or 'Resolved'"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates public access to reports as per PT22 and the domain rule about unregistered users viewing reports."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen attempts to modify an existing report.",
+    "api_endpoint": "/users/reports",
+    "http_method": "PUT",
+    "prompt": "Execute as a citizen. First, create a report (POST /users/reports) or use an existing one. Attempt to update the description or status of that specific report using PUT /users/me or a direct report update endpoint if available. Expect failure.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login with valid citizen credentials",
+      "POST /users/reports to create a dummy report (or ensure one exists)"
+    ],
+    "cleanup_strategy": "DELETE the created report if it was successfully created during setup, or verify no resource was modified.",
+    "expected_status_codes": [
+      "403",
+      "405"
+    ],
+    "rationale": "Tests the domain rule: 'Once a report has been inserted, it cannot be modified or deleted by the citizen.'"
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member views reports assigned to them with no assignments.",
+    "api_endpoint": "/tech/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as a technical office staff member. Ensure the user is logged in but there are currently zero reports assigned to this specific user or office. Verify that the response returns an empty list (or appropriate empty state) rather than an error.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /login with valid credentials for a technical office staff member",
+      "Ensure no reports exist in the system assigned to this user/office"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the edge case where the list is empty but the endpoint remains functional."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures account with an invalid Telegram username format.",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute as a citizen. Ensure the user is logged in. Attempt to update the profile with a malformed Telegram username (e.g., containing spaces or special characters not allowed). Verify that the system rejects the invalid input.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "POST /login with valid citizen credentials"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests input validation for profile configuration fields."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Unregistered user attempts to view internal comments on a report.",
+    "api_endpoint": "/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as an unauthenticated user. Call the public reports list endpoint for a report that has internal comments (reserved). Verify that the response does not include the 'comments' field or any reserved information.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure at least one report exists with internal comments (requires admin/tech-lead setup)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the domain rule regarding visibility of reserved comments to anonymous users."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member views assigned reports after a new assignment.",
+    "api_endpoint": "/tech/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as a technical office staff member. First, use the tech-lead endpoint to assign a new report to this user (PUT /tech-lead/report/{reportId}). Immediately call GET /tech/reports/list. Verify that the newly assigned report appears in the list.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "POST /login with valid credentials for a technical office staff member",
+      "Ensure a report exists that can be assigned"
+    ],
+    "cleanup_strategy": "DELETE the report if it was created during setup, or verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the stateful dependency where assignment creates a resource visible in the list."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen attempts to update profile without being logged in.",
+    "api_endpoint": "/users/me",
+    "http_method": "PUT",
+    "prompt": "Execute as an unauthenticated user. Attempt to call PUT /users/me with a JSON body containing profile updates. Verify that the system returns an authentication error.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no active session exists for this user"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Tests that protected endpoints require authentication."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Unregistered user views reports with a filter for 'Pending Approval' status.",
+    "api_endpoint": "/reports/list",
+    "http_method": "GET",
+    "prompt": "Execute as an unauthenticated user. Call GET /reports/list with a query parameter filtering by status='Pending Approval'. Verify that the response includes only reports matching this criteria and excludes 'Resolved' or internal-only reports.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure at least one report exists with status 'Pending Approval'"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the filtering capability of the public reports list endpoint."
+  }
+]

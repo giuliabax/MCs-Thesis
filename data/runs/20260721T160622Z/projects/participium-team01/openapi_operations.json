@@ -1,0 +1,893 @@
+[
+  {
+    "operation_id": "createSession",
+    "method": "POST",
+    "path": "/sessions",
+    "summary": "Log in with username or email and password.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/LoginRequest"
+    },
+    "response_codes": [
+      "201",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "getCurrentSession",
+    "method": "GET",
+    "path": "/sessions/current",
+    "summary": "Return the authenticated user.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "deleteCurrentSession",
+    "method": "DELETE",
+    "path": "/sessions/current",
+    "summary": "Log out the current user.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Authentication"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "registerCitizen",
+    "method": "POST",
+    "path": "/registration",
+    "summary": "Register a new citizen account.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/CitizenRegistrationRequest"
+    },
+    "response_codes": [
+      "201",
+      "409",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "getCitizenProfile",
+    "method": "GET",
+    "path": "/citizens",
+    "summary": "Get the logged-in citizen profile.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "404",
+      "423",
+      "503"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "updateCitizenProfile",
+    "method": "PUT",
+    "path": "/citizens",
+    "summary": "Update the logged-in citizen profile.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/CitizenProfileUpdate"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "409",
+      "500"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "createCitizenVerificationCode",
+    "method": "POST",
+    "path": "/citizens/verification-code",
+    "summary": "Generate and email a verification code for the logged-in citizen.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "423",
+      "503"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "verifyCitizenEmail",
+    "method": "POST",
+    "path": "/citizens/verify-email",
+    "summary": "Verify the logged-in citizen email using a code.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/VerifyEmailRequest"
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "422",
+      "423",
+      "503"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "getCitizenVerificationToken",
+    "method": "GET",
+    "path": "/citizens/verification-token",
+    "summary": "Get the active email verification token expiry.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "404",
+      "423",
+      "503"
+    ],
+    "tags": [
+      "Citizens"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "createUploadUrl",
+    "method": "POST",
+    "path": "/upload-url",
+    "summary": "Create a signed Supabase upload URL.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/UploadUrlRequest"
+    },
+    "response_codes": [
+      "200",
+      "500"
+    ],
+    "tags": [
+      "Uploads"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "listCategories",
+    "method": "GET",
+    "path": "/categories",
+    "summary": "List all report categories.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Catalog"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listRoles",
+    "method": "GET",
+    "path": "/roles",
+    "summary": "List all operator roles.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Catalog"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listCompanies",
+    "method": "GET",
+    "path": "/companies",
+    "summary": "List all companies.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Catalog"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listOperatorsForAdmin",
+    "method": "GET",
+    "path": "/admin",
+    "summary": "List municipality operators.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "createMunicipalityUser",
+    "method": "POST",
+    "path": "/admin/createuser",
+    "summary": "Create an operator or external maintainer.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/MunicipalityUserCreateRequest"
+    },
+    "response_codes": [
+      "201",
+      "400",
+      "401",
+      "409",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "addOperatorCategory",
+    "method": "POST",
+    "path": "/admin/addcategory",
+    "summary": "Add a category to an operator.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/OperatorCategoryRequest"
+    },
+    "response_codes": [
+      "201",
+      "401",
+      "404",
+      "409",
+      "422",
+      "500"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "removeOperatorCategory",
+    "method": "DELETE",
+    "path": "/admin/removecategory",
+    "summary": "Remove a category from an operator.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/OperatorCategoryRequest"
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "404",
+      "422",
+      "500"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listCompanyCategories",
+    "method": "GET",
+    "path": "/admin/companies/{companyId}/categories",
+    "summary": "List categories managed by one company.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/CompanyId"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Admin"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listOperatorsByCategory",
+    "method": "GET",
+    "path": "/operators",
+    "summary": "List assignable operators for a category.",
+    "description": null,
+    "parameters": [
+      {
+        "name": "category_id",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Operators"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listMyOperatorCategories",
+    "method": "GET",
+    "path": "/operators/my-categories",
+    "summary": "List categories assigned to the authenticated operator.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Operators"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "createReport",
+    "method": "POST",
+    "path": "/reports",
+    "summary": "Create a new citizen report.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ReportCreateRequest"
+    },
+    "response_codes": [
+      "201",
+      "401",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listReports",
+    "method": "GET",
+    "path": "/reports",
+    "summary": "List all reports for admin or public relations officer.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listApprovedReports",
+    "method": "GET",
+    "path": "/reports/approved",
+    "summary": "List approved reports for the public map.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": "listAssignedReports",
+    "method": "GET",
+    "path": "/reports/assigned",
+    "summary": "List reports assigned to the logged-in technical officer or external maintainer.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "updateReportStatus",
+    "method": "PUT",
+    "path": "/reports/{id}/status",
+    "summary": "Update the status of a report.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ReportId"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/ReportStatusUpdateRequest"
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "422",
+      "423",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "assignReportOperator",
+    "method": "PUT",
+    "path": "/reports/{id}/operator",
+    "summary": "Assign an internal technical operator to a report.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ReportId"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/OperatorAssignmentRequest"
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "422",
+      "423",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "autoAssignTechnicalOfficer",
+    "method": "POST",
+    "path": "/reports/{id}/auto-assign-officer",
+    "summary": "Automatically assign a technical officer to a report.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ReportId"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "assignReportMainteiner",
+    "method": "PUT",
+    "path": "/reports/{id}/mainteiner",
+    "summary": "Assign an external maintainer to a report.",
+    "description": "The route name is spelled `mainteiner` in the Team01 backend.",
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ReportId"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/OperatorAssignmentRequest"
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "422",
+      "423",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "autoAssignMaintainer",
+    "method": "POST",
+    "path": "/reports/{id}/auto-assign-maintainer",
+    "summary": "Automatically assign an external maintainer to a report.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ReportId"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/AutoAssignMaintainerRequest"
+    },
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "createInternalComment",
+    "method": "POST",
+    "path": "/reports/{id}/internal-comments",
+    "summary": "Add an internal operator comment to a report.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ReportId"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/TextContentRequest"
+    },
+    "response_codes": [
+      "201",
+      "401",
+      "403",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listInternalComments",
+    "method": "GET",
+    "path": "/reports/{id}/internal-comments",
+    "summary": "List internal operator comments for a report.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ReportId"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "createReportMessage",
+    "method": "POST",
+    "path": "/reports/{id}/messages",
+    "summary": "Add a citizen/operator message to a report chat.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ReportId"
+      }
+    ],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/TextContentRequest"
+    },
+    "response_codes": [
+      "201",
+      "401",
+      "403",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Reports",
+      "Chats"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listReportMessages",
+    "method": "GET",
+    "path": "/reports/{id}/messages",
+    "summary": "List messages for a report chat.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ReportId"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Reports",
+      "Chats"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listNotifications",
+    "method": "GET",
+    "path": "/notifications",
+    "summary": "List notifications for the logged-in citizen.",
+    "description": null,
+    "parameters": [
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "getUnreadNotificationCount",
+    "method": "GET",
+    "path": "/notifications/unread-count",
+    "summary": "Get unread notification count for the logged-in citizen.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "markNotificationAsSeen",
+    "method": "PUT",
+    "path": "/notifications/{id}/seen",
+    "summary": "Mark one notification as seen.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/NotificationId"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "404",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "markAllNotificationsAsSeen",
+    "method": "PUT",
+    "path": "/notifications/mark-all-seen",
+    "summary": "Mark all citizen notifications as seen.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Notifications"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "listChats",
+    "method": "GET",
+    "path": "/chats",
+    "summary": "List chats for the logged-in citizen, technical officer, or maintainer.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "tags": [
+      "Chats"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "getUnreadMessagesCount",
+    "method": "GET",
+    "path": "/chats/unread/count",
+    "summary": "Get total unread chat message count.",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "503"
+    ],
+    "tags": [
+      "Chats"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "getChatDetails",
+    "method": "GET",
+    "path": "/chats/{reportId}",
+    "summary": "Get chat details and messages for a report.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ChatReportId"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Chats"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": "markChatAsRead",
+    "method": "POST",
+    "path": "/chats/{reportId}/read",
+    "summary": "Mark a report chat as read for the logged-in user.",
+    "description": null,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/ChatReportId"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "422",
+      "503"
+    ],
+    "tags": [
+      "Chats"
+    ],
+    "auth_required": true
+  }
+]

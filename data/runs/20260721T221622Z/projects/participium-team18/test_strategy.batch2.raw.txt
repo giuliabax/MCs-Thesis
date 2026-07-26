@@ -1,0 +1,129 @@
+[
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/internal-users",
+    "http_method": "POST",
+    "prompt": "Create a new internal user with valid name, email, and role. Verify the response includes the generated ID and status 'active' or 'pending'. Ensure the request body matches the schema for creating an internal user.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure authentication token for system administrator role is valid."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of creating internal users as per PT02."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/internal-users/{id}",
+    "http_method": "PUT",
+    "prompt": "Update an existing internal user (created in a previous step or via setup) to assign a specific role. Verify the response confirms the role change and returns 200 OK.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Create an internal user via POST /admin/internal-users to obtain a valid ID for this test."
+    ],
+    "cleanup_strategy": "Delete the created internal user using DELETE /admin/internal-users/{id} if it was created specifically for this test.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates role assignment capability as per PT03."
+  },
+  {
+    "requirement_id": "PT10",
+    "requirement_summary": "System administrator modifies roles to municipality users.",
+    "api_endpoint": "/admin/internal-users/{id}",
+    "http_method": "PUT",
+    "prompt": "Attempt to modify the role of an internal user to an invalid or non-existent role ID. Verify that the API returns a 400 Bad Request or 404 Not Found error, indicating that the role modification failed.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Create an internal user via POST /admin/internal-users to obtain a valid ID."
+    ],
+    "cleanup_strategy": "Delete the created internal user using DELETE /admin/internal-users/{id} if it was created specifically for this test.",
+    "expected_status_codes": [
+      "400",
+      "404"
+    ],
+    "rationale": "Tests error handling when attempting to assign an invalid role as per PT10."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/internal-users",
+    "http_method": "POST",
+    "prompt": "Attempt to create an internal user with missing mandatory fields (e.g., name or email). Verify that the API returns a 400 Bad Request error, indicating that the request is invalid.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure authentication token for system administrator role is valid."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates input validation for user creation as per PT02."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/internal-users/{id}",
+    "http_method": "PUT",
+    "prompt": "Attempt to assign a role to an internal user that does not exist (using an invalid ID). Verify that the API returns a 404 Not Found error, indicating that the resource could not be found.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure authentication token for system administrator role is valid."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Tests error handling when attempting to update a non-existent user as per PT03."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/internal-users",
+    "http_method": "POST",
+    "prompt": "Create a new internal user with valid data. Then, immediately attempt to update the same user's role using PUT /admin/internal-users/{id} without first verifying the user exists or checking for any state changes.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Create an internal user via POST /admin/internal-users to obtain a valid ID."
+    ],
+    "cleanup_strategy": "Delete the created internal user using DELETE /admin/internal-users/{id} if it was created specifically for this test.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the stateful dependency where a user must exist before their role can be updated, as per PT02 and PT03."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/internal-users",
+    "http_method": "POST",
+    "prompt": "Attempt to create an internal user with duplicate email address (if the system enforces uniqueness). Verify that the API returns a 409 Conflict or similar error, indicating that the resource already exists.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Create an internal user via POST /admin/internal-users to obtain a valid ID and email."
+    ],
+    "cleanup_strategy": "Delete the created internal user using DELETE /admin/internal-users/{id} if it was created specifically for this test.",
+    "expected_status_codes": [
+      "409"
+    ],
+    "rationale": "Tests uniqueness constraint enforcement for email addresses during user creation as per PT02."
+  }
+]

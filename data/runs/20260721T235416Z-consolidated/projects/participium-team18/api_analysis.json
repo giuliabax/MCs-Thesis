@@ -1,0 +1,529 @@
+{
+  "summary": "API for managing internal users, citizen authentication and profiles, report lifecycle (creation, assignment, delegation, resolution), file uploads, email verification, and public report access.",
+  "operations": [
+    {
+      "path": "/admin/internal-users",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Fetch all internal users",
+        "Returns all internal users",
+        "Documented responses: 200, 400"
+      ]
+    },
+    {
+      "path": "/admin/internal-users",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Add a new internal user",
+        "Creates new internal user; requires RegisterInternalUserRequestDTO",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 409"
+      ]
+    },
+    {
+      "path": "/admin/internal-users/{id}",
+      "method": "PUT",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /admin/internal-users: User must exist before updating their data.",
+        "GET /admin/internal-users: Listing users helps identify valid IDs for updates."
+      ],
+      "notes": [
+        "Update an internal user",
+        "Updates internal user; roleIds overwrites existing roles; companyId required if External Maintainer role assigned",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404, 409"
+      ]
+    },
+    {
+      "path": "/admin/internal-users/{id}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Disable an internal user",
+        "Disables internal user; returns 204",
+        "Parameters: id",
+        "Documented responses: 204, 400, 403, 404"
+      ]
+    },
+    {
+      "path": "/auth/citizens/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Authenticate a citizen",
+        "Authenticates citizen; requires LoginRequestDTO",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401"
+      ]
+    },
+    {
+      "path": "/auth/internal/login",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Authenticate an internal user",
+        "Authenticates internal user; requires LoginRequestDTO",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401"
+      ]
+    },
+    {
+      "path": "/auth/logout",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Logout current authenticated user",
+        "Logs out current authenticated user",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/auth/me",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Return the authenticated profile",
+        "Returns authenticated profile",
+        "Documented responses: 200, 401"
+      ]
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get all categories",
+        "Public endpoint; returns predefined categories",
+        "Documented responses: 200"
+      ]
+    },
+    {
+      "path": "/citizens/register",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Register a new citizen",
+        "Registers new citizen; requires RegisterCitizenRequestDTO",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 409"
+      ]
+    },
+    {
+      "path": "/citizens/me",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /citizens/register: Citizen must be registered and authenticated before accessing their profile.",
+        "POST /email-verification/verify: Email verification completes citizen authentication required for profile access."
+      ],
+      "notes": [
+        "Get current authenticated citizen's profile",
+        "Returns current citizen profile including presigned photo URL",
+        "Documented responses: 200, 401, 404"
+      ]
+    },
+    {
+      "path": "/citizens/me",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /files/upload: File upload provides temporary file path used in profile update."
+      ],
+      "notes": [
+        "Update profile of the logged-in citizen",
+        "Updates citizen profile; can include accountPhoto from /files/upload",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 401, 404"
+      ]
+    },
+    {
+      "path": "/companies",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Retrieve a list of all companies {id, name}",
+        "Returns list of all companies",
+        "Documented responses: 200, 400"
+      ]
+    },
+    {
+      "path": "/companies/category/{categoryId}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Retrieve companies by category ID {id, name}",
+        "Filters companies by category ID",
+        "Parameters: categoryId",
+        "Documented responses: 200, 400"
+      ]
+    },
+    {
+      "path": "/email-verification/verify",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Verify email with code",
+        "Verifies email with 6-digit code; rate limited",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404"
+      ]
+    },
+    {
+      "path": "/email-verification/resend",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Resend verification code",
+        "Resends verification code; requires email",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 404"
+      ]
+    },
+    {
+      "path": "/files/upload",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Upload a file to temporary storage",
+        "Uploads file to temp storage; returns fileId for later use or profile photo",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 500"
+      ]
+    },
+    {
+      "path": "/files/temp/{fileId}",
+      "method": "DELETE",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /files/upload: File ID from upload is required to delete temporary file."
+      ],
+      "notes": [
+        "Delete a temporary file",
+        "Deletes temporary file by fileId",
+        "Parameters: fileId",
+        "Documented responses: 204, 400, 401, 500"
+      ]
+    },
+    {
+      "path": "/internal/reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get reports for review",
+        "Lists reports for review based on user role (Pending Approval or Assigned)",
+        "Parameters: status",
+        "Documented responses: 200, 400, 401"
+      ]
+    },
+    {
+      "path": "/internal/reports/{id}",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /citizens/report: Report must be created before its status can be updated."
+      ],
+      "notes": [
+        "Update report status",
+        "Updates report status; role-specific permissions apply; categoryId optional for PR Officers",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400, 403, 404"
+      ]
+    },
+    {
+      "path": "/internal/reports/{id}/delegate",
+      "method": "PATCH",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "PATCH /internal/reports/{id}: Delegation can only occur after report is assigned and user has appropriate role."
+      ],
+      "notes": [
+        "Delegate a report to an external company",
+        "Delegates report to external company; requires companyId",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 404, 403, 400"
+      ]
+    },
+    {
+      "path": "/internal/reports/assigned",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [
+        "POST /citizens/report: Reports are assigned after creation and must exist to be listed."
+      ],
+      "notes": [
+        "Get reports assigned to the authenticated user",
+        "Returns reports assigned to current user (technical staff or external maintainers)",
+        "Parameters: status",
+        "Documented responses: 200, 401, 403"
+      ]
+    },
+    {
+      "path": "/internal/reports/by-office",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get all reports related to the internal user's office",
+        "Returns reports related to internal user's office; technical officers only",
+        "Documented responses: 200, 401, 403"
+      ]
+    },
+    {
+      "path": "/internal/reports/{id}/comments",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get comments for a report (internal only)",
+        "Returns comments for a report; internal only",
+        "Parameters: id",
+        "Documented responses: 200, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/internal/reports/{id}/comments",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Create a comment on a report (internal only)",
+        "Creates comment on a report; requires comment text",
+        "Parameters: id",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403, 404"
+      ]
+    },
+    {
+      "path": "/internal/delegated-reports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get all reports delegated by the authenticated user",
+        "Returns reports delegated by technical officer; includes delegation timestamp",
+        "Documented responses: 200, 401, 403, 500"
+      ]
+    },
+    {
+      "path": "/reports/map",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get public summary of reports within specified map area",
+        "Public endpoint; returns summary of reports in map area",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 200, 400"
+      ]
+    },
+    {
+      "path": "/reports/getById/{id}",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": null,
+      "dependencies": [],
+      "notes": [
+        "Get public report by ID",
+        "Public endpoint; returns report by ID",
+        "Parameters: id",
+        "Documented responses: 200, 400, 404"
+      ]
+    },
+    {
+      "path": "/citizens/report",
+      "method": "POST",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Create a new report",
+        "Creates new report; requires CreateReportRequestDTO",
+        "Request body is documented in OpenAPI",
+        "Documented responses: 201, 400, 401, 403"
+      ]
+    },
+    {
+      "path": "/citizens/reports/myReports",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Get all reports created by the authenticated citizen",
+        "Returns reports created by authenticated citizen",
+        "Documented responses: 200, 401, 403"
+      ]
+    },
+    {
+      "path": "/admin/roles",
+      "method": "GET",
+      "operation_id": null,
+      "auth_required": true,
+      "dependencies": [],
+      "notes": [
+        "Fetch all internal user roles",
+        "Returns all internal user roles",
+        "Documented responses: 200, 400"
+      ]
+    }
+  ],
+  "authentication_notes": [
+    "All /admin/* endpoints require authentication.",
+    "/auth/* endpoints are for login/logout and profile retrieval; they themselves require auth (except login which sets session).",
+    "/citizens/* endpoints require citizen authentication after login or registration+email verification.",
+    "/internal/* endpoints require internal user authentication with appropriate roles.",
+    "/reports/map and /reports/getById/{id} are public and do not require authentication.",
+    "/categories is public and does not require authentication.",
+    "Operations marked auth_required need an authenticated session during test setup."
+  ],
+  "dependencies": [
+    "POST /citizens/register (or POST /auth/citizens/login) must precede GET/PATCH /citizens/me.",
+    "POST /files/upload must precede PATCH /citizens/me if accountPhoto is provided.",
+    "DELETE /files/temp/{fileId} depends on prior POST /files/upload to obtain fileId.",
+    "POST /admin/internal-users creates resources that can be referenced by PUT /admin/internal-users/{id}.",
+    "GET /admin/internal-users provides list of users for role management or verification before updating via PUT.",
+    "POST /email-verification/verify must succeed before citizen can fully authenticate and access /citizens/* endpoints.",
+    "POST /citizens/report creates reports that are then managed via /internal/reports/* endpoints based on user roles.",
+    "PATCH /internal/reports/{id} depends on prior creation of report (via POST /citizens/report) and assignment logic.",
+    "PATCH /internal/reports/{id}/delegate depends on report being in 'Assigned' status and user having technical officer role.",
+    "POST /citizens/register -> GET /citizens/me: Citizen must be registered and authenticated before accessing their profile.",
+    "POST /files/upload -> PATCH /citizens/me: File upload provides temporary file path used in profile update.",
+    "POST /files/upload -> DELETE /files/temp/{fileId}: File ID from upload is required to delete temporary file.",
+    "POST /admin/internal-users -> PUT /admin/internal-users/{id}: User must exist before updating their data.",
+    "GET /admin/internal-users -> PUT /admin/internal-users/{id}: Listing users helps identify valid IDs for updates.",
+    "POST /email-verification/verify -> GET /citizens/me: Email verification completes citizen authentication required for profile access.",
+    "POST /citizens/report -> PATCH /internal/reports/{id}: Report must be created before its status can be updated.",
+    "POST /citizens/report -> GET /internal/reports/assigned: Reports are assigned after creation and must exist to be listed.",
+    "PATCH /internal/reports/{id} -> PATCH /internal/reports/{id}/delegate: Delegation can only occur after report is assigned and user has appropriate role."
+  ],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/citizens/register",
+      "dependent_method": "GET",
+      "dependent_path": "/citizens/me",
+      "dependency_type": "state",
+      "reason": "Citizen must be registered and authenticated before accessing their profile."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/files/upload",
+      "dependent_method": "PATCH",
+      "dependent_path": "/citizens/me",
+      "dependency_type": "resource",
+      "reason": "File upload provides temporary file path used in profile update."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/files/upload",
+      "dependent_method": "DELETE",
+      "dependent_path": "/files/temp/{fileId}",
+      "dependency_type": "resource",
+      "reason": "File ID from upload is required to delete temporary file."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/admin/internal-users",
+      "dependent_method": "PUT",
+      "dependent_path": "/admin/internal-users/{id}",
+      "dependency_type": "resource",
+      "reason": "User must exist before updating their data."
+    },
+    {
+      "prerequisite_method": "GET",
+      "prerequisite_path": "/admin/internal-users",
+      "dependent_method": "PUT",
+      "dependent_path": "/admin/internal-users/{id}",
+      "dependency_type": "state",
+      "reason": "Listing users helps identify valid IDs for updates."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/email-verification/verify",
+      "dependent_method": "GET",
+      "dependent_path": "/citizens/me",
+      "dependency_type": "authorization",
+      "reason": "Email verification completes citizen authentication required for profile access."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/citizens/report",
+      "dependent_method": "PATCH",
+      "dependent_path": "/internal/reports/{id}",
+      "dependency_type": "resource",
+      "reason": "Report must be created before its status can be updated."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/citizens/report",
+      "dependent_method": "GET",
+      "dependent_path": "/internal/reports/assigned",
+      "dependency_type": "state",
+      "reason": "Reports are assigned after creation and must exist to be listed."
+    },
+    {
+      "prerequisite_method": "PATCH",
+      "prerequisite_path": "/internal/reports/{id}",
+      "dependent_method": "PATCH",
+      "dependent_path": "/internal/reports/{id}/delegate",
+      "dependency_type": "state",
+      "reason": "Delegation can only occur after report is assigned and user has appropriate role."
+    }
+  ],
+  "risks": [
+    "PUT /admin/internal-users/{id} allows overwriting roles; accidental omission of required companyId for External Maintainer role could cause validation error.",
+    "PATCH /internal/reports/{id} enforces strict status transitions; invalid state changes will return 400/403.",
+    "POST /citizens/report requires authentication but does not specify which user types can create reports; potential access control ambiguity.",
+    "DELETE /files/temp/{fileId} accepts UUID format; if fileId is reused or leaked, unintended deletion could occur.",
+    "GET /internal/reports/assigned returns reports for both technical staff and external maintainers; role-based filtering must be enforced server-side to prevent data leakage.",
+    "POST /email-verification/resend has rate limit but no explicit backoff guidance in documentation; clients may need to implement exponential backoff."
+  ]
+}

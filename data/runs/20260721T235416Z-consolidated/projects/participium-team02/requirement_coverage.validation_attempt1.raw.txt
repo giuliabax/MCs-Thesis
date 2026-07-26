@@ -1,0 +1,275 @@
+{
+  "requirement_id": "PT28",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/get-map-reports", "operation_id": null}
+  ],
+  "evidence": ["GET /reports/get-map-reports with summary 'Get reports for map display (public)' and auth_required: null covers viewing approved reports on interactive map for unregistered users"],
+  "missing_behaviors": [],
+  "rationale": "The OpenAPI contract exposes a public endpoint for retrieving map-displayable reports without authentication, covering the core behavior of viewing approved reports on an interactive map."
+}
+{
+  "requirement_id": "PT24",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PATCH", "path": "/reports/report/{id}/assign-maintainer", "operation_id": null}
+  ],
+  "evidence": ["PATCH /reports/report/{id}/assign-maintainer with summary 'Assign a report to an external maintainer (technical officer)' covers assigning reports to external maintainers"],
+  "missing_behaviors": [],
+  "rationale": "The OpenAPI contract exposes a dedicated endpoint for technical office staff to assign reports to external maintainers, covering the complete behavior."
+}
+{
+  "requirement_id": "PT25",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "PATCH", "path": "/reports/report/{id}/status", "operation_id": null}
+  ],
+  "evidence": ["PATCH /reports/report/{id}/status with summary 'Update a report status (admin or municipality)' exists but is restricted to admin/municipality roles, not external maintainers"],
+  "missing_behaviors": ["Endpoint role restrictions may prevent external maintainers from updating status as intended by the requirement"],
+  "rationale": "Status update endpoint exists but is documented for admin/municipality users only, not specifically for external maintainers. The behavior is partially covered due to potential role mismatch."
+}
+{
+  "requirement_id": "PT26",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/{report_id}/comments", "operation_id": null},
+    {"method": "POST", "path": "/reports/{report_id}/comment", "operation_id": null},
+    {"method": "PATCH", "path": "/reports/{report_id}/comment", "operation_id": null},
+    {"method": "DELETE", "path": "/reports/{report_id}/comment", "operation_id": null}
+  ],
+  "evidence": ["Comment endpoints exist for GET, POST, PATCH, DELETE but are documented for admin/municipality roles only, not external maintainers"],
+  "missing_behaviors": ["Role restrictions may prevent external maintainers from exchanging internal comments as intended"],
+  "rationale": "Comment exchange endpoints exist but are restricted to admin/municipality users. External maintainers' ability to participate in internal comment exchange is not clearly covered by the contract."
+}
+{
+  "requirement_id": "PT01",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/register-citizen", "operation_id": null}
+  ],
+  "evidence": ["POST /users/register-citizen with summary 'Register a new citizen (public)' covers citizen registration with name and username"],
+  "missing_behaviors": [],
+  "rationale": "The OpenAPI contract exposes a public citizen registration endpoint, covering the complete behavior of registering with name and username."
+}
+{
+  "requirement_id": "PT27",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No email/phone verification or code confirmation endpoint exists in the OpenAPI contract"],
+  "rationale": "Registration endpoint exists but no verification/code confirmation endpoint is documented. The account activation flow is not covered by the REST contract."
+}
+{
+  "requirement_id": "PT02",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/admin/create-municipality-user", "operation_id": null}
+  ],
+  "evidence": ["POST /users/admin/create-municipality-user with summary 'Create a municipality user and optionally assign roles (admin only)' covers setting up municipality users"],
+  "missing_behaviors": [],
+  "rationale": "The OpenAPI contract exposes an admin endpoint for creating municipality users, covering the complete behavior."
+}
+{
+  "requirement_id": "PT03",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/admin/assign-roles", "operation_id": null}
+  ],
+  "evidence": ["POST /users/admin/assign-roles with summary 'Replace the roles of a user (admin only)' covers assigning roles to municipality users"],
+  "missing_behaviors": [],
+  "rationale": "The OpenAPI contract exposes an admin endpoint for role assignment, covering the complete behavior."
+}
+{
+  "requirement_id": "PT04",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for map location selection or geolocation input exists in the OpenAPI contract"],
+  "rationale": "While /reports/upload exists, no specific endpoint or parameter is documented for selecting a location on a city map. The geolocation behavior is not covered by the REST contract."
+}
+{
+  "requirement_id": "PT05",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/reports/upload", "operation_id": null}
+  ],
+  "evidence": ["POST /reports/upload with summary 'Upload a new report with photos (citizen only)' covers providing details for a report"],
+  "missing_behaviors": [],
+  "rationale": "The OpenAPI contract exposes a citizen-only endpoint for uploading reports, covering the complete behavior of providing report details."
+}
+{
+  "requirement_id": "PT06",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "PATCH", "path": "/reports/report/{id}/status", "operation_id": null}
+  ],
+  "evidence": ["PATCH /reports/report/{id}/status with summary 'Update a report status (admin or municipality)' exists but is not specifically for public relations officers"],
+  "missing_behaviors": ["Endpoint role documentation does not explicitly include municipal public relations officers"],
+  "rationale": "Status update endpoint exists but is documented for admin/municipality roles. The specific role of municipal public relations officer is not explicitly covered, making this partially implemented."
+}
+{
+  "requirement_id": "PT07",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/get-map-reports", "operation_id": null}
+  ],
+  "evidence": ["GET /reports/get-map-reports with summary 'Get reports for map display (public)' and auth_required: null covers viewing approved reports on interactive map"],
+  "missing_behaviors": [],
+  "rationale": "The OpenAPI contract exposes a public endpoint for retrieving map-displayable reports, covering the complete behavior of viewing approved reports on an interactive map."
+}
+{
+  "requirement_id": "PT15",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No parameter or field for anonymity selection is visible in /reports/upload endpoint"],
+  "rationale": "While /reports/upload exists, no specific parameter or field is documented for choosing anonymous vs non-anonymous reporting. The anonymity behavior is not covered by the REST contract."
+}
+{
+  "requirement_id": "PT08",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/assigned-to-techOfficer", "operation_id": null}
+  ],
+  "evidence": ["GET /reports/assigned-to-techOfficer with summary 'Get reports assigned to the authenticated technical officer' covers viewing assigned reports"],
+  "missing_behaviors": [],
+  "rationale": "The OpenAPI contract exposes a dedicated endpoint for technical officers to view their assigned reports, covering the complete behavior."
+}
+{
+  "requirement_id": "PT09",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "PATCH", "path": "/users/edit-me", "operation_id": null}
+  ],
+  "evidence": ["PATCH /users/edit-me with summary 'Update the current user's information' covers account configuration"],
+  "missing_behaviors": [],
+  "rationale": "The OpenAPI contract exposes an endpoint for updating current user information, covering the complete behavior of configuring account settings."
+}
+{
+  "requirement_id": "PT30",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/search-reports", "operation_id": null}
+  ],
+  "evidence": ["GET /reports/search-reports with summary 'Search reports with pagination and filters (admin or municipality)' exists but is restricted to admin/municipality roles"],
+  "missing_behaviors": ["Endpoint is documented for admin/municipality only, not citizens/unregistered users as required"],
+  "rationale": "Search endpoint exists but role restrictions prevent citizen/unregistered user access. The behavior is partially covered due to role mismatch."
+}
+{
+  "requirement_id": "PT10",
+  "status": "implemented",
+  "matched_operations": [
+    {"method": "POST", "path": "/users/admin/assign-roles", "operation_id": null}
+  ],
+  "evidence": ["POST /users/admin/assign-roles with summary 'Replace the roles of a user (admin only)' covers modifying roles to municipality users"],
+  "missing_behaviors": [],
+  "rationale": "The OpenAPI contract exposes an admin endpoint for role modification, covering the complete behavior."
+}
+{
+  "requirement_id": "PT11",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "PATCH", "path": "/reports/report/{id}/status", "operation_id": null}
+  ],
+  "evidence": ["PATCH /reports/report/{id}/status with summary 'Update a report status (admin or municipality)' exists but is not specifically for technical office staff"],
+  "missing_behaviors": ["Endpoint role documentation does not explicitly include technical office staff members"],
+  "rationale": "Status update endpoint exists but is documented for admin/municipality roles. The specific role of technical office staff member is not explicitly covered, making this partially implemented."
+}
+{
+  "requirement_id": "PT12",
+  "status": "not_assessable",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Telegram bot integration is an external service not visible in REST OpenAPI contract"],
+  "rationale": "Telegram bot functionality is an external integration that cannot be assessed from a REST API contract alone. This requirement requires UI/external system evidence."
+}
+{
+  "requirement_id": "PT13",
+  "status": "not_assessable",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Telegram bot integration is an external service not visible in REST OpenAPI contract"],
+  "rationale": "Telegram bot functionality is an external integration that cannot be assessed from a REST API contract alone. This requirement requires UI/external system evidence."
+}
+{
+  "requirement_id": "PT14",
+  "status": "not_assessable",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Telegram bot integration is an external service not visible in REST OpenAPI contract"],
+  "rationale": "Telegram bot functionality is an external integration that cannot be assessed from a REST API contract alone. This requirement requires UI/external system evidence."
+}
+{
+  "requirement_id": "PT18",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No messaging/notification endpoint exists for replying to municipal operator messages"],
+  "rationale": "No REST endpoint is documented for replying to messages from municipal operators. This is primarily a real-time communication feature not covered by the OpenAPI contract."
+}
+{
+  "requirement_id": "PT16",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for following/subscribing to other citizens' reports exists"],
+  "rationale": "No REST endpoint is documented for following reports done by other citizens. This behavior is not covered by the OpenAPI contract."
+}
+{
+  "requirement_id": "PT17",
+  "status": "not_assessable",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["Telegram bot push notifications are an external service not visible in REST OpenAPI contract"],
+  "rationale": "Telegram bot push notifications are an external integration that cannot be assessed from a REST API contract alone. This requirement requires UI/external system evidence."
+}
+{
+  "requirement_id": "PT19",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No notification/email configuration endpoint exists in the OpenAPI contract"],
+  "rationale": "No REST endpoint is documented for configuring email alerts or platform notifications. This behavior is not covered by the OpenAPI contract."
+}
+{
+  "requirement_id": "PT20",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No statistics endpoint exists in the OpenAPI contract"],
+  "rationale": "No REST endpoint is documented for viewing public or private statistics about reports. This behavior is not covered by the OpenAPI contract."
+}
+{
+  "requirement_id": "PT21",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No statistics endpoint exists in the OpenAPI contract"],
+  "rationale": "No REST endpoint is documented for viewing detailed private statistics. This behavior is not covered by the OpenAPI contract."
+}
+{
+  "requirement_id": "PT29",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No endpoint for configuring automatic assignment rules exists in the OpenAPI contract"],
+  "rationale": "No REST endpoint is documented for configuring automatic assignment of reports by category. This behavior is not covered by the OpenAPI contract."
+}
+{
+  "requirement_id": "PT22",
+  "status": "partially_implemented",
+  "matched_operations": [
+    {"method": "GET", "path": "/reports/search-reports", "operation_id": null}
+  ],
+  "evidence": ["GET /reports/search-reports with summary 'Search reports with pagination and filters (admin or municipality)' exists but is restricted to admin/municipality roles"],
+  "missing_behaviors": ["Endpoint is documented for admin/municipality only, not citizens/unregistered users as required"],
+  "rationale": "Search endpoint exists but role restrictions prevent citizen/unregistered user access. The behavior is partially covered due to role mismatch."
+}
+{
+  "requirement_id": "PT23",
+  "status": "not_implemented",
+  "matched_operations": [],
+  "evidence": [],
+  "missing_behaviors": ["No export/download endpoint exists in the OpenAPI contract"],
+  "rationale": "No REST endpoint is documented for downloading summary tables of reports. This behavior is not covered by the OpenAPI contract."
+}

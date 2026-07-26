@@ -1,0 +1,154 @@
+[
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+    "api_endpoint": "/api/telegram/registration",
+    "http_method": "POST",
+    "prompt": "Execute registration for a new citizen user. Validate successful creation of the Telegram bot session linked to the user account.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Core functionality: establishing the user's presence in the system via Telegram."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "As a citizen I want to create a new report through a Telegram bot So that I can quickly notify the public administration about an issue in my area.",
+    "api_endpoint": "/api/telegram/reports",
+    "http_method": "POST",
+    "prompt": "Submit a valid report payload containing location, description, and category to create a new incident record.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Core functionality: creating a new report instance."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "As a citizen I want to check my report status through a Telegram bot So that I can quickly get updates.",
+    "api_endpoint": "/api/telegram/reports/{id}",
+    "http_method": "GET",
+    "prompt": "Retrieve the details of a specific report using its unique identifier to verify status and content.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Create a valid report via POST /api/telegram/reports first"
+    ],
+    "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Core functionality: reading existing report data."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "As a technical office staff member/external maintainer I want to exchange information and comments on the report internally So that coordination happens without exposing internal notes to citizens",
+    "api_endpoint": "/api/messages",
+    "http_method": "GET",
+    "prompt": "Fetch internal messages or comments associated with a specific report ID to verify internal coordination data is accessible.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical office staff member/external maintainer",
+    "setup_needed": [
+      "Ensure a report exists (via PT12) and that the system has generated or populated internal messages/comments for it"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Stateful workflow: requires an existing report to fetch associated internal comments/messages."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "As a citizen I want to create a new report through a Telegram bot So that I can quickly notify the public administration about an issue in my area.",
+    "api_endpoint": "/api/telegram/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to submit a report with missing required fields (e.g., empty description or null location) to trigger validation errors.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Edge case: testing input validation boundaries where required fields are omitted or empty."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "As a citizen I want to create a new report through a Telegram bot So that I can quickly notify the public administration about an issue in my area.",
+    "api_endpoint": "/api/telegram/reports",
+    "http_method": "POST",
+    "prompt": "Submit a report with invalid data types (e.g., non-numeric coordinates, malformed JSON structure) to test server resilience and error handling.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Negative test: ensuring the API rejects malformed payloads gracefully without crashing."
+  },
+  {
+    "requirement_id": "PT13",
+    "requirement_summary": "As a citizen I want to check my report status through a Telegram bot So that I can quickly get updates.",
+    "api_endpoint": "/api/telegram/reports/{id}",
+    "http_method": "GET",
+    "prompt": "Attempt to retrieve a report using an invalid or non-existent ID (e.g., '999999') to verify 404 handling.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Create or locate the resource referenced by the path parameter."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "404"
+    ],
+    "rationale": "Negative test: verifying correct error response for non-existent resources."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "As a technical office staff member/external maintainer I want to exchange information and comments on the report internally So that coordination happens without exposing internal notes to citizens",
+    "api_endpoint": "/api/messages",
+    "http_method": "GET",
+    "prompt": "Attempt to access internal messages without providing the required authentication token or role header.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Negative test: verifying that unauthorized access to internal coordination data is blocked."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "As a citizen I want to register with my name and username So that I can access the Participium system and submit reports.",
+    "api_endpoint": "/api/telegram/registration",
+    "http_method": "POST",
+    "prompt": "Attempt to register a user with an already existing username to test duplicate key handling.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [
+      "Perform a successful registration for a specific username first"
+    ],
+    "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+    "expected_status_codes": [
+      "409"
+    ],
+    "rationale": "Edge case: testing system behavior when attempting to create duplicate user accounts."
+  }
+]

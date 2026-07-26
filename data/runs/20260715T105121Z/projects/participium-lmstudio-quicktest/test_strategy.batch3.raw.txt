@@ -1,0 +1,102 @@
+[
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "As a citizen \nI want to reply to messages from municipal operators in the platform \nSo that I can communicate directly about my report.",
+    "api_endpoint": "/reports/{id}/messages",
+    "http_method": "POST",
+    "prompt": "Create a message on the report chat, then verify message appears in list via GET /reports/{id}/messages to confirm stateful dependency.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create report via POST /reports and obtain ReportId",
+      "Authenticate user via POST /sessions"
+    ],
+    "cleanup_strategy": "verify no resource was created; delete it if unexpectedly present",
+    "expected_status_codes": [
+      "201",
+      "401",
+      "403",
+      "422",
+      "503"
+    ],
+    "rationale": "Covers the stateful dependency edge where listing messages requires prior message creation."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "As a citizen \nI want to configure my account\nSo that I can better manage notifications and my virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Update citizen profile with valid configuration data including photo and Telegram username.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate user via POST /sessions"
+    ],
+    "cleanup_strategy": "Reset profile to default state via admin endpoint if needed",
+    "expected_status_codes": [
+      "200",
+      "409"
+    ],
+    "rationale": "Validates core account configuration functionality for citizens."
+  },
+  {
+    "requirement_id": "PT16",
+    "requirement_summary": "As a citizen \nI want to follow reports done by other citizens \nSo that I can be updated",
+    "api_endpoint": "/notifications",
+    "http_method": "GET",
+    "prompt": "Verify notifications do not include updates for closed reports when following a report.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate user via POST /sessions",
+      "Ensure a closed report exists for notification context"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200",
+      "401"
+    ],
+    "rationale": "Tests constraint that only not closed reports can be followed and notifications follow same rules."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "As a citizen \nI want to configure my account\nSo that I can better manage notifications and my virtual presence.",
+    "api_endpoint": "/citizens",
+    "http_method": "PUT",
+    "prompt": "Attempt to upload invalid photo format or missing required field during profile update.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Authenticate user via POST /sessions"
+    ],
+    "cleanup_strategy": "Reset profile to default state via admin endpoint if needed",
+    "expected_status_codes": [
+      "200",
+      "409"
+    ],
+    "rationale": "Validates input validation on profile update endpoints for invalid data."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "As a technical office staff member\nI want to see the list of reports assigned to me\nSo that I can get an overview of the maintenance to be done",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "List assigned reports for technical office staff member with valid session.",
+    "test_type": "happy_path",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Authenticate user via POST /sessions"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200",
+      "403"
+    ],
+    "rationale": "Validates read access to assigned reports for technical office staff members."
+  }
+]

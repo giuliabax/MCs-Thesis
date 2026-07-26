@@ -1,0 +1,386 @@
+{
+  "summary": "A citizen reporting and operator management API supporting authentication, citizen registration/verification, report creation, status updates, operator assignment (internal/external), chat messaging, notifications, and admin user/category management.",
+  "operations": [
+    {
+      "path": "/sessions",
+      "method": "POST",
+      "operation_id": "createSession",
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Initial login endpoint; returns session token for subsequent auth-required calls."]
+    },
+    {
+      "path": "/sessions/current",
+      "method": "GET",
+      "operation_id": "getCurrentSession",
+      "auth_required": true,
+      "dependencies": ["createSession"],
+      "notes": ["Returns current authenticated user; requires valid session from createSession."]
+    },
+    {
+      "path": "/sessions/current",
+      "method": "DELETE",
+      "operation_id": "deleteCurrentSession",
+      "auth_required": true,
+      "dependencies": ["getCurrentSession"],
+      "notes": ["Logs out current user; invalidates session."]
+    },
+    {
+      "path": "/registration",
+      "method": "POST",
+      "operation_id": "registerCitizen",
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Public registration endpoint; creates citizen account."]
+    },
+    {
+      "path": "/citizens",
+      "method": "GET",
+      "operation_id": "getCitizenProfile",
+      "auth_required": true,
+      "dependencies": ["createSession"],
+      "notes": ["Returns logged-in citizen profile; requires auth."]
+    },
+    {
+      "path": "/citizens",
+      "method": "PUT",
+      "operation_id": "updateCitizenProfile",
+      "auth_required": true,
+      "dependencies": ["getCitizenProfile"],
+      "notes": ["Updates logged-in citizen profile; requires auth."]
+    },
+    {
+      "path": "/citizens/verification-code",
+      "method": "POST",
+      "operation_id": "createCitizenVerificationCode",
+      "auth_required": true,
+      "dependencies": ["getCitizenProfile"],
+      "notes": ["Generates email verification code for logged-in citizen."]
+    },
+    {
+      "path": "/citizens/verify-email",
+      "method": "POST",
+      "operation_id": "verifyCitizenEmail",
+      "auth_required": true,
+      "dependencies": ["createCitizenVerificationCode"],
+      "notes": ["Verifies citizen email using code; requires active verification token."]
+    },
+    {
+      "path": "/citizens/verification-token",
+      "method": "GET",
+      "operation_id": "getCitizenVerificationToken",
+      "auth_required": true,
+      "dependencies": ["createCitizenVerificationCode"],
+      "notes": ["Returns active email verification token expiry."]
+    },
+    {
+      "path": "/upload-url",
+      "method": "POST",
+      "operation_id": "createUploadUrl",
+      "auth_required": false,
+      "dependencies": [],
+      "notes": ["Creates signed Supabase upload URL; no auth required."]
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operation_id": "listCategories",
+      "auth_required": true,
+      "dependencies": ["createSession"],
+      "notes": ["Lists all report categories; requires auth."]
+    },
+    {
+      "path": "/roles",
+      "method": "GET",
+      "operation_id": "listRoles",
+      "auth_required": true,
+      "dependencies": ["createSession"],
+      "notes": ["Lists operator roles; requires auth."]
+    },
+    {
+      "path": "/companies",
+      "method": "GET",
+      "operation_id": "listCompanies",
+      "auth_required": true,
+      "dependencies": ["createSession"],
+      "notes": ["Lists all companies; requires auth."]
+    },
+    {
+      "path": "/admin",
+      "method": "GET",
+      "operation_id": "listOperatorsForAdmin",
+      "auth_required": true,
+      "dependencies": ["createSession"],
+      "notes": ["Lists municipality operators; admin-only access."]
+    },
+    {
+      "path": "/admin/createuser",
+      "method": "POST",
+      "operation_id": "createMunicipalityUser",
+      "auth_required": true,
+      "dependencies": ["listOperatorsForAdmin"],
+      "notes": ["Creates operator or external maintainer; requires admin auth."]
+    },
+    {
+      "path": "/admin/addcategory",
+      "method": "POST",
+      "operation_id": "addOperatorCategory",
+      "auth_required": true,
+      "dependencies": ["createMunicipalityUser"],
+      "notes": ["Adds category to operator; requires existing operator."]
+    },
+    {
+      "path": "/admin/removecategory",
+      "method": "DELETE",
+      "operation_id": "removeOperatorCategory",
+      "auth_required": true,
+      "dependencies": ["addOperatorCategory"],
+      "notes": ["Removes category from operator; requires existing operator."]
+    },
+    {
+      "path": "/admin/companies/{companyId}/categories",
+      "method": "GET",
+      "operation_id": "listCompanyCategories",
+      "auth_required": true,
+      "dependencies": ["createMunicipalityUser"],
+      "notes": ["Lists categories managed by a specific company."]
+    },
+    {
+      "path": "/operators",
+      "method": "GET",
+      "operation_id": "listOperatorsByCategory",
+      "auth_required": true,
+      "dependencies": ["addOperatorCategory"],
+      "notes": ["Lists assignable operators for a category; requires category to exist."]
+    },
+    {
+      "path": "/operators/my-categories",
+      "method": "GET",
+      "operation_id": "listMyOperatorCategories",
+      "auth_required": true,
+      "dependencies": ["addOperatorCategory"],
+      "notes": ["Lists categories assigned to authenticated operator."]
+    },
+    {
+      "path": "/reports",
+      "method": "POST",
+      "operation_id": "createReport",
+      "auth_required": true,
+      "dependencies": ["listCategories"],
+      "notes": ["Creates new citizen report; requires category selection."]
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "operation_id": "listReports",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Lists all reports for admin or public relations officer."]
+    },
+    {
+      "path": "/reports/approved",
+      "method": "GET",
+      "operation_id": "listApprovedReports",
+      "auth_required": false,
+      "dependencies": ["createReport"],
+      "notes": ["Public endpoint for approved reports on map; no auth required."]
+    },
+    {
+      "path": "/reports/assigned",
+      "method": "GET",
+      "operation_id": "listAssignedReports",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Lists reports assigned to logged-in technical officer or maintainer."]
+    },
+    {
+      "path": "/reports/{id}/status",
+      "method": "PUT",
+      "operation_id": "updateReportStatus",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Updates report status; requires report ID."]
+    },
+    {
+      "path": "/reports/{id}/operator",
+      "method": "PUT",
+      "operation_id": "assignReportOperator",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Assigns internal technical operator to report."]
+    },
+    {
+      "path": "/reports/{id}/auto-assign-officer",
+      "method": "POST",
+      "operation_id": "autoAssignTechnicalOfficer",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Automatically assigns technical officer to report."]
+    },
+    {
+      "path": "/reports/{id}/mainteiner",
+      "method": "PUT",
+      "operation_id": "assignReportMainteiner",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Assigns external maintainer to report; route name spelled 'mainteiner'."]
+    },
+    {
+      "path": "/reports/{id}/auto-assign-maintainer",
+      "method": "POST",
+      "operation_id": "autoAssignMaintainer",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Automatically assigns external maintainer to report."]
+    },
+    {
+      "path": "/reports/{id}/internal-comments",
+      "method": "POST",
+      "operation_id": "createInternalComment",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Adds internal operator comment to report."]
+    },
+    {
+      "path": "/reports/{id}/internal-comments",
+      "method": "GET",
+      "operation_id": "listInternalComments",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Lists internal operator comments for a report."]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "POST",
+      "operation_id": "createReportMessage",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Adds citizen/operator message to report chat."]
+    },
+    {
+      "path": "/reports/{id}/messages",
+      "method": "GET",
+      "operation_id": "listReportMessages",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Lists messages for a report chat."]
+    },
+    {
+      "path": "/notifications",
+      "method": "GET",
+      "operation_id": "listNotifications",
+      "auth_required": true,
+      "dependencies": ["createSession"],
+      "notes": ["Lists notifications for logged-in citizen; optional limit parameter."]
+    },
+    {
+      "path": "/notifications/unread-count",
+      "method": "GET",
+      "operation_id": "getUnreadNotificationCount",
+      "auth_required": true,
+      "dependencies": ["listNotifications"],
+      "notes": ["Returns unread notification count for logged-in citizen."]
+    },
+    {
+      "path": "/notifications/{id}/seen",
+      "method": "PUT",
+      "operation_id": "markNotificationAsSeen",
+      "auth_required": true,
+      "dependencies": ["listNotifications"],
+      "notes": ["Marks specific notification as seen."]
+    },
+    {
+      "path": "/notifications/mark-all-seen",
+      "method": "PUT",
+      "operation_id": "markAllNotificationsAsSeen",
+      "auth_required": true,
+      "dependencies": ["listNotifications"],
+      "notes": ["Marks all citizen notifications as seen."]
+    },
+    {
+      "path": "/chats",
+      "method": "GET",
+      "operation_id": "listChats",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Lists chats for logged-in citizen, technical officer, or maintainer."]
+    },
+    {
+      "path": "/chats/unread/count",
+      "method": "GET",
+      "operation_id": "getUnreadMessagesCount",
+      "auth_required": true,
+      "dependencies": ["listChats"],
+      "notes": ["Returns total unread chat message count."]
+    },
+    {
+      "path": "/chats/{reportId}",
+      "method": "GET",
+      "operation_id": "getChatDetails",
+      "auth_required": true,
+      "dependencies": ["createReport"],
+      "notes": ["Returns chat details and messages for a specific report."]
+    },
+    {
+      "path": "/chats/{reportId}/read",
+      "method": "POST",
+      "operation_id": "markChatAsRead",
+      "auth_required": true,
+      "dependencies": ["getChatDetails"],
+      "notes": ["Marks a report chat as read for logged-in user."]
+    }
+  ],
+  "authentication_notes": ["/sessions POST is the only unauthenticated endpoint; all other endpoints require valid session from createSession or are public read-only (listApprovedReports, createUploadUrl).", "/citizens/verify-email depends on prior creation of verification code via /citizens/verification-code.", "/admin/* and /reports/* operations require elevated roles (admin, technical officer, maintainer) as implied by 403 responses."],
+  "dependencies": ["/sessions POST is prerequisite for all auth-required endpoints. /registration POST allows new citizen accounts without prior login. /citizens/verification-code must precede /citizens/verify-email. Admin operations (/admin/*) depend on user creation via /admin/createuser. Report operations (/reports/*) depend on report creation via /reports POST.", "Chat and notification endpoints depend on existing reports or sessions."],
+  "dependency_edges": [
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/sessions",
+      "dependent_method": "GET",
+      "dependent_path": "/sessions/current",
+      "dependency_type": "state",
+      "reason": "getCurrentSession requires an active session created by createSession."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/citizens/verification-code",
+      "dependent_method": "POST",
+      "dependent_path": "/citizens/verify-email",
+      "dependency_type": "state",
+      "reason": "verifyCitizenEmail requires an active verification code generated by createCitizenVerificationCode."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/admin/createuser",
+      "dependent_method": "POST",
+      "dependent_path": "/admin/addcategory",
+      "dependency_type": "resource",
+      "reason": "addOperatorCategory requires an existing operator created by createMunicipalityUser."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/reports/{id}/status",
+      "dependency_type": "resource",
+      "reason": "updateReportStatus requires an existing report created by createReport."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "PUT",
+      "dependent_path": "/reports/{id}/operator",
+      "dependency_type": "resource",
+      "reason": "assignReportOperator requires an existing report created by createReport."
+    },
+    {
+      "prerequisite_method": "POST",
+      "prerequisite_path": "/reports",
+      "dependent_method": "GET",
+      "dependent_path": "/chats/{reportId}",
+      "dependency_type": "resource",
+      "reason": "getChatDetails requires an existing report to retrieve its chat."
+    }
+  ],
+  "risks": ["/citizens/verify-email may fail if verification code expires (423) without explicit expiry handling in client. /admin/* endpoints lack explicit role checks in documentation; 403 responses imply hidden role requirements. Route name 'mainteiner' is non-standard and may cause confusion or typos in client implementations.", "listApprovedReports is public but depends on report creation flow; no clear mechanism to filter by category or status beyond 'approved'.", "Notification and chat endpoints rely on session state that may be invalidated by deleteCurrentSession without explicit cleanup guidance."]
+}

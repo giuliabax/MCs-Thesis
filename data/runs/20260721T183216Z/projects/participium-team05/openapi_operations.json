@@ -1,0 +1,415 @@
+[
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users",
+    "summary": "List users (Dev)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users",
+    "summary": "(unused) placeholder",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/signup",
+    "summary": "Register a new user",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/NewUser"
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/login",
+    "summary": "Login",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/LoginRequest"
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/employees",
+    "summary": "Create a municipality employee (admin only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/NewMunicipalityUser"
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/maintainers",
+    "summary": "Get external maintainers by category",
+    "description": null,
+    "parameters": [
+      {
+        "in": "query",
+        "name": "categoryId",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Category ID to filter maintainers"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/users/me",
+    "summary": "Return current authenticated user and (optionally) a fresh token",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/users/tsm",
+    "summary": "Get all Technical Staff Members",
+    "description": "Retrieves a list of all technical staff members with their assigned offices",
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200",
+      "401",
+      "403",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PATCH",
+    "path": "/users/tsm/{id}",
+    "summary": "Update Technical Staff Member offices",
+    "description": "Updates the assigned offices for a specific technical staff member.",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "The technical staff member ID"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "officeIds"
+      ],
+      "properties": {
+        "officeIds": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "example": [
+            1,
+            2,
+            3
+          ],
+          "description": "Array of office IDs to assign to the technical staff member"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "tags": [
+      "Users"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/categories",
+    "summary": "List categories",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Categories"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/offices",
+    "summary": "List offices",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Offices"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/uploads/sign",
+    "summary": "Get Cloudinary signature and parameters for client upload",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Uploads"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "GET",
+    "path": "/reports",
+    "summary": "List reports filtered by status",
+    "description": null,
+    "parameters": [
+      {
+        "in": "query",
+        "name": "status",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "PendingApproval",
+            "Assigned",
+            "InProgress",
+            "Suspended",
+            "Rejected",
+            "Resolved"
+          ]
+        },
+        "description": "Filter reports by status"
+      }
+    ],
+    "request_body_schema": null,
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": null
+  },
+  {
+    "operation_id": null,
+    "method": "POST",
+    "path": "/reports",
+    "summary": "Create a report (citizen only)",
+    "description": null,
+    "parameters": [],
+    "request_body_schema": {
+      "$ref": "#/components/schemas/CreateReport"
+    },
+    "response_codes": [
+      "201"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/reports/{id}/category",
+    "summary": "Update report category (public relations officer, municipal administrator)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "categoryId"
+      ],
+      "properties": {
+        "categoryId": {
+          "type": "integer"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/reports/{id}/status",
+    "summary": "Change report status (public relations officer)",
+    "description": "Accept (Assigned) or reject (Rejected) a report currently in PendingApproval.\nWhen accepted, the report is automatically assigned to the least-loaded technical staff member\nof the office associated with the report's category (tie-breaker alphabetical).\n",
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "Assigned",
+            "Rejected"
+          ]
+        },
+        "rejectedDescription": {
+          "type": "string",
+          "nullable": true,
+          "description": "Required when status is Rejected"
+        }
+      }
+    },
+    "response_codes": [
+      "200"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  },
+  {
+    "operation_id": null,
+    "method": "PUT",
+    "path": "/reports/{id}/assign-external",
+    "summary": "Assign report to external maintainer (Technical Staff member)",
+    "description": null,
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Report ID"
+      }
+    ],
+    "request_body_schema": {
+      "type": "object",
+      "required": [
+        "maintainerId"
+      ],
+      "properties": {
+        "maintainerId": {
+          "type": "integer",
+          "description": "ID of the external maintainer to assign the report to"
+        }
+      }
+    },
+    "response_codes": [
+      "200",
+      "400",
+      "404"
+    ],
+    "tags": [
+      "Reports"
+    ],
+    "auth_required": true
+  }
+]

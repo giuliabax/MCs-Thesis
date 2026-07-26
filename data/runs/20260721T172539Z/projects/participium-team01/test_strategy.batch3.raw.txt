@@ -1,0 +1,293 @@
+[
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Create a new municipality user with valid email, password, and role 'municipality_user'. Verify response includes created user ID and status 201.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure session is active for admin role via /sessions/current"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates core user creation functionality required for subsequent role assignment and report management."
+  },
+  {
+    "requirement_id": "PT03",
+    "requirement_summary": "System administrator assigns roles to municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Attempt to assign a role (e.g., 'technical_officer') to an existing user ID returned from PT02. Verify the API accepts the role update or returns appropriate status if endpoint differs.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure a municipality user exists (created in PT02)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Confirms role assignment capability essential for flexible staff management per PT10."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with valid description, category, and location coordinates. Verify status is 'Pending Approval' and response includes generated report ID.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen session is active via /sessions/current"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the primary report submission flow ensuring correct initial state per domain rules."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a report with 'anonymous' flag set to true. Verify response indicates anonymity status and that name is hidden in public views (simulated by checking response metadata).",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen session is active via /sessions/current"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the anonymity feature which impacts public visibility and staff view logic."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of assigned reports.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to the current technical office staff user. Verify response contains only reports where 'assignee_id' matches the logged-in user or their team.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure a report exists in 'Assigned' state (requires prior admin assignment)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Confirms role-based filtering logic for staff overview functionality."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to submit a report without providing required 'description' field. Verify system returns 400 Bad Request with message indicating missing mandatory field.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen session is active via /sessions/current"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Ensures input validation prevents incomplete report submissions."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to submit a report with 'anonymous' flag set to true while the user is not authenticated (simulate unregistered user). Verify system blocks submission or returns 401/403.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no active session exists for the test user"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401",
+      "403"
+    ],
+    "rationale": "Validates that anonymous reporting requires prior registration/confirmation per domain rules."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of assigned reports.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Attempt to access /reports/assigned as a citizen user. Verify system returns 403 Forbidden or filters out all results, ensuring citizens cannot see staff-specific assignments.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure citizen session is active via /sessions/current"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "403"
+    ],
+    "rationale": "Confirms strict role separation between citizen and staff views."
+  },
+  {
+    "requirement_id": "PT02",
+    "requirement_summary": "System administrator sets up municipality users.",
+    "api_endpoint": "/admin/createuser",
+    "http_method": "POST",
+    "prompt": "Attempt to create a user with an invalid email format (e.g., 'notanemail'). Verify system returns 400 Bad Request.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "system administrator",
+    "setup_needed": [
+      "Ensure session is active for admin role via /sessions/current"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Validates input validation for critical user creation fields."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of assigned reports.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Access /reports/assigned with a session for a user who has no assigned reports. Verify response returns empty array or appropriate message without error.",
+    "test_type": "edge_case",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure no reports are currently assigned to this user"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests graceful handling of empty result sets for staff dashboards."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to modify an existing report (using its ID) via POST /reports. Verify system returns 405 Method Not Allowed or 403 Forbidden, enforcing immutability after submission.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a report exists in 'Pending Approval' state (created via PT05 happy path)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "405",
+      "403"
+    ],
+    "rationale": "Enforces domain rule: 'Once a report has been inserted, it cannot be modified or deleted by the citizen.'"
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a report with 'anonymous' flag set to true, then immediately attempt to view the public list of reports. Verify the user's name is hidden in the response payload for that specific report.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a report exists with 'anonymous': true (created via PT15 happy path)"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the cross-endpoint behavior where anonymity affects public view logic."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of assigned reports.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Access /reports/assigned as a user with 'technical_officer' role but without any specific assignment. Verify response includes only reports explicitly assigned to this user or their team, excluding others.",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure a report exists in 'Assigned' state and is assigned to a different technical officer"
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests role-based filtering logic ensuring staff only see their own or team's work."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for their report.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to delete a report that was just created (using DELETE /reports/{id}). Verify system returns 405 Method Not Allowed or 403 Forbidden, enforcing immutability.",
+    "test_type": "cleanup",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a report exists in 'Pending Approval' state (created via PT05 happy path)"
+    ],
+    "cleanup_strategy": "Verify no resource was deleted; if deletion succeeded unexpectedly, log error and re-create the report for subsequent tests.",
+    "expected_status_codes": [
+      "405",
+      "403"
+    ],
+    "rationale": "Enforces domain rule: 'Once a report has been inserted, it cannot be modified or deleted by the citizen.'"
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a report with 'anonymous': false. Verify that the user's name is visible in the response payload and would be shown in public views (simulated by checking response metadata).",
+    "test_type": "cleanup",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure no reports exist for this specific test scenario"
+    ],
+    "cleanup_strategy": "If a report was created, delete it using the admin endpoint or wait for natural expiration if applicable; otherwise, verify resource is gone.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the inverse of anonymity logic ensuring non-anonymous reports show user details."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees list of assigned reports.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Access /reports/assigned as a user with 'technical_officer' role. Verify that the response does not include reports assigned to external maintainers unless explicitly configured (per domain rules).",
+    "test_type": "cleanup",
+    "priority": "low",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure a report exists in 'Assigned' state and is assigned to an external maintainer"
+    ],
+    "cleanup_strategy": "If the test creates resources for this scenario, ensure they are cleaned up via admin endpoints or by waiting for resolution.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Ensures role-based access control correctly filters out external maintainer assignments from staff views."
+  }
+]

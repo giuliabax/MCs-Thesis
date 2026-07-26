@@ -1,0 +1,158 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports without any authentication headers or cookies. Verify that the response contains a list of reports where the 'status' is 'Approved'. Ensure that the response includes map-compatible data (e.g., coordinates) and that no sensitive fields (like full user names for anonymous users) are exposed in a way that violates domain rules.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the core functionality for unregistered users to view public data as per requirement PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{reportId}/assign-external",
+    "http_method": "POST",
+    "prompt": "First, ensure a valid session exists for a 'technical_office_staff_member' role. Then, perform a POST request to /reports/{reportId}/assign-external with the ID of an existing external maintainer. Verify that the report's assignment status changes correctly and that the response confirms the successful assignment.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a valid session for role 'technical_office_staff_member'."
+    ],
+    "cleanup_strategy": "Verify that the report assignment was successful; no resource deletion is required as this is a state change, but ensure the specific maintainer ID used in the payload is valid.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the primary workflow for technical staff to delegate work to external maintainers per PT24."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{reportId}/status",
+    "http_method": "PATCH",
+    "prompt": "Ensure a valid session exists for an 'external_maintainer' role. Perform a PATCH request to /reports/{reportId}/status with a new status value (e.g., 'In Progress'). Verify that the status is updated successfully and that the response reflects the change.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a valid session for role 'external_maintainer'."
+    ],
+    "cleanup_strategy": "No cleanup required for status updates; the state change is the intended outcome.",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the ability of external maintainers to update report statuses per PT25."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{reportId}/status",
+    "http_method": "PATCH",
+    "prompt": "Ensure a valid session exists for a 'technical_office_staff_member' role. Perform a PATCH request to /reports/{reportId}/status with a new status value (e.g., 'Pending Approval'). Verify that the status is updated successfully.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a valid session for role 'technical_office_staff_member'."
+    ],
+    "cleanup_strategy": "No cleanup required; status updates are state changes.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the ability of technical staff to manage report statuses per PT11."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{reportId}/assign-external",
+    "http_method": "POST",
+    "prompt": "Ensure a valid session exists for a 'technical_office_staff_member' role. Perform a POST request to /reports/{reportId}/assign-external with an invalid external maintainer ID (e.g., non-existent or null). Verify that the API returns an appropriate error status code (e.g., 400 Bad Request) indicating that the assignment failed due to the invalid target.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a valid session for role 'technical_office_staff_member'."
+    ],
+    "cleanup_strategy": "Verify that no unintended side effects occurred; ensure the report was not assigned to anyone.",
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures the system handles invalid external maintainer IDs gracefully and does not allow assignment to non-existent users."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates the status of a report assigned to them.",
+    "api_endpoint": "/reports/{reportId}/status",
+    "http_method": "PATCH",
+    "prompt": "Ensure a valid session exists for an 'external_maintainer' role. Perform a PATCH request to /reports/{reportId}/status with an invalid status value (e.g., 'InvalidStatus'). Verify that the API returns an appropriate error status code (e.g., 400 Bad Request) indicating that the status update failed due to the invalid value.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a valid session for role 'external_maintainer'."
+    ],
+    "cleanup_strategy": "Verify that the report status was not changed.",
+    "expected_status_codes": ["400"],
+    "rationale": "Ensures the system validates input data and rejects invalid status values."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user can view approved reports on an interactive map.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports without authentication. Verify that the response filters out reports that are not in 'Approved' status (e.g., 'Pending Approval', 'Assigned'). Ensure that the response does not include sensitive information such as full user names for anonymous users, adhering to domain rules.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the filtering logic to ensure only approved reports are visible and sensitive data is hidden for unregistered users."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns a report to an external maintainer.",
+    "api_endpoint": "/reports/{reportId}/assign-external",
+    "http_method": "POST",
+    "prompt": "Ensure a valid session exists for a 'technical_office_staff_member' role. First, create a new report via POST /reports. Then, perform a POST request to /reports/{reportId}/assign-external with a valid external maintainer ID. Verify that the assignment is successful and that the report's state transitions correctly (e.g., from 'Pending Approval' to 'Assigned').",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a valid session for role 'technical_office_staff_member'.",
+      "POST /reports to create a new report."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{reportId} if it was not successfully assigned, or verify that the assignment operation did not leave the system in an inconsistent state.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the dependency between creating a report and assigning it to an external maintainer, ensuring proper state transitions."
+  },
+  {
+    "requirement_id": "PT11",
+    "requirement_summary": "Technical office staff member updates report statuses.",
+    "api_endpoint": "/reports/{reportId}/status",
+    "http_method": "PATCH",
+    "prompt": "Ensure a valid session exists for a 'technical_office_staff_member' role. First, create a new report via POST /reports. Then, perform a PATCH request to /reports/{reportId}/status with a new status value (e.g., 'Pending Approval'). Verify that the status is updated successfully and that the response reflects the change.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a valid session for role 'technical_office_staff_member'.",
+      "POST /reports to create a new report."
+    ],
+    "cleanup_strategy": "Delete the created report using DELETE /reports/{reportId} after the test to clean up the resource.",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the dependency between creating a report and updating its status, ensuring proper state transitions."
+  },
+  {
+    "requirement_id": "PT22",
+    "requirement_summary": "Citizen/unregistered user can browse a summary table of reports with filters.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports without authentication. Verify that the response includes a summary table of reports. Apply query parameters for filtering by category, status, or period of time (e.g., ?status=Approved&category=Infrastructure). Ensure that the filtered results are returned correctly and that the response format supports CSV download as per domain rules.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the filtering and browsing functionality for citizens/unregistered users to explore reports per PT22."
+  }
+]

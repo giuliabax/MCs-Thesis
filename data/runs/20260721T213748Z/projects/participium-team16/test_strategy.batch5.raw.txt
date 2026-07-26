@@ -1,0 +1,154 @@
+[
+  {
+    "requirement_id": "PT20",
+    "requirement_summary": "As a citizen /unregistered user I want to see public statistics about reports So that I understand trends in city issues.",
+    "api_endpoint": "/reports/stats",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports/stats without authentication. Verify response contains aggregated data (e.g., total count, category breakdown) accessible to unregistered users. Ensure no sensitive user details are exposed.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates public accessibility of statistics as per requirement PT20 and domain rule regarding visitor access."
+  },
+  {
+    "requirement_id": "PT14",
+    "requirement_summary": "As a citizen I want to access quick assistance and help commands from the Telegram bot So that I can understand how to use the system and find useful contacts.",
+    "api_endpoint": "/faqs",
+    "http_method": "GET",
+    "prompt": "Execute GET /faqs. Verify response returns a list of FAQ items or help topics relevant to citizens (e.g., how to submit, contact info). Ensure content is readable and structured for display.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the availability of help commands/FAQs for citizens as required by PT14."
+  },
+  {
+    "requirement_id": "PT16",
+    "requirement_summary": "As a citizen I want to follow reports done by other citizens So that I can be updated",
+    "api_endpoint": "/reports/{id}/follow",
+    "http_method": "POST",
+    "prompt": "Execute POST /reports/{id}/follow with a valid report ID. Verify the system registers the user as following this specific report. Check response indicates success (e.g., 200 OK or updated state).",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a valid report ID exists in the system.",
+      "Ensure the authenticated user is not already following this report."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., remove follow relationship via DELETE /reports/{id}/follow or equivalent cleanup endpoint).",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the core functionality of following reports as per PT16."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "As a citizen I want to reply to messages from municipal operators in the platform So that I can communicate directly about my report.",
+    "api_endpoint": "/reports/{id}/message",
+    "http_method": "POST",
+    "prompt": "Execute POST /reports/{id}/message with a valid report ID and a message body. Verify the system accepts the message and stores it for the specific report context. Ensure response confirms message submission.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a valid report ID exists.",
+      "Ensure the authenticated user is associated with this report (e.g., they submitted it or are allowed to comment)."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., remove message via DELETE /reports/{id}/message/{msgId} or equivalent).",
+    "expected_status_codes": ["200"],
+    "rationale": "Validates the ability to reply to messages as per PT18."
+  },
+  {
+    "requirement_id": "PT16",
+    "requirement_summary": "As a citizen I want to follow reports done by other citizens So that I can be updated",
+    "api_endpoint": "/users/me/followed-reports",
+    "http_method": "GET",
+    "prompt": "Execute GET /users/me/followed-reports immediately after performing the follow action (from item 3). Verify the response list includes the report ID that was just followed. Ensure no other unrelated reports are listed unless previously followed.",
+    "test_type": "stateful",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Perform POST /reports/{id}/follow with a valid report ID and authenticated citizen user (as per item 3)."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., remove follow relationship via DELETE /reports/{id}/follow).",
+    "expected_status_codes": ["200"],
+    "rationale": "Tests the state dependency where following a report populates the followed-reports list."
+  },
+  {
+    "requirement_id": "PT16",
+    "requirement_summary": "As a citizen I want to follow reports done by other citizens So that I can be updated",
+    "api_endpoint": "/reports/{id}/follow",
+    "http_method": "POST",
+    "prompt": "Execute POST /reports/{id}/follow with a report ID that is in 'Resolved' or 'Rejected' state. Verify the system prevents following this closed report and returns an appropriate error (e.g., 403 Forbidden or 400 Bad Request) indicating the action is not allowed on closed reports.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Create a report and transition it to 'Resolved' or 'Rejected' state (or use existing data)."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["403", "400"],
+    "rationale": "Tests the domain rule preventing citizens from following closed reports."
+  },
+  {
+    "requirement_id": "PT16",
+    "requirement_summary": "As a citizen I want to follow reports done by other citizens So that I can be updated",
+    "api_endpoint": "/reports/{id}/follow",
+    "http_method": "POST",
+    "prompt": "Execute POST /reports/{id}/follow with an invalid report ID (e.g., non-existent or malformed UUID). Verify the system returns a 404 Not Found or 400 Bad Request error.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["404", "400"],
+    "rationale": "Tests system behavior with invalid input data for the follow operation."
+  },
+  {
+    "requirement_id": "PT16",
+    "requirement_summary": "As a citizen I want to follow reports done by other citizens So that I can be updated",
+    "api_endpoint": "/reports/{id}/follow",
+    "http_method": "POST",
+    "prompt": "Execute POST /reports/{id}/follow with an invalid report ID (e.g., non-existent or malformed UUID). Verify the system returns a 404 Not Found or 400 Bad Request error.",
+    "test_type": "cleanup",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": ["404", "400"],
+    "rationale": "Ensures robustness against invalid inputs for the follow operation."
+  },
+  {
+    "requirement_id": "PT21",
+    "requirement_summary": "As a municipal administrator I want to see detailed private statistics So that I can monitor usage and performance of the system.",
+    "api_endpoint": "/reports/stats",
+    "http_method": "GET",
+    "prompt": "Execute GET /reports/stats with authentication as 'municipal administrator'. Verify the response contains detailed private statistics (e.g., internal metrics, sensitive breakdowns) that are not visible to unauthenticated users or citizens.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "municipal administrator",
+    "setup_needed": [
+      "Authenticate as a municipal administrator user."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["200"],
+    "rationale": "Validates role-based access control ensuring administrators see private stats not available to the public."
+  },
+  {
+    "requirement_id": "PT18",
+    "requirement_summary": "As a citizen I want to reply to messages from municipal operators in the platform So that I can communicate directly about my report.",
+    "api_endpoint": "/reports/{id}/message",
+    "http_method": "POST",
+    "prompt": "Execute POST /reports/{id}/message without authentication (or with a citizen token for a report they do not own). Verify the system denies the request and returns an error (e.g., 401 Unauthorized or 403 Forbidden) because message posting is restricted to authorized users.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": ["401", "403"],
+    "rationale": "Tests security constraint that only authorized users can reply to messages."
+  }
+]

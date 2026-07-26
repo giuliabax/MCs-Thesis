@@ -1,0 +1,493 @@
+{
+  "summary": "Participium is a web application for the Municipality of Turin enabling citizens to report urban issues (e.g., potholes, trash) via an interactive map or Telegram bot. Reports undergo a lifecycle: Pending Approval -> Assigned (to Technical Office) -> In Progress -> Resolved/Rejected/Suspended. The system supports external maintainers (with or without platform access), internal communication between staff and maintainers, citizen notifications (email/push), anonymous reporting options, and detailed public/private statistics.",
+  "requirements": [
+    {
+      "id": "REQ-PT28",
+      "source": "User Story PT28",
+      "text": "Unregistered users must be able to view approved reports on an interactive map of Turin.",
+      "role": "unregistered user",
+      "business_value": 990,
+      "constraints": [
+        "Reports must be in 'Approved' status (Pending Approval is not visible).",
+        "Map must be based on OpenStreetMap standard layer."
+      ],
+      "expected_behaviors": [
+        "User can see geolocated reports at the point indicated by the citizen.",
+        "User can zoom in/out to view individual reports or cumulative groupings."
+      ]
+    },
+    {
+      "id": "REQ-PT24",
+      "source": "User Story PT24",
+      "text": "Technical office staff members must be able to assign reports to external maintainers.",
+      "role": "technical office staff member",
+      "business_value": 980,
+      "constraints": [
+        "Assignment is possible for specific reports of certain categories (e.g., Public Lighting) based on content review."
+      ],
+      "expected_behaviors": [
+        "Staff can select an external maintainer to handle the intervention.",
+        "System must support the scenario where the external company has access to Participium."
+      ]
+    },
+    {
+      "id": "REQ-PT25",
+      "source": "User Story PT25",
+      "text": "External maintainers must be able to update the status of a report assigned to them.",
+      "role": "external maintainer",
+      "business_value": 975,
+      "constraints": [
+        "Maintainer must have access to Participium (Case 1).",
+        "Status updates are limited to moving from 'Assigned' to 'In Progress' and finally to 'Resolved'.",
+        "Internal comments exchanged with the technical office are not visible to the reporter."
+      ],
+      "expected_behaviors": [
+        "Maintainer can change status to reflect intervention progress.",
+        "Maintainer can add comments visible only to technical office staff."
+      ]
+    },
+    {
+      "id": "REQ-PT26",
+      "source": "User Story PT26",
+      "text": "Technical office staff members and external maintainers must be able to exchange information and comments on a report internally.",
+      "role": "technical office staff member, external maintainer",
+      "business_value": 970,
+      "constraints": [
+        "Communication is reserved for the specific report.",
+        "Comments are not visible to the reporter or citizens."
+      ],
+      "expected_behaviors": [
+        "Both roles can post comments on the report thread.",
+        "System must distinguish between internal (staff/maintainer) and external (citizen) communication channels."
+      ]
+    },
+    {
+      "id": "REQ-PT01",
+      "source": "User Story PT01",
+      "text": "Citizens must register with email, username, first name, and last name to access the system.",
+      "role": "citizen",
+      "business_value": 950,
+      "constraints": [
+        "Registration is mandatory before submitting reports.",
+        "Email can be used for login."
+      ],
+      "expected_behaviors": [
+        "System validates required fields during registration.",
+        "User receives a confirmation email with a code after registration."
+      ]
+    },
+    {
+      "id": "REQ-PT27",
+      "source": "User Story PT27",
+      "text": "Users must confirm their registration using a valid code to activate their account.",
+      "role": "citizen",
+      "business_value": 945,
+      "constraints": [
+        "Confirmation code is valid for 30 minutes.",
+        "User cannot use the application until confirmation."
+      ],
+      "expected_behaviors": [
+        "System accepts the code within the 30-minute window.",
+        "Account status changes to 'valid' upon successful code entry."
+      ]
+    },
+    {
+      "id": "REQ-PT02",
+      "source": "User Story PT02",
+      "text": "System administrators must be able to set up municipality users.",
+      "role": "system administrator",
+      "business_value": 940,
+      "constraints": [
+        "Users created are internal accounts of the municipality."
+      ],
+      "expected_behaviors": [
+        "Admin can create new user accounts for municipal staff."
+      ]
+    },
+    {
+      "id": "REQ-PT03",
+      "source": "User Story PT03",
+      "text": "System administrators must be able to assign roles to municipality users.",
+      "role": "system administrator",
+      "business_value": 935,
+      "constraints": [
+        "Roles include: municipal public relations officer, municipal administrator, technical office staff member, external maintainer.",
+        "Only technical office staff members can have multiple roles.",
+        "Modification of roles includes cancellation."
+      ],
+      "expected_behaviors": [
+        "Admin assigns specific role(s) to a user.",
+        "System enforces the constraint that only technical office staff can hold multiple roles."
+      ]
+    },
+    {
+      "id": "REQ-PT04",
+      "source": "User Story PT04",
+      "text": "Citizens must be able to select a location on the city map when creating a report.",
+      "role": "citizen",
+      "business_value": 930,
+      "constraints": [
+        "Report must be tied to a specific location (latitude/longitude).",
+        "Map layer must be OpenStreetMap standard."
+      ],
+      "expected_behaviors": [
+        "User clicks on map to set coordinates.",
+        "System stores the geolocation data with the report."
+      ]
+    },
+    {
+      "id": "REQ-PT05",
+      "source": "User Story PT05",
+      "text": "Citizens must provide mandatory details (title, description, category, photos) for a report.",
+      "role": "citizen",
+      "business_value": 920,
+      "constraints": [
+        "Mandatory fields: title, textual description, category (from list), photos (min 1, max 3).",
+        "Categories include: Water Supply, Architectural Barriers, Sewer System, Public Lighting, Waste, Road Signs and Traffic Lights, Roads and Urban Furnishings, Public Green Areas and Playgrounds, Other."
+      ],
+      "expected_behaviors": [
+        "Form validates presence of all mandatory fields.",
+        "System accepts 1 to 3 photos per report."
+      ]
+    },
+    {
+      "id": "REQ-PT06",
+      "source": "User Story PT06",
+      "text": "Municipal public relations officers must be able to review and approve or reject reports.",
+      "role": "municipal public relations officer",
+      "business_value": 915,
+      "constraints": [
+        "Rejected reports must include an explanation.",
+        "Accepted reports are assigned to the competent technical office based on category.",
+        "Automatic assignment is possible only if previously set by the municipal administrator."
+      ],
+      "expected_behaviors": [
+        "Officer selects 'Accept' or 'Reject' action.",
+        "If rejected, officer must input a reason text.",
+        "If accepted, system updates status to 'Assigned' and routes to correct technical office."
+      ]
+    },
+    {
+      "id": "REQ-PT07",
+      "source": "User Story PT07",
+      "text": "Citizens must be able to view approved reports on an interactive map with zoom functionality.",
+      "role": "citizen",
+      "business_value": 910,
+      "constraints": [
+        "Map must show reporter's name or 'anonymous' if flagged.",
+        "Zooming out groups reports cumulatively; zooming in separates them."
+      ],
+      "expected_behaviors": [
+        "User clicks title to open full description with pictures.",
+        "Cumulative view shows total number of reports when zoomed out.",
+        "Individual view shows title and reporter name/status."
+      ]
+    },
+    {
+      "id": "REQ-PT15",
+      "source": "User Story PT15",
+      "text": "Citizens must be able to choose whether to make their report anonymous.",
+      "role": "citizen",
+      "business_value": 905,
+      "constraints": [
+        "Choice is made at issue description time.",
+        "Anonymous name is hidden in the public list/map but visible to staff."
+      ],
+      "expected_behaviors": [
+        "User toggles anonymity option before submission.",
+        "Public views display 'anonymous' if selected; internal views show real name."
+      ]
+    },
+    {
+      "id": "REQ-PT08",
+      "source": "User Story PT08",
+      "text": "Technical office staff members must be able to see the list of reports assigned to them.",
+      "role": "technical office staff member",
+      "business_value": 900,
+      "constraints": [
+        "List includes reports assigned based on category or manual assignment."
+      ],
+      "expected_behaviors": [
+        "Staff views dashboard/list of their assigned tasks.",
+        "List reflects current status (e.g., Assigned, In Progress)."
+      ]
+    },
+    {
+      "id": "REQ-PT09",
+      "source": "User Story PT09",
+      "text": "Citizens must be able to configure their account for notifications and virtual presence.",
+      "role": "citizen",
+      "business_value": 895,
+      "constraints": [
+        "Configuration panel allows uploading personal photo.",
+        "Allows adding Telegram username.",
+        "Allows switching email notifications on/off."
+      ],
+      "expected_behaviors": [
+        "User uploads profile photo.",
+        "User enters Telegram handle.",
+        "User toggles email notification preference."
+      ]
+    },
+    {
+      "id": "REQ-PT30",
+      "source": "User Story PT30",
+      "text": "Citizens and unregistered users must be able to search for reports by typing an address.",
+      "role": "citizen, unregistered user",
+      "business_value": 890,
+      "constraints": [
+        "Search zooms in on the specific area."
+      ],
+      "expected_behaviors": [
+        "User types address in search bar.",
+        "Map centers and zooms to the location of reports matching the address."
+      ]
+    },
+    {
+      "id": "REQ-PT10",
+      "source": "User Story PT10",
+      "text": "System administrators must be able to modify roles for municipality users.",
+      "role": "system administrator",
+      "business_value": 885,
+      "constraints": [
+        "Modification includes cancellation of existing roles.",
+        "Users can have multiple roles (except technical office staff constraint)."
+      ],
+      "expected_behaviors": [
+        "Admin removes or adds roles to a user account."
+      ]
+    },
+    {
+      "id": "REQ-PT11",
+      "source": "User Story PT11",
+      "text": "Technical office staff members must be able to update report statuses.",
+      "role": "technical office staff member",
+      "business_value": 880,
+      "constraints": [
+        "Status changes trigger notifications to citizens.",
+        "Operators can send messages to citizens which citizens can reply to."
+      ],
+      "expected_behaviors": [
+        "Staff updates status (e.g., Pending -> Assigned -> In Progress -> Resolved).",
+        "System sends platform notification and email (if enabled) to citizen.",
+        "Chat interface allows two-way communication between staff and citizen."
+      ]
+    },
+    {
+      "id": "REQ-PT12",
+      "source": "User Story PT12",
+      "text": "Citizens must be able to create a new report through a Telegram bot.",
+      "role": "citizen",
+      "business_value": 875,
+      "constraints": [
+        "Bot guides process: location, title, description, category, photos (up to 3), anonymity."
+      ],
+      "expected_behaviors": [
+        "User sends /newreport command.",
+        "Bot prompts for required fields sequentially or in a form-like interface.",
+        "Bot accepts photo uploads and anonymity choice."
+      ]
+    },
+    {
+      "id": "REQ-PT13",
+      "source": "User Story PT13",
+      "text": "Citizens must be able to check their report status through a Telegram bot.",
+      "role": "citizen",
+      "business_value": 865,
+      "constraints": [
+        "Lists all submitted reports with current status."
+      ],
+      "expected_behaviors": [
+        "User sends /myreports to see list.",
+        "User sends /reportstatus <ID> to see details of specific report."
+      ]
+    },
+    {
+      "id": "REQ-PT14",
+      "source": "User Story PT14",
+      "text": "Citizens must be able to access quick assistance and help commands from the Telegram bot.",
+      "role": "citizen",
+      "business_value": 840,
+      "constraints": [
+        "Commands provide system usage info and useful contacts."
+      ],
+      "expected_behaviors": [
+        "User sends /help to list commands.",
+        "User sends /contact for support team info.",
+        "User sends /faq for frequently asked questions."
+      ]
+    },
+    {
+      "id": "REQ-PT18",
+      "source": "User Story PT18",
+      "text": "Citizens must be able to reply to messages from municipal operators in the platform.",
+      "role": "citizen",
+      "business_value": 830,
+      "constraints": [
+        "Two-way communication is possible within the platform."
+      ],
+      "expected_behaviors": [
+        "Citizen sees incoming message from operator.",
+        "Citizen can type and send a reply message."
+      ]
+    },
+    {
+      "id": "REQ-PT16",
+      "source": "User Story PT16",
+      "text": "Citizens must be able to follow reports done by other citizens.",
+      "role": "citizen",
+      "business_value": 820,
+      "constraints": [
+        "Only not closed reports can be followed.",
+        "Notifications follow the same rules as for owned reports."
+      ],
+      "expected_behaviors": [
+        "User selects a report to follow.",
+        "User receives notifications when status changes on followed reports."
+      ]
+    },
+    {
+      "id": "REQ-PT17",
+      "source": "User Story PT17",
+      "text": "Citizens must be able to receive real-time push notifications via the Telegram bot.",
+      "role": "citizen",
+      "business_value": 810,
+      "constraints": [
+        "Requires Telegram username configuration."
+      ],
+      "expected_behaviors": [
+        "User sends /subscribe to enable all report notifications.",
+        "User sends /unsubscribe to disable.",
+        "User sends /subscribe report <ID> for specific report."
+      ]
+    },
+    {
+      "id": "REQ-PT19",
+      "source": "User Story PT19",
+      "text": "Citizens must be able to receive optional email alerts in addition to platform notifications.",
+      "role": "citizen",
+      "business_value": 790,
+      "constraints": [
+        "Email alerts are sent unless disabled in configuration panel."
+      ],
+      "expected_behaviors": [
+        "System sends email copy of platform notification if enabled.",
+        "User can toggle this setting in config panel."
+      ]
+    },
+    {
+      "id": "REQ-PT20",
+      "source": "User Story PT20",
+      "text": "Citizens and unregistered users must be able to see public statistics about reports.",
+      "role": "citizen, unregistered user",
+      "business_value": 770,
+      "constraints": [
+        "Includes number of reports by category and trends by day/week/month."
+      ],
+      "expected_behaviors": [
+        "Public dashboard displays charts/tables for public metrics.",
+        "Data is accessible without login."
+      ]
+    },
+    {
+      "id": "REQ-PT21",
+      "source": "User Story PT21",
+      "text": "Municipal administrators must be able to see detailed private statistics.",
+      "role": "municipal administrator",
+      "business_value": 755,
+      "constraints": [
+        "Includes: reports by status, type, type+status, reporter, reporter+type, reporter+type+status, top 1% reporters, top 5% reporters."
+      ],
+      "expected_behaviors": [
+        "Admin dashboard displays advanced analytics charts and tables.",
+        "Data is restricted to administrators only."
+      ]
+    },
+    {
+      "id": "REQ-PT29",
+      "source": "User Story PT29",
+      "text": "Municipal administrators must be able to configure automatic assignment of all reports in a certain category.",
+      "role": "municipal administrator",
+      "business_value": 750,
+      "constraints": [
+        "Overrides initial review by municipal public relations officer if set."
+      ],
+      "expected_behaviors": [
+        "Admin configures rule: Category X -> Technical Office Y automatically.",
+        "System applies rule upon report approval."
+      ]
+    },
+    {
+      "id": "REQ-PT22",
+      "source": "User Story PT22",
+      "text": "Citizens and unregistered users must be able to browse a summary table of reports with filters.",
+      "role": "citizen, unregistered user",
+      "business_value": 740,
+      "constraints": [
+        "Filters: by category, status, period of time."
+      ],
+      "expected_behaviors": [
+        "User applies filter criteria.",
+        "Table updates to show only filtered data."
+      ]
+    },
+    {
+      "id": "REQ-PT23",
+      "source": "User Story PT23",
+      "text": "Citizens must be able to download the summary table of reports as a CSV file.",
+      "role": "citizen",
+      "business_value": 730,
+      "constraints": [
+        "If a filter is active, only filtered data should be downloaded."
+      ],
+      "expected_behaviors": [
+        "User clicks download button.",
+        "System generates CSV file matching current view (filtered or unfiltered)."
+      ]
+    }
+  ],
+  "roles": [
+    "citizen",
+    "unregistered user",
+    "system administrator",
+    "municipal public relations officer",
+    "municipal administrator",
+    "technical office staff member",
+    "external maintainer"
+  ],
+  "domain_rules": [
+    "Reports must be in 'Pending Approval' state until the Organization Office performs preliminary verification.",
+    "Accepted reports move to 'Assigned' state and are sent to the competent technical office depending on the problem category.",
+    "Rejected reports require a mandatory explanation from the Municipality Organization Office.",
+    "Once approved, accepted reports immediately become visible on the Participium portal (map and table).",
+    "Unregistered users can view reports on maps but cannot submit new reports.",
+    "Once a report has been inserted, it cannot be modified or deleted by the citizen.",
+    "An anonymous user's name is still visible to staff and only hidden in the Turin map of reports for citizens.",
+    "Only technical office staff members can have multiple roles.",
+    "External maintainers are added by the system administrator.",
+    "Each maintainer should have their own individual account.",
+    "Case 1 (External maintainer has access): Comments/information exchanged between a technical office and an external maintainer are report-specific and reserved (not visible to reporter).",
+    "Case 2 (External maintainer no access): Communication is out of scope; technical office updates status externally.",
+    "Automatic assignment of all issues of a certain category is possible only if previously set by the municipal administrator.",
+    "Notifications/messages can be set to either be sent in real time or when the page is refreshed, depending on user preference.",
+    "Public statistics are visible to unregistered users; private statistics are for administrators only."
+  ],
+  "edge_cases": [
+    "External maintainer resolves a report assigned to them (Case 1).",
+    "Technical office staff member updates status when external company has no access (Case 2).",
+    "User zooms out on map to see cumulative report grouping.",
+    "User filters table by category, status, or period of time before downloading CSV.",
+    "Citizen follows a report that is not closed.",
+    "Telegram bot handles commands for help, contacts, and FAQ.",
+    "System handles the 30-minute expiration of the registration confirmation code."
+  ],
+  "assumptions": [
+    "The 'Organization Office' refers to the initial review body before assignment.",
+    "Competent technical office is determined by the problem category (e.g., Public Lighting -> Enel X or specific office).",
+    "Telegram bot integration requires the user to have provided a valid Telegram username in their configuration panel.",
+    "Email notifications are sent unless explicitly disabled in the user's configuration panel.",
+    "The 'top 1%' and 'top 5%' reporters statistics refer to the most active reporters based on report count.",
+    "Unregistered users can view reports but cannot interact with them (no comments, no status updates).",
+    "Staff members can send messages to citizens which citizens can reply to, implying a chat-like interface within the platform."
+  ]
+}

@@ -1,0 +1,180 @@
+[
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user views approved reports on an interactive map.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Verify that the response includes a list of reports where status is 'Approved' or equivalent (e.g., 'In Progress', 'Resolved'). Ensure the response format supports rendering on an interactive map (e.g., includes latitude, longitude, title). Do not require authentication headers.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the core functionality for unregistered users to view public data as per PT28."
+  },
+  {
+    "requirement_id": "PT24",
+    "requirement_summary": "Technical office staff member assigns reports to external maintainers.",
+    "api_endpoint": "/officers/assign-report",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to /officers/assign-report. Include headers for an authenticated 'technical_office_staff' role. In the body, provide a report ID and an external maintainer ID. Verify the response indicates successful assignment.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff",
+    "setup_needed": [
+      "Ensure at least one report exists in 'Assigned' state.",
+      "Ensure an external maintainer account exists in the system."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present (e.g., check for new assignment logs or notifications).",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the specific workflow for technical staff assigning to external parties per PT24."
+  },
+  {
+    "requirement_id": "PT30",
+    "requirement_summary": "Citizen searches for reports in a specific area by typing an address.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Include query parameters with 'address' set to a valid street name (e.g., 'Via Roma, 1'). Verify the response filters results to reports located near or within that address.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure at least one report exists with a geolocation matching the query address."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the search/filtering capability for citizens per PT30 using an address parameter."
+  },
+  {
+    "requirement_id": "PT28",
+    "requirement_summary": "Unregistered user views approved reports on an interactive map.",
+    "api_endpoint": "/reports",
+    "http_method": "GET",
+    "prompt": "Execute a GET request to /reports. Verify that the response includes reports with status 'Resolved' or 'Rejected'. Ensure these are visible if they meet the 'approved' criteria defined in domain rules (e.g., resolved issues). Check that no sensitive internal data is exposed.",
+    "test_type": "negative",
+    "priority": "low",
+    "auth_role": null,
+    "setup_needed": [],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests boundary conditions of 'approved' status visibility for unregistered users per PT28."
+  },
+  {
+    "requirement_id": "PT26",
+    "requirement_summary": "Technical office staff exchanges internal comments on a report without exposing them to citizens.",
+    "api_endpoint": "/internal-messages",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to create an internal message for a specific report. Authenticate as 'technical_office_staff_member'. The payload should include the report ID and a comment text. Verify that the message is created successfully.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical_office_staff_member",
+    "setup_needed": [
+      "Create a report via POST /reports with status 'Assigned'."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present. Note: Internal messages are stateful, but the cleanup strategy ensures no orphaned data remains.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the internal communication channel for technical office staff as per requirement PT26."
+  },
+  {
+    "requirement_id": "PT25",
+    "requirement_summary": "External maintainer updates a report status, which triggers a state change dependent on previous assignment.",
+    "api_endpoint": "/maintainers/reports/{id}/status",
+    "http_method": "PATCH",
+    "prompt": "Execute a PATCH request to update the status of a report from 'Pending Approval' to 'In Progress'. This should fail because the report must first be assigned. Verify that the system rejects this change with an appropriate error message.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": "external_maintainer",
+    "setup_needed": [
+      "Create a report via POST /reports with status 'Pending Approval'.",
+      "Ensure the report is NOT assigned to any technical office or maintainer."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests the dependency edge where a report must be assigned before its status can be updated by an external maintainer."
+  },
+  {
+    "requirement_id": "PT01",
+    "requirement_summary": "Citizen registers with name and username to access the Participium system.",
+    "api_endpoint": "/users",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to register a new user. The payload should include 'name', 'username', and 'email'. Verify that the response indicates successful registration and provides a confirmation code or token.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no user with the same username exists."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the registration flow for citizens as per requirement PT01."
+  },
+  {
+    "requirement_id": "PT27",
+    "requirement_summary": "Citizen confirms registration with a code to activate their account.",
+    "api_endpoint": "/users/verifyotp",
+    "http_method": "POST",
+    "prompt": "Execute a POST request to verify the OTP code for a user. First, register a user via POST /users and capture the confirmation code from the response. Then, send the code in the payload to verify the account.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Register a user via POST /users and capture the confirmation code from the response."
+    ],
+    "cleanup_strategy": "Verify no resource was created; delete it if unexpectedly present.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the account confirmation flow for citizens as per requirement PT27."
+  },
+  {
+    "requirement_id": "PT04",
+    "requirement_summary": "Citizen selects a location on the city map to geolocate their report with latitude and longitude.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report via POST /reports. The request body must include 'latitude' and 'longitude' fields derived from a map selection action (e.g., click event). Ensure the coordinates are valid numbers within acceptable ranges for the city.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure user is authenticated as a citizen (session/token active)."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of geolocation-based report submission."
+  },
+  {
+    "requirement_id": "PT12",
+    "requirement_summary": "Citizen creates a new report through a Telegram bot so that they can quickly notify the public administration.",
+    "api_endpoint": "/auth/telegram",
+    "http_method": "POST",
+    "prompt": "Initiate the Telegram authentication flow via POST /auth/telegram. The request body must include 'chat_id' and 'token'. Verify that the response provides a confirmation code or session token required to complete registration before submitting a report.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure Telegram bot credentials are valid and active."
+    ],
+    "cleanup_strategy": "Delete created resources or restore their previous state.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the entry point for Telegram-based report submission, ensuring the auth handshake works before data submission."
+  }
+]

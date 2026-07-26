@@ -1,0 +1,201 @@
+[
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a new report with valid title, description, category, and location coordinates. Ensure the payload includes all required fields for proper classification logic.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure authenticated citizen session is active."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the core functionality of report submission and classification based on provided details."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Submit a report with missing mandatory fields (e.g., empty title or invalid coordinates) to test input validation and error handling during classification.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure authenticated citizen session is active."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests system resilience against incomplete or malformed input data during the classification process."
+  },
+  {
+    "requirement_id": "PT05",
+    "requirement_summary": "Citizen provides details for report classification.",
+    "api_endpoint": "/reports",
+    "http_method": "POST",
+    "prompt": "Attempt to submit a report without authentication tokens to verify that unauthenticated users are blocked from creating reports.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no valid session or token is present in the request headers."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Confirms that the system enforces authentication requirements for report creation as per domain rules."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Public relations officer reviews and approves/rejects reports.",
+    "api_endpoint": "/reports/{id}/review",
+    "http_method": "PUT",
+    "prompt": "Update a report's status to 'Pending Approval' with a mandatory explanation for rejection, simulating the PR officer's review workflow.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Ensure a report exists in 'Pending Approval' state.",
+      "Authenticate as municipal public relations officer."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the approval/rejection workflow and ensures mandatory explanations are enforced for rejected reports."
+  },
+  {
+    "requirement_id": "PT06",
+    "requirement_summary": "Public relations officer reviews and approves/rejects reports.",
+    "api_endpoint": "/reports/{id}/review",
+    "http_method": "PUT",
+    "prompt": "Attempt to approve a report without providing an explanation when the system expects one, or try to modify a report already in 'Resolved' state.",
+    "test_type": "negative",
+    "priority": "medium",
+    "auth_role": "municipal public relations officer",
+    "setup_needed": [
+      "Ensure a report exists in 'Pending Approval' state."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "400"
+    ],
+    "rationale": "Tests enforcement of business rules regarding mandatory explanations and state transitions."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports/anonymous",
+    "http_method": "POST",
+    "prompt": "Submit an anonymous report without authentication, ensuring the system correctly handles anonymity and hides the user's name in public views.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no authentication tokens are included in the request."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Validates the anonymous submission flow and ensures user identity is not exposed in public lists."
+  },
+  {
+    "requirement_id": "PT15",
+    "requirement_summary": "Citizen chooses whether to make their report anonymous.",
+    "api_endpoint": "/reports/anonymous",
+    "http_method": "POST",
+    "prompt": "Attempt to submit an anonymous report while providing authentication tokens, which should be ignored or rejected depending on system design.",
+    "test_type": "edge_case",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure a valid citizen session is active."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "201"
+    ],
+    "rationale": "Tests the system's handling of conflicting authentication states for anonymous submissions."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees assigned reports.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Retrieve the list of reports assigned to the current technical office staff member, verifying that only relevant reports are displayed.",
+    "test_type": "happy_path",
+    "priority": "high",
+    "auth_role": "technical office staff member",
+    "setup_needed": [
+      "Ensure authenticated session for technical office staff member."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the filtering logic for assigned reports based on user role and office assignment."
+  },
+  {
+    "requirement_id": "PT08",
+    "requirement_summary": "Technical office staff member sees assigned reports.",
+    "api_endpoint": "/reports/assigned",
+    "http_method": "GET",
+    "prompt": "Attempt to access the assigned reports list without authentication or with an unauthorized role, expecting a 401 or 403 response.",
+    "test_type": "negative",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure no valid session or token is present."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "401"
+    ],
+    "rationale": "Confirms that access control mechanisms prevent unauthorized users from viewing assigned reports."
+  },
+  {
+    "requirement_id": "PT09",
+    "requirement_summary": "Citizen configures their account for notifications and virtual presence.",
+    "api_endpoint": "/users/{id}/update",
+    "http_method": "PUT",
+    "prompt": "Update a citizen's account settings to enable real-time push notifications and adjust notification preferences, ensuring changes are persisted correctly.",
+    "test_type": "happy_path",
+    "priority": "medium",
+    "auth_role": "citizen",
+    "setup_needed": [
+      "Ensure authenticated citizen session is active."
+    ],
+    "cleanup_strategy": null,
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Validates the account configuration endpoint for managing user preferences and notification settings."
+  },
+  {
+    "requirement_id": "PT17",
+    "requirement_summary": "Citizen receives real-time push notifications via Telegram bot.",
+    "api_endpoint": "/telegram/webhook",
+    "http_method": "POST",
+    "prompt": "Simulate a status change event for a report and verify that the Telegram bot receives the webhook payload correctly, triggering a push notification to the citizen.",
+    "test_type": "stateful",
+    "priority": "high",
+    "auth_role": null,
+    "setup_needed": [
+      "Ensure a valid report exists with an active Telegram subscription for the citizen."
+    ],
+    "cleanup_strategy": "Verify no new reports were created; if any webhook test data was persisted, delete it to maintain system cleanliness.",
+    "expected_status_codes": [
+      "200"
+    ],
+    "rationale": "Tests the integration between the reporting system and external Telegram notifications for real-time status updates."
+  }
+]
