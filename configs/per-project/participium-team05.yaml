@@ -1,0 +1,43 @@
+project_name: participium-team05
+run_id: null
+
+llm:
+  provider: lmstudio
+  model: ${LMSTUDIO_MODEL}
+  temperature: 0.1
+  max_tokens: 9000
+  base_url: ${LMSTUDIO_BASE_URL}
+  # timeout_seconds: 1200
+  # Only the matcher reasons; the planner emits JSON directly (faster, and measured
+  # more accurate on 8 GB). Add test_strategy_planner here to A/B a reasoned planner.
+  reasoning_agents: [requirement_api_matcher]
+  # Optional: route a heavy agent to a remote provider (needs a paid Groq tier — the
+  # free tier caps at 8000 tokens/minute). Not required: compact payloads keep the
+  # planner within the local context window.
+  # overrides:
+  #   test_strategy_planner:
+  #     provider: groq
+  #     model: your-groq-model-id
+
+inputs:
+  requirements:
+    description_pdf: data/requirements/participium-description.pdf
+    user_stories_xlsx: data/requirements/participium-userstories.xlsx
+    faq_pdf: data/requirements/participium-faq.pdf
+  projects:
+    - name: participium-team05
+      openapi_path: projects/participium-team05/swagger.yaml
+      sut_base_url: http://localhost:8084
+
+execution:
+  runner: python_requests
+  reset_command: null
+  timeout_seconds: 30
+
+budget:
+  max_iterations: 3
+  max_tests_per_iteration: 10
+  max_llm_calls: 50
+
+output:
+  runs_dir: data/runs
