@@ -73,6 +73,20 @@ class TestStrategyItem(DomainModel):
     def normalize_http_method(cls, value: str) -> str:
         return value.upper()
 
+    @field_validator("expected_status_codes", mode="before")
+    @classmethod
+    def normalize_status_codes(cls, value: Any) -> Any:
+        """Accept status codes as ints or a bare scalar, not just list[str].
+
+        Models routinely emit `[200]` or `200` instead of `["200"]`; coercing is
+        lossless and keeps a whole planning run from failing on formatting.
+        """
+        if isinstance(value, (int, str)):
+            value = [value]
+        if isinstance(value, list):
+            return [str(item).strip() for item in value if item is not None]
+        return value
+
 
 class WorkflowPlan(DomainModel):
     run_id: str
