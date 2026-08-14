@@ -1,0 +1,172 @@
+# How each system under test is started, and what we had to supply to start it.
+#
+# projects/ is gitignored, so this file is the only durable record of how the eighteen
+# student applications were brought up. It is filled in empirically, one project at a
+# time: entries start as `unverified` and become `runnable` only once the project has
+# actually answered its readiness probe and passed the base-URL plausibility check.
+#
+# base_url is an ORIGIN PLUS A PATH PREFIX. The prefix is not recoverable from any
+# artifact -- the OpenAPI loader never read `servers`, and the reconstructed contracts do
+# not carry it -- yet both projects verified so far mount their routes under one. Getting
+# it wrong makes every request 404 and looks like a broken service rather than a broken
+# harness. Always 127.0.0.1, never localhost: Windows resolves localhost to ::1 first
+# while Docker publishes on IPv4.
+#
+# provenance mirrors the spec-provenance column of docs/run-results-2026-07-21.md section
+# 4. It must say honestly which projects ran as their teams delivered them and which we
+# had to complete ourselves.
+#
+# EXCLUSION POLICY. Each project gets a fixed budget of 30 minutes to be brought up. Past
+# that it is marked `unrunnable` with a specific blocker and the campaign moves on, so
+# that which projects are excluded depends on a stated rule rather than on how patient
+# anyone felt that day.
+#
+# The blocker must be accurate per project, because the situations are not equivalent and
+# a single blanket justification would be unfair. In particular, a project that declares
+# an `env_file` it did not ship has NOT failed to containerise: committing credentials
+# would have been the worse practice, and those teams did the right thing. That case is
+# `missing_env_file`, and where the cost is reasonable we supply the file ourselves rather
+# than exclude the project.
+#
+# Reported together, these blockers are a result in their own right: of eighteen projects
+# delivered with Docker configuration, how many start from the repository alone, how many
+# need files the authors correctly withheld, and how many cannot be self-hosted at all.
+
+version: 1
+
+defaults:
+  method: GET
+  path: /
+  accept_status: [200, 204, 400, 401, 403, 404]
+  reject_content_type: text/html
+  settle_seconds: 3
+  poll_interval_seconds: 2
+
+projects:
+
+  participium-team16:
+    status: runnable
+    provenance: original
+    root: projects/participium-team16
+    compose:
+      files: [docker-compose.yml]
+      project_name: exec-team16
+      services: [redis, server]
+    api:
+      # server/src/config/config.ts: APP_V1_BASE_URL = "/api/v1"; the swagger declares
+      # paths as /auth/users, /reports/... with the prefix stripped. Verified against the
+      # running container: /api/v1/reports and /api/v1/faqs answer 200.
+      base_url: http://127.0.0.1:5000/api/v1
+      service: server
+    readiness:
+      # A documented endpoint rather than /, which this app answers with an HTML 404.
+      path: /reports
+      accept_status: [200]
+    # The SQLite database lives inside the image, so `down -v` already gives a clean start.
+    reset_paths: []
+
+  participium-team13:
+    status: runnable
+    provenance: original
+    root: projects/participium-team13
+    compose:
+      files: [docker-compose.yml]
+      project_name: exec-team13
+      services: [db, minio, minio-init, server]
+    api:
+      # server/src/config/constants.ts: API_PREFIX = "/api"; the swagger declares /session,
+      # /citizen/signup with the prefix stripped.
+      base_url: http://127.0.0.1:4000/api
+      service: server
+    readiness:
+      # The only project of the eighteen with an application-level health endpoint.
+      path: /health
+      accept_status: [200]
+    reset_paths: []
+
+  # --- not yet established -----------------------------------------------------------
+  # Each of these needs its route prefix read from the source and, where noted, files we
+  # must supply. See docs and the plan for what is expected per project.
+
+  participium-team01:
+    status: unverified
+    reason: >
+      Its compose file starts only postgres; the API has no service definition and will
+      need an overlay built from the root Dockerfile. Route prefix not yet read.
+
+  participium-team02:
+    status: unverified
+    reason: "Declares env_file .env, which does not exist. Route prefix not yet read."
+
+  participium-team03:
+    status: unverified
+    reason: "Declares env_file ../.env, which does not exist. Route prefix not yet read."
+
+  participium-team04:
+    status: unverified
+    reason: >
+      Next.js app; declares env_file .env on three services, none present. Also the
+      structural outlier of the planning phase, with only 9 REST operations.
+
+  participium-team05:
+    status: unverified
+    reason: "Declares env_file ./prod.env, absent; ${DB_*} have no defaults."
+
+  participium-team06:
+    status: unverified
+    reason: "Declares env_file ./server/.env, which does not exist."
+
+  participium-team07:
+    status: unverified
+    reason: "No env_file declared; expected to run as delivered. Prefix not yet read."
+
+  participium-team08:
+    status: unrunnable
+    blocker: external_dependency
+    reason: >
+      The backend throws at startup without SUPABASE_URL and SUPABASE_KEY, and its compose
+      defines no database: the data layer is Supabase cloud reached through the Supabase
+      SDK, so a plain Postgres container does not substitute for it. Running it would mean
+      standing up a self-hosted Supabase stack and applying
+      backend/supabase/migrations/, which is disproportionate. Revisit only if the
+      execution sample proves too small without it.
+
+  participium-team09:
+    status: unverified
+    reason: >
+      docker-compose.yml starts only redis; the runnable definition is in
+      docker-compose-hub.yml, which needs no overlay, only a second entry in files.
+
+  participium-team10:
+    status: unverified
+    reason: "No env_file declared; expected to run as delivered."
+
+  participium-team11:
+    status: unverified
+    reason: "Declares env_file .env on backend and telegram; neither exists."
+
+  participium-team12:
+    status: unverified
+    reason: >
+      NestJS with a global 'api' prefix (apps/api/src/main.ts). pull_policy is always, so
+      its images must still exist on Docker Hub.
+
+  participium-team14:
+    status: unverified
+    reason: >
+      ${DB_PORT} and ${BACKEND_PORT} appear inside ports: with no defaults, so compose
+      refuses to start; .env.example exists and can seed an interpolation env file.
+
+  participium-team15:
+    status: unverified
+    reason: "Uses a versioned prefix (Backend/src/config/config.ts). MySQL rather than Postgres."
+
+  participium-team17:
+    status: unverified
+    reason: "Declares env_file on both Back-end and Front-end; neither exists."
+
+  participium-team18:
+    status: unverified
+    reason: >
+      Its compose file starts only minio; the API is the root Dockerfile, referenced by no
+      compose file, and will need an overlay.
