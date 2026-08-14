@@ -57,7 +57,7 @@ class OpenAPILoader:
                         description=operation.get("description"),
                         tags=[str(tag) for tag in operation.get("tags", [])],
                         parameters=parameters,
-                        request_body_schema=self._request_schema(operation, parameters),
+                        request_body_schema=self._request_schema(operation, parameters, raw),
                         response_codes=[str(code) for code in response_codes],
                         auth_required=self._auth_required(operation, raw),
                     )
@@ -92,20 +92,33 @@ class OpenAPILoader:
     def _request_schema(
         operation: dict[str, Any],
         parameters: list[dict[str, Any]],
+        document: dict[str, Any],
     ) -> dict[str, Any] | None:
+        """The body schema for an operation, with its references followed.
+
+        Most specifications in this corpus describe a body by pointing at a named
+        schema rather than by writing it out, and returning the pointer meant nothing
+        downstream could read the fields: the compaction step made no claim about the
+        body, the Test Writer received no field list and invented plausible names, and
+        the service rejected them with a 400 that said nothing about the behaviour under
+        test. Resolving here rather than at each use keeps the rest of the pipeline
+        working on plain schemas.
+        """
+
         request_body = operation.get("requestBody")
         if isinstance(request_body, dict):
-            if "$ref" in request_body:
-                return {"$ref": request_body["$ref"]}
+            # A requestBody may itself be a reference into components/requestBodies,
+            # in which case the media types live on the target, not here.
+            request_body = _resolve(request_body, document) or request_body
             content = request_body.get("content")
             if isinstance(content, dict) and content:
                 media = content.get("application/json") or next(iter(content.values()))
                 if isinstance(media, dict) and isinstance(media.get("schema"), dict):
-                    return media["schema"]
+                    return _resolve_schema(media["schema"], document)
 
         for parameter in parameters:
             if parameter.get("in") == "body" and isinstance(parameter.get("schema"), dict):
-                return parameter["schema"]
+                return _resolve_schema(parameter["schema"], document)
         return None
 
     @staticmethod
@@ -117,3 +130,107 @@ class OpenAPILoader:
         else:
             return None
         return bool(security)
+
+
+# How deep a chain of references is followed before giving up. Bodies in this corpus
+# nest a level or two at most, and a bound keeps a pathological document from costing
+# the whole run.
+_MAX_REF_DEPTH = 4
+
+
+def _resolve(node: dict[str, Any], document: dict[str, Any]) -> dict[str, Any] | None:
+    """Follow one local ``$ref``, or return None when there is nothing to follow."""
+
+    pointer = node.get("$ref")
+    if not isinstance(pointer, str) or not pointer.startswith("#/"):
+        # An external reference ("common.yaml#/Foo") would mean reading another file;
+        # none of the specifications in this corpus use one.
+        return None
+    target: Any = document
+    for token in pointer[2:].split("/"):
+        token = token.replace("~1", "/").replace("~0", "~")
+        if not isinstance(target, dict) or token not in target:
+            return None
+        target = target[token]
+    return target if isinstance(target, dict) else None
+
+
+def _resolve_schema(
+    schema: dict[str, Any],
+    document: dict[str, Any],
+    *,
+    depth: int = 0,
+    seen: frozenset[str] = frozenset(),
+) -> dict[str, Any]:
+    """Return a schema whose fields can be read without chasing pointers.
+
+    A reference that cannot be followed is returned untouched rather than dropped: a
+    dangling pointer is a fact about the specification, and leaving it visible lets the
+    compaction step tell "this body is undescribed" apart from "this body takes no
+    fields" -- a distinction the Test Writer's prompt depends on.
+    """
+
+    if depth >= _MAX_REF_DEPTH:
+        return schema
+
+    pointer = schema.get("$ref")
+    if isinstance(pointer, str):
+        if pointer in seen:
+            # Self-referential schemas are legal and do occur; stop rather than recurse.
+            return schema
+        target = _resolve(schema, document)
+        if target is None:
+            return schema
+        # Sibling keys alongside a $ref are an override in OpenAPI 3.1 and ignored in
+        # 3.0; keeping them costs nothing and matches the stricter reading.
+        overrides = {key: value for key, value in schema.items() if key != "$ref"}
+        return _resolve_schema(
+            {**target, **overrides}, document, depth=depth + 1, seen=seen | {pointer}
+        )
+
+    resolved = dict(schema)
+
+    # allOf is how these specifications express "the create request, plus an id": the
+    # fields live in the branches, so a body that only ever appears as an allOf would
+    # otherwise arrive with no properties at all.
+    branches = resolved.pop("allOf", None)
+    if isinstance(branches, list):
+        properties: dict[str, Any] = {}
+        required: list[Any] = []
+        inherited: dict[str, Any] = {}
+        for branch in branches:
+            if not isinstance(branch, dict):
+                continue
+            flattened = _resolve_schema(branch, document, depth=depth + 1, seen=seen)
+            properties.update(flattened.get("properties") or {})
+            required.extend(flattened.get("required") or [])
+            for key, value in flattened.items():
+                inherited.setdefault(key, value)
+        # What the schema declares alongside its allOf wins over what it composes, and
+        # comes last so the field order follows the document rather than the merge.
+        properties.update(resolved.get("properties") or {})
+        required.extend(resolved.get("required") or [])
+        if properties:
+            resolved["properties"] = properties
+        if required:
+            resolved["required"] = list(dict.fromkeys(required))
+        for key, value in inherited.items():
+            if key not in {"properties", "required"}:
+                resolved.setdefault(key, value)
+
+    properties = resolved.get("properties")
+    if isinstance(properties, dict):
+        # One level deeper, so a field's declared type survives: a property that is
+        # itself a reference would otherwise be typed "unknown", and the writer is
+        # checked against those types.
+        resolved["properties"] = {
+            name: _resolve_schema(value, document, depth=depth + 1, seen=seen)
+            if isinstance(value, dict)
+            else value
+            for name, value in properties.items()
+        }
+
+    items = resolved.get("items")
+    if isinstance(items, dict):
+        resolved["items"] = _resolve_schema(items, document, depth=depth + 1, seen=seen)
+    return resolved
