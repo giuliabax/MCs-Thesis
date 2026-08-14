@@ -1,6 +1,7 @@
 """Test strategy planning agent."""
 
 import json
+import logging
 import math
 import re
 from pathlib import Path
@@ -22,9 +23,15 @@ from thesis_rest_tester.domain.schemas import APIAnalysis, RequirementsAnalysis
 from thesis_rest_tester.llm.base import LLMClient
 
 _BATCH_SIZE = 6
+# Module-level: the normalization helpers are class/static methods reached from
+# _finalize_strategy, so they have no access to the agent instance logger.
+_logger = logging.getLogger(__name__)
 
 
 class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
+    # Test types the quality gate demands of every accepted strategy.
+    _REQUIRED_TEST_TYPES = ("happy_path", "edge_case", "negative")
+
     def __init__(
         self,
         llm_client: LLMClient,
@@ -120,12 +127,15 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
             + "\n\nReturn a complete replacement JSON array that fixes every issue."
         )
         corrected, corrected_output = self.call_and_validate(correction_prompt)
+        # Last attempt: the model has had its corrective call, so a still-missing
+        # required type is now rebuilt from the contract instead of failing the project.
         corrected = self._finalize_strategy(
             corrected,
             requirements_analysis,
             api_analysis,
             operations,
             budget,
+            synthesize_missing_types=True,
         )
         corrected_output = corrected_output.model_copy(
             update={"parsed_json": [item.model_dump(mode="json") for item in corrected]}
@@ -171,6 +181,7 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
                 batch_requirements, batch_api, _ = self._batch_scope(
                     batch_ids, requirements_analysis, api_analysis, operations, coverage
                 )
+                batch_budget = self._batch_budget(budget, batch_ids, requirement_ids)
                 payload = {
                     "requirements_analysis": {
                         "requirements": compact_requirements(batch_requirements.requirements),
@@ -178,13 +189,15 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
                         "edge_cases": batch_requirements.edge_cases,
                     },
                     "api_analysis": compact_api_analysis(batch_api),
-                    "budget": budget.model_dump(mode="json"),
+                    "budget": batch_budget.model_dump(mode="json"),
                 }
                 user_prompt = (
                     f"Create test strategy items for batch {index}/{len(batches)} of this "
                     "project's requirements. Each batch is planned independently and merged "
-                    "afterward, so do not worry about the overall budget or diversity targets "
-                    "for the whole project; those are enforced once after every batch is merged. "
+                    "afterward, so do not worry about the diversity targets for the whole "
+                    "project; those are enforced once every batch is merged. The budget "
+                    f"below is this batch's own share: produce at most "
+                    f"{batch_budget.max_tests_per_iteration} items. "
                     "Cover each requirement in this batch with an appropriate mix of test types. "
                     "Return only a strict JSON array.\n\n"
                     + json.dumps(payload, ensure_ascii=False)
@@ -238,7 +251,12 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
             self._raw_artifact_name = original_raw_name
 
         corrected = self._finalize_strategy(
-            corrected, requirements_analysis, api_analysis, operations, budget
+            corrected,
+            requirements_analysis,
+            api_analysis,
+            operations,
+            budget,
+            synthesize_missing_types=True,
         )
         corrected_output = corrected_output.model_copy(
             update={"parsed_json": [item.model_dump(mode="json") for item in corrected]}
@@ -374,6 +392,29 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
         return batches
 
     @staticmethod
+    def _batch_budget(
+        budget: BudgetConfig,
+        batch_ids: list[str],
+        all_requirement_ids: list[str],
+    ) -> BudgetConfig:
+        """Give a batch its own share of the test budget, not the project's whole budget.
+
+        Sending the full budget to every batch asks each one for as many tests as the
+        entire project may contain, so N batches produce roughly N times the plan and the
+        trim discards the rest. That was merely wasteful at a budget of ten; at thirty it
+        makes each response large enough to exhaust the model's token ceiling, which is
+        what made batched planning appear unable to fill a larger budget.
+
+        The share is proportional to the batch's requirements, rounded up, and never
+        below the three items the quality gate requires of any plan.
+        """
+
+        total = len(all_requirement_ids) or 1
+        share = math.ceil(budget.max_tests_per_iteration * len(batch_ids) / total)
+        capped = max(3, min(budget.max_tests_per_iteration, share))
+        return budget.model_copy(update={"max_tests_per_iteration": capped})
+
+    @staticmethod
     def _batch_scope(
         requirement_ids: list[str],
         requirements_analysis: RequirementsAnalysis,
@@ -440,7 +481,17 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
         api_analysis: APIAnalysis,
         operations: list[OpenAPIOperation],
         budget: BudgetConfig,
+        *,
+        synthesize_missing_types: bool = False,
     ) -> list[TestStrategyItem]:
+        """Reconcile a draft against the contract.
+
+        ``synthesize_missing_types`` is a last resort, enabled only on a final attempt:
+        filling a missing required type deterministically would otherwise rob the
+        corrective call of its purpose, which is to make the *model* produce a real test
+        rather than a template.
+        """
+
         normalized = cls._normalize_strategy(strategy, operations)
         if (
             api_analysis.dependency_edges
@@ -451,7 +502,123 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
                 cls._stateful_item(requirements_analysis, api_analysis, operations)
             )
             normalized = cls._normalize_strategy(normalized, operations)
+
+        # A required test type can go missing because the model's only item of that type
+        # named an endpoint the contract does not document, and normalization dropped it.
+        # Rebuild it from a real operation rather than failing the project, exactly as
+        # the stateful item above is rebuilt when the model omits it.
+        if synthesize_missing_types and budget.max_tests_per_iteration >= 3:
+            missing = [
+                test_type
+                for test_type in cls._REQUIRED_TEST_TYPES
+                if not any(item.test_type == test_type for item in normalized)
+            ]
+            synthesized = [
+                item
+                for item in (
+                    cls._required_type_item(test_type, requirements_analysis, operations)
+                    for test_type in missing
+                )
+                if item is not None
+            ]
+            if synthesized:
+                _logger.warning(
+                    "Synthesized %d strategy item(s) for required test type(s) the strategy "
+                    "was missing: %s",
+                    len(synthesized),
+                    ", ".join(item.test_type for item in synthesized),
+                )
+                normalized = cls._normalize_strategy(normalized + synthesized, operations)
         return cls._trim_to_budget(normalized, budget.max_tests_per_iteration)
+
+    @classmethod
+    def _required_type_item(
+        cls,
+        test_type: str,
+        requirements_analysis: RequirementsAnalysis,
+        operations: list[OpenAPIOperation],
+    ) -> TestStrategyItem | None:
+        """Build a deterministic item of one required test type from a real operation."""
+
+        if not operations or not requirements_analysis.requirements:
+            return None
+        operation = cls._operation_for_type(test_type, operations)
+        success_codes = [
+            code for code in operation.response_codes if not code.startswith(("4", "5"))
+        ]
+        rejection_codes = [code for code in operation.response_codes if code.startswith("4")]
+
+        if test_type == "negative":
+            codes = rejection_codes or ["400"]
+            prompt = (
+                f"Generate an independent negative test that calls {operation.method} "
+                f"{operation.path} with invalid, missing, or unauthorized input and asserts "
+                "the request is rejected."
+            )
+        elif test_type == "edge_case":
+            codes = success_codes or operation.response_codes or ["200"]
+            prompt = (
+                f"Generate an independent edge-case test that calls {operation.method} "
+                f"{operation.path} with boundary values and asserts the documented behavior."
+            )
+        else:
+            codes = success_codes or operation.response_codes or ["200"]
+            prompt = (
+                f"Generate an independent happy-path test that calls {operation.method} "
+                f"{operation.path} with valid input and asserts a successful response."
+            )
+
+        requirement = cls._best_requirement(
+            requirements_analysis.requirements,
+            " ".join(filter(None, [operation.path, operation.summary, operation.description])),
+        )
+        return TestStrategyItem(
+            requirement_id=requirement.id,
+            requirement_summary=requirement.text,
+            api_endpoint=operation.path,
+            http_method=operation.method,
+            prompt=prompt,
+            test_type=test_type,
+            priority="medium",
+            auth_role=requirement.role if operation.auth_required else None,
+            expected_status_codes=codes,
+            rationale=(
+                f"Synthesized from the OpenAPI contract: the strategy contained no "
+                f"{test_type} test."
+            ),
+        )
+
+    @staticmethod
+    def _operation_for_type(
+        test_type: str,
+        operations: list[OpenAPIOperation],
+    ) -> OpenAPIOperation:
+        """Pick the operation that best supports a given test type, by documented shape."""
+
+        if test_type == "negative":
+            # An operation documenting a 4xx gives the test a status code to assert.
+            return next(
+                (
+                    operation
+                    for operation in operations
+                    if any(code.startswith("4") for code in operation.response_codes)
+                ),
+                operations[0],
+            )
+        if test_type == "edge_case":
+            # Boundary values need somewhere to put them: a parameter or a request body.
+            return next(
+                (
+                    operation
+                    for operation in operations
+                    if operation.parameters or operation.request_body_schema
+                ),
+                operations[0],
+            )
+        return next(
+            (operation for operation in operations if operation.method == "GET"),
+            operations[0],
+        )
 
     @staticmethod
     def _stateful_item(
@@ -569,17 +736,25 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
         strategy: list[TestStrategyItem],
         operations: list[OpenAPIOperation],
     ) -> list[TestStrategyItem]:
-        """Add setup and cleanup facts that are deterministic from OpenAPI."""
+        """Drop items the OpenAPI does not support, then add deterministic setup/cleanup."""
 
         operation_map = {(operation.method, operation.path): operation for operation in operations}
         mutating_methods = {"POST", "PUT", "PATCH", "DELETE"}
         normalized: list[TestStrategyItem] = []
+        hallucinated: list[str] = []
         for item in strategy:
             operation = operation_map.get((item.http_method, item.api_endpoint))
+            # An item naming an endpoint the contract does not document is not merely
+            # unverified, it is untestable: the generated test would call a URL that
+            # does not exist. Drop it here so one invented endpoint cannot fail a whole
+            # project, and let the quality gate judge whatever survives.
+            if operation is None:
+                hallucinated.append(f"{item.http_method} {item.api_endpoint}")
+                continue
             setup = list(item.setup_needed)
             cleanup = item.cleanup_strategy
 
-            if operation is not None and operation.auth_required:
+            if operation.auth_required:
                 has_auth_setup = any(
                     keyword in step.lower()
                     for step in setup
@@ -612,6 +787,13 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
                         "cleanup_strategy": cleanup,
                     }
                 )
+            )
+        if hallucinated:
+            _logger.warning(
+                "Dropped %d strategy item(s) naming operations absent from the OpenAPI "
+                "document: %s",
+                len(hallucinated),
+                ", ".join(sorted(set(hallucinated))),
             )
         return normalized
 
