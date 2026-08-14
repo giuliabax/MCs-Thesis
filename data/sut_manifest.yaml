@@ -80,7 +80,10 @@ projects:
       service: server
     readiness:
       # The only project of the eighteen with an application-level health endpoint.
+      # It is registered on the origin, ahead of the /api router: /health answers 200
+      # and /api/health answers 404.
       path: /health
+      relative_to: origin
       accept_status: [200]
     reset_paths: []
 

@@ -58,6 +58,12 @@ class ReadinessProbe(ManifestModel):
 
     method: str = "GET"
     path: str = "/"
+    # Health endpoints are routinely mounted outside the API prefix -- an Express app
+    # registers ``/health`` before mounting its router under ``/api``, so team13 answers
+    # 200 on ``/health`` and 404 on ``/api/health``. Resolving the probe against the
+    # origin instead of the base URL reaches it without giving up a real application
+    # healthcheck for a weaker probe on the prefix.
+    relative_to: Literal["base_url", "origin"] = "base_url"
     # 4xx proves a server is listening and routing; only 5xx and no answer mean not ready.
     accept_status: list[int] = Field(default_factory=lambda: [200, 204, 400, 401, 403, 404])
     reject_content_type: str | None = "text/html"

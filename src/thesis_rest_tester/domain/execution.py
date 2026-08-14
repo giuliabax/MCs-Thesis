@@ -73,7 +73,7 @@ class HttpExchangeRecord(DomainModel):
 class PhaseTiming(DomainModel):
     """How long one stage of a project's execution took, and whether it succeeded."""
 
-    name: Literal["build", "up", "ready", "suite", "down"]
+    name: Literal["pull", "build", "up", "ready", "suite", "down"]
     started_at: datetime | None = None
     duration_seconds: float | None = Field(default=None, ge=0.0)
     ok: bool = True

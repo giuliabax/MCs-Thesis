@@ -13,6 +13,7 @@ import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
 import requests
 
@@ -70,6 +71,7 @@ class DockerComposeStack:
             # would collide by name and no amount of -p isolation would prevent it.
             self._compose("down", "--remove-orphans", timeout=120)
             self._reset_state()
+            self._pull()
             self._up()
             self._await_ready()
         except Exception:
@@ -93,6 +95,40 @@ class DockerComposeStack:
 
     # --- phases -------------------------------------------------------------------
 
+    def _pull(self) -> None:
+        """Fetch the images the stack needs, as a phase of its own.
+
+        ``up`` is documented to pull what is missing, but the Compose version in use here
+        does not: on a stack mixing built and pulled services it built the one service
+        with a ``build:`` section, pulled none of the other three, and then failed on
+        container creation with ``No such image``. Pulling explicitly removes the
+        dependency on that behaviour, and it separates two failures worth telling apart --
+        an image that cannot be fetched (registry down, rate limit, tag withdrawn) is not
+        a project that cannot start.
+
+        ``--ignore-buildable`` leaves the services compose is about to build alone, and
+        pull failures are not fatal here: an image may be present locally already, and
+        ``up`` gives the clearer error if one is genuinely missing.
+        """
+
+        started = time.perf_counter()
+        services = self.project.compose.services if self.project.compose else []
+        result = self._compose(
+            "pull",
+            "--ignore-buildable",
+            *services,
+            timeout=self.build_timeout_seconds,
+            check=False,
+        )
+        self.phases.append(
+            PhaseResult(
+                "pull",
+                result.returncode == 0,
+                time.perf_counter() - started,
+                result.stderr[-2000:],
+            )
+        )
+
     def _up(self) -> None:
         started = time.perf_counter()
         services = self.project.compose.services if self.project.compose else []
@@ -115,7 +151,7 @@ class DockerComposeStack:
     def _await_ready(self) -> None:
         started = time.perf_counter()
         assert self.project.api is not None
-        url = self.project.api.base_url.rstrip("/") + self.readiness.path
+        url = _probe_url(self.project.api.base_url, self.readiness)
         deadline = time.monotonic() + self.startup_timeout_seconds
         last: str = "no attempt made"
 
@@ -298,6 +334,21 @@ class DockerComposeStack:
                 f"`docker compose {' '.join(arguments)}` failed: {_last_line(result.stderr)}"
             )
         return result
+
+
+def _probe_url(base_url: str, readiness: ReadinessProbe) -> str:
+    """Where to send the readiness probe.
+
+    The default is the base URL, which is the stronger signal: it proves the API prefix
+    itself routes, not merely that something is listening on the port. A probe declared
+    ``relative_to: origin`` drops the prefix, for the projects whose health endpoint sits
+    outside it.
+    """
+
+    if readiness.relative_to == "origin":
+        parts = urlsplit(base_url)
+        return urlunsplit((parts.scheme, parts.netloc, readiness.path, "", ""))
+    return base_url.rstrip("/") + readiness.path
 
 
 def docker_is_available() -> tuple[bool, str]:

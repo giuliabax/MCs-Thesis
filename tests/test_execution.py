@@ -4,6 +4,7 @@ import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import get_args
 
 import pytest
 
@@ -356,7 +357,10 @@ def test_runner_reports_a_suite_that_cannot_be_collected(tmp_path, stub_server) 
 
 
 from thesis_rest_tester.config import load_config  # noqa: E402
-from thesis_rest_tester.domain.execution import CaseExecutionRecord  # noqa: E402
+from thesis_rest_tester.domain.execution import (  # noqa: E402
+    CaseExecutionRecord,
+    PhaseTiming,
+)
 from thesis_rest_tester.execution.base import RunnerResult  # noqa: E402
 from thesis_rest_tester.execution.executor import SuiteExecutor  # noqa: E402
 from thesis_rest_tester.execution.manifest import SutManifest  # noqa: E402
@@ -595,6 +599,7 @@ def test_runner_accepts_a_suite_path_relative_to_the_current_directory(
 from thesis_rest_tester.execution.docker_compose import (  # noqa: E402
     ComposeError,
     DockerComposeStack,
+    _probe_url,
 )
 from thesis_rest_tester.execution.manifest import ProjectManifest, ReadinessProbe  # noqa: E402
 
@@ -659,3 +664,41 @@ def test_reset_state_refuses_to_delete_the_project_root(tmp_path) -> None:
         _stack(tmp_path, ["."], reset_state=True)._reset_state()
 
     assert (tmp_path / "proj").is_dir()
+
+
+# --- readiness probe URL ---------------------------------------------------------------
+
+
+def test_probe_resolves_against_the_base_url_by_default() -> None:
+    """The default proves the API prefix routes, not merely that a port is open."""
+
+    url = _probe_url("http://127.0.0.1:4000/api", ReadinessProbe(path="/"))
+    assert url == "http://127.0.0.1:4000/api/"
+
+
+def test_probe_can_drop_the_prefix_for_a_health_endpoint_outside_it() -> None:
+    """A health route registered before the API router is not under the prefix.
+
+    team13 answers 200 on `/health` and 404 on `/api/health`; without this the probe
+    times out against a service that is in fact healthy and ready.
+    """
+
+    url = _probe_url(
+        "http://127.0.0.1:4000/api",
+        ReadinessProbe(path="/health", relative_to="origin"),
+    )
+    assert url == "http://127.0.0.1:4000/health"
+
+
+def test_every_phase_the_stack_records_is_a_phase_the_record_accepts() -> None:
+    """A phase name the persisted record rejects turns a handled failure into a crash.
+
+    The executor lifts the stack's phase log straight into `ProjectExecutionRecord`, so
+    a phase added to the lifecycle without adding it to `PhaseTiming` raises a
+    ValidationError precisely when a project fails to start -- exactly when the timings
+    are the evidence being collected.
+    """
+
+    recorded = {"pull", "build", "up", "ready", "down"}
+    accepted = set(get_args(PhaseTiming.model_fields["name"].annotation))
+    assert recorded <= accepted

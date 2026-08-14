@@ -133,19 +133,25 @@ class SuiteExecutor:
         if not self._use_docker:
             return self._run_suite(name, entry, suite_dir, artifact_dir, stack=None)
 
+        # Bound before the `with`, not by it: when __enter__ raises, the `as` target is
+        # never assigned, and the phase timings and captured container logs -- the only
+        # evidence of why the project would not come up -- would be lost with it.
+        stack = DockerComposeStack(
+            project=entry,
+            readiness=self._manifest.readiness_for(name),
+            repository_root=self._repository_root,
+            build_timeout_seconds=self._config.execution.build_timeout_seconds,
+            startup_timeout_seconds=self._config.execution.startup_timeout_seconds,
+            teardown_volumes=self._config.execution.teardown_volumes,
+            reset_state=self._reset_state,
+        )
         try:
-            with DockerComposeStack(
-                project=entry,
-                readiness=self._manifest.readiness_for(name),
-                repository_root=self._repository_root,
-                build_timeout_seconds=self._config.execution.build_timeout_seconds,
-                startup_timeout_seconds=self._config.execution.startup_timeout_seconds,
-                teardown_volumes=self._config.execution.teardown_volumes,
-                reset_state=self._reset_state,
-            ) as stack:
+            with stack:
                 record = self._run_suite(name, entry, suite_dir, artifact_dir, stack=stack)
         except ComposeError as exc:
             _logger.warning("%s could not be started: %s", name, exc)
+            if stack.logs:
+                ArtifactWriter(artifact_dir).write_text("compose_logs.txt", stack.logs)
             record = ProjectExecutionRecord(
                 project_name=name,
                 outcome=(
@@ -159,6 +165,7 @@ class SuiteExecutor:
                 reason=str(exc),
                 base_url=entry.api.base_url,
                 compose_files=_compose_files(entry),
+                phases=_phase_timings(stack),
                 cases=all_not_run(name, generated, str(exc)),
             )
         self._write_project_artifacts(artifact_dir, record)
@@ -182,16 +189,7 @@ class SuiteExecutor:
             suite_timeout_seconds=self._config.execution.suite_timeout_seconds,
             artifact_dir=artifact_dir,
         )
-        phases = [
-            PhaseTiming(
-                name=phase.name,
-                duration_seconds=phase.duration_seconds,
-                ok=phase.ok,
-                detail=phase.detail,
-            )
-            for phase in (stack.phases if stack else [])
-            if phase.name in {"build", "up", "ready", "down"}
-        ]
+        phases = _phase_timings(stack)
         phases.append(
             PhaseTiming(name="suite", duration_seconds=result.duration_seconds, ok=True)
         )
@@ -266,6 +264,21 @@ class SuiteExecutor:
         writer = ArtifactWriter(self._run_dir)
         writer.write_json("execution_report.json", report)
         writer.write_text("execution_summary.md", _summary_markdown(report))
+
+
+def _phase_timings(stack: DockerComposeStack | None) -> list[PhaseTiming]:
+    """Lift the stack's own phase log into the persisted record."""
+
+    return [
+        PhaseTiming(
+            name=phase.name,
+            duration_seconds=phase.duration_seconds,
+            ok=phase.ok,
+            detail=phase.detail,
+        )
+        for phase in (stack.phases if stack else [])
+        if phase.name in {"pull", "build", "up", "ready", "down"}
+    ]
 
 
 def _compose_files(entry: ProjectManifest) -> list[str]:
