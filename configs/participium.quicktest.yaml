@@ -5,12 +5,19 @@ llm:
   provider: lmstudio
   model: ${LMSTUDIO_MODEL}
   temperature: 0.1
-  max_tokens: 9000
+  max_tokens: 20000
   base_url: ${LMSTUDIO_BASE_URL}
   timeout_seconds: 1200
   # Planner reasoning off: emits JSON directly (fast, reliable). Add
   # test_strategy_planner here to A/B against a reasoned planner run.
   reasoning_agents: [requirement_api_matcher]
+  # One strategy call per project; set true only if the payload stops fitting the window.
+  batch_strategy_planner: false
+  overrides:
+    # max_tokens is the matcher's deliberation budget: a larger one makes it more
+    # literal and costs recall. See configs/participium.example.yaml.
+    requirement_api_matcher:
+      max_tokens: 9000
 
 inputs:
   requirements:
@@ -22,7 +29,6 @@ inputs:
 
 execution:
   runner: python_requests
-  reset_command: null
   timeout_seconds: 30
 
 budget:

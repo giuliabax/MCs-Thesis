@@ -31,7 +31,6 @@ inputs:
 
 execution:
   runner: python_requests
-  reset_command: null
   timeout_seconds: 30
 
 budget:

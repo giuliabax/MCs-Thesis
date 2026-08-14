@@ -23,6 +23,9 @@ _PLANNING_AGENTS = (
     "requirement_api_matcher",
     "test_strategy_planner",
 )
+# Agents of the generation stage, configured through the same per-agent settings.
+_GENERATION_AGENTS = ("test_writer",)
+_CONFIGURABLE_AGENTS = (*_PLANNING_AGENTS, *_GENERATION_AGENTS)
 
 
 class StrictConfigModel(BaseModel):
@@ -32,21 +35,52 @@ class StrictConfigModel(BaseModel):
 
 
 class AgentLLMOverride(StrictConfigModel):
-    """Route a single planning agent to a different provider/model.
+    """Per-agent LLM settings that depart from the parent llm config.
 
-    Temperature, max_tokens, and timeout are inherited from the parent llm config.
+    An override may reroute the agent to a different provider/model, give it its own
+    max_tokens, or both. Temperature and timeout are always inherited.
+
+    max_tokens is not merely a length cap for a reasoning agent: it is also how much
+    room the model has to deliberate before answering. Agents whose accuracy depends
+    on that budget therefore need to set it independently of the rest of the run.
     """
 
-    provider: Literal["groq", "lmstudio"]
-    model: str
+    provider: Literal["groq", "lmstudio"] | None = None
+    model: str | None = None
     base_url: str | None = None
+    max_tokens: int | None = Field(default=None, gt=0)
 
     @field_validator("model")
     @classmethod
-    def model_must_not_be_blank(cls, value: str) -> str:
+    def model_must_not_be_blank(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
         if not value.strip():
             raise ValueError("llm.overrides[...].model must not be blank")
         return value.strip()
+
+    @model_validator(mode="after")
+    def validate_override(self) -> AgentLLMOverride:
+        # Rerouting needs both halves: a provider without a model (or the reverse)
+        # cannot name a target, and silently inheriting one half would send the agent
+        # somewhere the configuration never states.
+        if (self.provider is None) != (self.model is None):
+            raise ValueError(
+                "llm.overrides[...] must set provider and model together, or neither"
+            )
+        if self.provider is None and self.base_url is not None:
+            raise ValueError("llm.overrides[...].base_url requires provider and model")
+        if self.provider is None and self.max_tokens is None:
+            raise ValueError(
+                "llm.overrides[...] must set provider/model, max_tokens, or both"
+            )
+        return self
+
+    @property
+    def reroutes(self) -> bool:
+        """Whether this override names a different provider/model to call."""
+
+        return self.provider is not None and self.model is not None
 
 
 class LLMConfig(StrictConfigModel):
@@ -66,6 +100,13 @@ class LLMConfig(StrictConfigModel):
             "test_strategy_planner",
         ]
     )
+    # Split strategy planning into batches of requirements instead of one call per
+    # project. Introduced when a 16k context window could not hold a whole project's
+    # planning payload; a batch is planned blind to the project-wide budget and
+    # diversity targets, which are then enforced post hoc on the merged result. With a
+    # context window large enough for the whole payload, one call plans against the
+    # real objective and is both faster and better informed, so this defaults off.
+    batch_strategy_planner: bool = False
     # Per-agent provider/model overrides, keyed by planning agent identifier. Used to
     # route heavy agents (e.g. the planner) to a remote provider while the rest stay
     # local. Names must match the planning agent identifiers.
@@ -89,28 +130,36 @@ class LLMConfig(StrictConfigModel):
     @field_validator("reasoning_agents")
     @classmethod
     def validate_reasoning_agents(cls, value: list[str]) -> list[str]:
-        unknown = sorted(set(value) - set(_PLANNING_AGENTS))
+        unknown = sorted(set(value) - set(_CONFIGURABLE_AGENTS))
         if unknown:
             raise ValueError(
                 "llm.reasoning_agents contains unknown agent names: "
                 + ", ".join(unknown)
                 + "; valid names are: "
-                + ", ".join(_PLANNING_AGENTS)
+                + ", ".join(_CONFIGURABLE_AGENTS)
             )
         return value
+
+    def max_tokens_for(self, agent_name: str) -> int:
+        """Resolve one agent's output budget, honoring a per-agent override."""
+
+        override = self.overrides.get(agent_name)
+        if override is not None and override.max_tokens is not None:
+            return override.max_tokens
+        return self.max_tokens
 
     @field_validator("overrides")
     @classmethod
     def validate_overrides(
         cls, value: dict[str, AgentLLMOverride]
     ) -> dict[str, AgentLLMOverride]:
-        unknown = sorted(set(value) - set(_PLANNING_AGENTS))
+        unknown = sorted(set(value) - set(_CONFIGURABLE_AGENTS))
         if unknown:
             raise ValueError(
                 "llm.overrides contains unknown agent names: "
                 + ", ".join(unknown)
                 + "; valid names are: "
-                + ", ".join(_PLANNING_AGENTS)
+                + ", ".join(_CONFIGURABLE_AGENTS)
             )
         return value
 
@@ -187,8 +236,24 @@ class InputsConfig(StrictConfigModel):
 
 class ExecutionConfig(StrictConfigModel):
     runner: Literal["python_requests", "newman"] = "python_requests"
+    # Deprecated and unread: per-project reset now lives in the SUT manifest, where the
+    # heterogeneity between projects actually is. The field is kept because every run's
+    # config.resolved.yaml is a persisted artifact that the executor loads, and this model
+    # forbids unknown keys -- dropping the field would make every past run unexecutable.
     reset_command: str | None = None
+    # Per-HTTP-request timeout. Consumed at generation time and baked into the suite's
+    # conftest.py as REQUEST_TIMEOUT_SECONDS, so changing it only affects suites
+    # generated afterwards. The two timeouts below bound execution instead.
     timeout_seconds: int = Field(default=30, gt=0)
+    # A cold Node build with no node_modules takes minutes; keeping it separate from the
+    # readiness wait is what makes "the build failed" distinguishable from "the app never
+    # came up", instead of waiting half an hour to learn which.
+    build_timeout_seconds: int = Field(default=1800, gt=0)
+    startup_timeout_seconds: int = Field(default=180, gt=0)
+    # Wall clock for one suite. JUnit XML is written only at session end, so exceeding
+    # this loses every case outcome for that project; size it generously.
+    suite_timeout_seconds: int = Field(default=3600, gt=0)
+    teardown_volumes: bool = True
 
 
 class BudgetConfig(StrictConfigModel):

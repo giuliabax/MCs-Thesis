@@ -5,16 +5,35 @@ llm:
   provider: lmstudio
   model: ${LMSTUDIO_MODEL}
   temperature: 0.1
-  max_tokens: 9000
+  # Ceiling on output (reasoning + content), not a target: the model stops on its own.
+  # Two limits bound it, and both apply to the 1.5x retry in LMStudioLLMClient, not just
+  # to this value: the loaded context window minus the prompt, and timeout_seconds times
+  # the measured generation rate.
+  max_tokens: 20000
   base_url: ${LMSTUDIO_BASE_URL}
   # timeout_seconds: 1200
   # Only the matcher reasons; the planner emits JSON directly (faster, and measured
-  # more accurate on 8 GB). Add test_strategy_planner here to A/B a reasoned planner.
+  # more accurate on 8 GB, where reasoning competed with the prompt for a 16k window).
+  # Worth re-measuring on a larger window: add test_strategy_planner here to A/B it.
   reasoning_agents: [requirement_api_matcher]
-  # Optional: route a heavy agent to a remote provider (needs a paid Groq tier — the
-  # free tier caps at 8000 tokens/minute). Not required: compact payloads keep the
-  # planner within the local context window.
-  # overrides:
+  # Plan in batches of requirements. Required at this budget, not optional: measured on
+  # team16, a single call asked to produce 30 strategy items generated ~35k tokens of
+  # JSON without ever closing it, exhausting the token ceiling twice. Batching keeps each
+  # response small, and with each batch receiving its own share of the budget it filled
+  # 30 items covering 29 of 29 requirements in 181s.
+  batch_strategy_planner: true
+  overrides:
+    # The matcher is the reasoning agent, so max_tokens is its deliberation budget and
+    # not just a length cap. Raising it to 20000 made it markedly more literal: on
+    # team16 it stopped granting inferential matches and returned 7 not_assessable
+    # where 9000 returns none, costing recall. Keep it at the value the July baseline
+    # used; the planner keeps the larger budget it needs to emit a whole strategy in
+    # one call.
+    requirement_api_matcher:
+      max_tokens: 9000
+  # An override may also reroute one agent to another provider (needs a paid Groq tier
+  # — the free tier caps at 8000 tokens/minute). Not required: compact payloads keep
+  # every agent within the local context window.
   #   test_strategy_planner:
   #     provider: groq
   #     model: your-groq-model-id
@@ -82,12 +101,14 @@ inputs:
 
 execution:
   runner: python_requests
-  reset_command: null
   timeout_seconds: 30
 
 budget:
   max_iterations: 3
-  max_tests_per_iteration: 10
+  # Raised from 10, which was a scarcity setting from the 8 GB era and left two thirds of
+  # each project's implemented requirements with no test at all: 10 items per project
+  # covered 6.8 of 18.6 implemented requirements, 37%.
+  max_tests_per_iteration: 30
   max_llm_calls: 50
 
 output:

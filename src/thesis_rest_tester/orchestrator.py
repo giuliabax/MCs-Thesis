@@ -95,7 +95,7 @@ class Orchestrator:
             llm_client=agent_clients["requirements_analyst"],
             artifact_writer=root_writer,
             temperature=config.llm.temperature,
-            max_tokens=config.llm.max_tokens,
+            max_tokens=config.llm.max_tokens_for("requirements_analyst"),
             think="requirements_analyst" in config.llm.reasoning_agents,
         )
         requirements_analysis, _ = requirements_agent.run(
@@ -166,15 +166,17 @@ class Orchestrator:
             "openapi_operations.json",
             [operation.model_dump(mode="json") for operation in project.operations],
         )
+        # max_tokens is resolved per agent, not shared: it doubles as a reasoning
+        # budget, so agents differ in what value serves them best.
         agent_arguments = {
             "artifact_writer": writer,
             "temperature": config.llm.temperature,
-            "max_tokens": config.llm.max_tokens,
         }
 
         api_agent = APIUnderstandingAgent(
             prompt_path=self._prompt_root / "planning/api_understanding.md",
             llm_client=agent_clients["api_understanding"],
+            max_tokens=config.llm.max_tokens_for("api_understanding"),
             think="api_understanding" in config.llm.reasoning_agents,
             **agent_arguments,
         )
@@ -184,6 +186,7 @@ class Orchestrator:
         matcher = RequirementAPIMatcherAgent(
             prompt_path=self._prompt_root / "planning/requirement_api_matcher.md",
             llm_client=agent_clients["requirement_api_matcher"],
+            max_tokens=config.llm.max_tokens_for("requirement_api_matcher"),
             think="requirement_api_matcher" in config.llm.reasoning_agents,
             **agent_arguments,
         )
@@ -206,12 +209,11 @@ class Orchestrator:
             strategy_agent = TestStrategyPlannerAgent(
                 prompt_path=self._prompt_root / "planning/test_strategy_planner.md",
                 llm_client=agent_clients["test_strategy_planner"],
-                # Batching keeps each local request within the context window; the mock
-                # dry run returns a single fixture per project, so plan in one call there.
-                batch_by_requirement=(
-                    not self._dry_run
-                    and self._effective_provider(config, "test_strategy_planner") == "lmstudio"
-                ),
+                # Opt-in fallback for a context window too small to hold a whole project's
+                # planning payload. The mock dry run returns a single fixture per project,
+                # so it always plans in one call.
+                batch_by_requirement=(not self._dry_run and config.llm.batch_strategy_planner),
+                max_tokens=config.llm.max_tokens_for("test_strategy_planner"),
                 think="test_strategy_planner" in config.llm.reasoning_agents,
                 **agent_arguments,
             )
@@ -363,7 +365,8 @@ class Orchestrator:
         clients: dict[str, LLMClient] = {}
         for name in agent_names:
             override = config.llm.overrides.get(name)
-            if override is None:
+            # A max_tokens-only override changes the request, not its destination.
+            if override is None or not override.reroutes:
                 clients[name] = default_client
                 continue
             key = (override.provider, override.model, override.base_url)
@@ -374,24 +377,23 @@ class Orchestrator:
 
     @staticmethod
     def _build_override_client(config: AppConfig, override: AgentLLMOverride) -> LLMClient:
+        # Only rerouting overrides reach this point, so provider and model are both set.
+        if override.model is None:
+            raise RuntimeError("cannot build a client for an override without a model")
+        default_max_tokens = override.max_tokens or config.llm.max_tokens
         if override.provider == "lmstudio":
             return LMStudioLLMClient(
                 model=override.model,
                 base_url=override.base_url or config.llm.base_url,
                 default_temperature=config.llm.temperature,
-                default_max_tokens=config.llm.max_tokens,
+                default_max_tokens=default_max_tokens,
                 timeout=config.llm.timeout_seconds,
             )
         return GroqLLMClient(
             model=override.model,
             default_temperature=config.llm.temperature,
-            default_max_tokens=config.llm.max_tokens,
+            default_max_tokens=default_max_tokens,
         )
-
-    @staticmethod
-    def _effective_provider(config: AppConfig, agent_name: str) -> str:
-        override = config.llm.overrides.get(agent_name)
-        return override.provider if override is not None else config.llm.provider
 
     @classmethod
     def _mock_responses(

@@ -107,7 +107,6 @@ def _fixtures(tmp_path: Path) -> Path:
         },
         "execution": {
             "runner": "python_requests",
-            "reset_command": None,
             "timeout_seconds": 30,
         },
         "budget": {
