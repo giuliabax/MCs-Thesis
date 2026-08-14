@@ -14,7 +14,16 @@ from thesis_rest_tester.domain.coverage import (
     ProjectRequirementCoverage,
     RequirementAPIMatch,
 )
-from thesis_rest_tester.domain.models import OpenAPIOperation, RequirementItem
+
+# TestStrategyItem is aliased: pytest would otherwise try to collect the Test-prefixed
+# model as a test class.
+from thesis_rest_tester.domain.models import (
+    OpenAPIOperation,
+    RequirementItem,
+)
+from thesis_rest_tester.domain.models import (
+    TestStrategyItem as StrategyItem,
+)
 from thesis_rest_tester.domain.schemas import (
     APIAnalysis,
     APIDependency,
@@ -495,3 +504,333 @@ def test_strategy_agent_batching_falls_back_when_correction_call_fails(tmp_path:
 
     assert {item.requirement_id for item in strategy} == {f"R{i}" for i in range(1, 9)}
     assert {item.test_type for item in strategy} == {"happy_path"}
+
+
+def test_normalize_drops_items_naming_operations_absent_from_openapi() -> None:
+    """One invented endpoint must cost its own item, not the whole project.
+
+    Reproduces the team11 failure: the planner named PATCH /sessions/current/config,
+    which the contract does not document, and the run aborted even though every other
+    item was valid.
+    """
+
+    operations = [
+        OpenAPIOperation(method="GET", path="/op1", response_codes=["200"]),
+        OpenAPIOperation(method="POST", path="/op2", response_codes=["201"]),
+    ]
+    strategy = [
+        item
+        for item in _strategy_from(
+            [("R1", "GET", "/op1", "happy_path"), ("R2", "POST", "/op2", "negative")]
+        )
+    ]
+    hallucinated = _strategy_from(
+        [("R3", "PATCH", "/sessions/current/config", "edge_case")]
+    )
+
+    normalized = StrategyPlannerAgent._normalize_strategy(strategy + hallucinated, operations)
+
+    assert [(item.http_method, item.api_endpoint) for item in normalized] == [
+        ("GET", "/op1"),
+        ("POST", "/op2"),
+    ]
+
+
+def test_normalize_keeps_every_item_backed_by_the_contract() -> None:
+    operations = [OpenAPIOperation(method="GET", path="/op1", response_codes=["200"])]
+    strategy = _strategy_from([("R1", "GET", "/op1", "happy_path")])
+
+    normalized = StrategyPlannerAgent._normalize_strategy(strategy, operations)
+
+    assert len(normalized) == 1
+
+
+def _strategy_from(rows: list[tuple[str, str, str, str]]) -> list[StrategyItem]:
+    return [
+        StrategyItem(
+            requirement_id=requirement_id,
+            requirement_summary=f"Requirement {requirement_id}",
+            api_endpoint=endpoint,
+            http_method=method,
+            prompt=f"Generate a {test_type} test.",
+            test_type=test_type,
+            priority="high",
+            expected_status_codes=["200"],
+            rationale="Fixture item.",
+        )
+        for requirement_id, method, endpoint, test_type in rows
+    ]
+
+
+def test_finalize_synthesizes_a_required_type_lost_to_a_dropped_item() -> None:
+    """Reproduces the run2 failure: the only negative item named a fake endpoint.
+
+    Dropping it left the strategy without a `negative` test, which the quality gate
+    rejects. The missing type must be rebuilt from a documented operation instead.
+    """
+
+    operations = [
+        OpenAPIOperation(method="GET", path="/reports", response_codes=["200", "400"]),
+        OpenAPIOperation(
+            method="POST",
+            path="/reports",
+            request_body_schema={"type": "object"},
+            response_codes=["201", "422"],
+        ),
+    ]
+    requirements = RequirementsAnalysis(
+        summary="Requirements",
+        requirements=[
+            RequirementItem(id="R1", source="test", text="Report handling", role="user")
+        ],
+    )
+    api_analysis = APIAnalysis(
+        summary="API",
+        operations=[
+            APIOperationAnalysis(path=item.path, method=item.method) for item in operations
+        ],
+    )
+    strategy = _strategy_from(
+        [
+            ("R1", "GET", "/reports", "happy_path"),
+            ("R1", "POST", "/reports", "edge_case"),
+            # The model's only negative test names an endpoint that does not exist.
+            ("R1", "DELETE", "/users/reports", "negative"),
+        ]
+    )
+
+    finalized = StrategyPlannerAgent._finalize_strategy(
+        strategy,
+        requirements,
+        api_analysis,
+        operations,
+        BudgetConfig(max_iterations=1, max_tests_per_iteration=10, max_llm_calls=10),
+        synthesize_missing_types=True,
+    )
+
+    assert {item.test_type for item in finalized} >= {"happy_path", "edge_case", "negative"}
+    negative = next(item for item in finalized if item.test_type == "negative")
+    # The replacement must point at a documented operation and assert a rejection.
+    assert (negative.http_method, negative.api_endpoint) in {
+        (item.method, item.path) for item in operations
+    }
+    assert all(code.startswith("4") for code in negative.expected_status_codes)
+
+
+def test_finalize_does_not_synthesize_before_the_corrective_call() -> None:
+    """Filling a gap deterministically must not pre-empt the model's corrective call."""
+
+    operations = [OpenAPIOperation(method="GET", path="/reports", response_codes=["200", "400"])]
+    requirements = RequirementsAnalysis(
+        summary="Requirements",
+        requirements=[RequirementItem(id="R1", source="test", text="Reports", role="user")],
+    )
+    api_analysis = APIAnalysis(
+        summary="API", operations=[APIOperationAnalysis(path="/reports", method="GET")]
+    )
+    strategy = _strategy_from([("R1", "GET", "/reports", "happy_path")])
+
+    finalized = StrategyPlannerAgent._finalize_strategy(
+        strategy,
+        requirements,
+        api_analysis,
+        operations,
+        BudgetConfig(max_iterations=1, max_tests_per_iteration=10, max_llm_calls=10),
+    )
+
+    assert {item.test_type for item in finalized} == {"happy_path"}
+
+
+def test_finalize_leaves_a_complete_strategy_untouched() -> None:
+    operations = [
+        OpenAPIOperation(method="GET", path="/reports", response_codes=["200", "400"]),
+    ]
+    requirements = RequirementsAnalysis(
+        summary="Requirements",
+        requirements=[RequirementItem(id="R1", source="test", text="Reports", role="user")],
+    )
+    api_analysis = APIAnalysis(
+        summary="API",
+        operations=[APIOperationAnalysis(path="/reports", method="GET")],
+    )
+    strategy = _strategy_from(
+        [
+            ("R1", "GET", "/reports", "happy_path"),
+            ("R1", "GET", "/reports", "edge_case"),
+            ("R1", "GET", "/reports", "negative"),
+        ]
+    )
+
+    finalized = StrategyPlannerAgent._finalize_strategy(
+        strategy,
+        requirements,
+        api_analysis,
+        operations,
+        BudgetConfig(max_iterations=1, max_tests_per_iteration=10, max_llm_calls=10),
+    )
+
+    assert len(finalized) == 3
+    assert all(item.rationale == "Fixture item." for item in finalized)
+
+
+def test_each_batch_receives_its_own_share_of_the_budget() -> None:
+    """Sending the whole budget to every batch asks N times for the whole plan.
+
+    That was merely wasteful at a budget of ten; at thirty it made each response large
+    enough to exhaust the model's token ceiling, which is what made batched planning look
+    incapable of filling a larger budget.
+    """
+
+    budget = BudgetConfig(max_iterations=1, max_tests_per_iteration=30, max_llm_calls=50)
+    all_ids = [f"R{index}" for index in range(29)]
+
+    share = StrategyPlannerAgent._batch_budget(budget, all_ids[:6], all_ids)
+
+    assert share.max_tests_per_iteration == 7
+    # The rest of the budget is untouched.
+    assert share.max_llm_calls == 50
+
+
+def test_a_batch_never_drops_below_the_minimum_the_quality_gate_demands() -> None:
+    budget = BudgetConfig(max_iterations=1, max_tests_per_iteration=10, max_llm_calls=50)
+    all_ids = [f"R{index}" for index in range(29)]
+
+    share = StrategyPlannerAgent._batch_budget(budget, all_ids[:1], all_ids)
+
+    assert share.max_tests_per_iteration == 3
+
+
+def test_a_single_batch_project_keeps_the_whole_budget() -> None:
+    """With one batch there is nothing to share the budget with."""
+
+    budget = BudgetConfig(max_iterations=1, max_tests_per_iteration=30, max_llm_calls=50)
+    all_ids = ["R1", "R2", "R3"]
+
+    share = StrategyPlannerAgent._batch_budget(budget, all_ids, all_ids)
+
+    assert share.max_tests_per_iteration == 30
+
+
+def test_replan_reuses_coverage_and_only_replaces_the_strategy(tmp_path: Path) -> None:
+    """Re-planning must not re-decide coverage: that is what the run was selected on."""
+
+    from thesis_rest_tester.config import load_config
+    from thesis_rest_tester.replanner import Replanner
+
+    source = tmp_path / "source"
+    project = source / "projects" / "team-a"
+    project.mkdir(parents=True)
+    (source / "requirements_analysis.json").write_text(
+        RequirementsAnalysis(
+            summary="Requirements",
+            requirements=[
+                RequirementItem(id="R1", source="test", text="Create a report", role="user")
+            ],
+            assumptions=["an assumption"],
+        ).model_dump_json(),
+        encoding="utf-8",
+    )
+    (project / "openapi_operations.json").write_text(
+        json.dumps(
+            [
+                {"method": "GET", "path": "/reports", "response_codes": ["200"]},
+                {"method": "POST", "path": "/reports", "response_codes": ["201", "400"]},
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (project / "api_analysis.json").write_text(
+        APIAnalysis(
+            summary="API",
+            operations=[
+                APIOperationAnalysis(path="/reports", method="GET"),
+                APIOperationAnalysis(path="/reports", method="POST"),
+            ],
+        ).model_dump_json(),
+        encoding="utf-8",
+    )
+    coverage = ProjectRequirementCoverage.from_matches(
+        project_name="team-a",
+        openapi_path="swagger.yaml",
+        matches=[
+            RequirementAPIMatch(
+                requirement_id="R1",
+                status="implemented",
+                matched_operations=[
+                    OperationReference(method="GET", path="/reports"),
+                    OperationReference(method="POST", path="/reports"),
+                ],
+                rationale="Reports are exposed.",
+            )
+        ],
+    )
+    (project / "requirement_coverage.json").write_text(
+        coverage.model_dump_json(), encoding="utf-8"
+    )
+    (project / "test_strategy.json").write_text(json.dumps([{}, {}]), encoding="utf-8")
+    (project / "workflow_plan.json").write_text("{}", encoding="utf-8")
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+project_name: replan-test
+run_id: fixed
+llm:
+  provider: lmstudio
+  model: a-model
+  temperature: 0.1
+  max_tokens: 100
+inputs:
+  requirements:
+    description_pdf: d.pdf
+    user_stories_xlsx: s.xlsx
+    faq_pdf: f.pdf
+  openapi_path: openapi.yaml
+  sut_base_url: http://127.0.0.1:8080
+budget:
+  max_iterations: 1
+  max_tests_per_iteration: 3
+  max_llm_calls: 10
+output:
+  runs_dir: runs
+""",
+        encoding="utf-8",
+    )
+    planned = [
+        {
+            "requirement_id": "R1",
+            "requirement_summary": "Create a report",
+            "api_endpoint": path,
+            "http_method": method,
+            "prompt": f"Generate a {test_type} test.",
+            "test_type": test_type,
+            "priority": "high",
+            "setup_needed": [],
+            "cleanup_strategy": None,
+            "expected_status_codes": ["200"],
+            "rationale": "Replanned.",
+        }
+        for method, path, test_type in (
+            ("GET", "/reports", "happy_path"),
+            ("POST", "/reports", "negative"),
+            ("POST", "/reports", "edge_case"),
+        )
+    ]
+
+    result = Replanner(
+        source,
+        load_config(config_path),
+        llm_client=MockLLMClient([json.dumps(planned)]),
+    ).run(output_run=tmp_path / "out")
+
+    assert [(p.items_before, p.items_after) for p in result.projects] == [(2, 3)]
+    destination = tmp_path / "out" / "projects" / "team-a"
+    # The coverage file is carried over byte for byte, not recomputed.
+    assert (destination / "requirement_coverage.json").read_text(encoding="utf-8") == (
+        project / "requirement_coverage.json"
+    ).read_text(encoding="utf-8")
+    # And the new plan carries that same coverage plus the fresh strategy.
+    plan = json.loads((destination / "workflow_plan.json").read_text(encoding="utf-8"))
+    assert len(plan["strategy_items"]) == 3
+    assert plan["requirement_coverage"]["matches"][0]["requirement_id"] == "R1"
+    assert (tmp_path / "out" / "replan.json").is_file()
