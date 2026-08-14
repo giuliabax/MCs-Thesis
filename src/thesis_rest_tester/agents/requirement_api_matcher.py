@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 from pydantic import TypeAdapter
 
@@ -25,6 +26,10 @@ from thesis_rest_tester.llm.base import LLMClient
 
 
 class RequirementAPIMatcherAgent(BaseAgent[RequirementCoverageDraft]):
+    # Marks a rationale this agent rebuilt because the model omitted one, so run
+    # artifacts never present synthesized text as the model's own assessment.
+    _SYNTHESIZED_RATIONALE = "Synthesized from evidence; the model omitted a rationale: "
+
     def __init__(
         self,
         llm_client: LLMClient,
@@ -84,9 +89,35 @@ class RequirementAPIMatcherAgent(BaseAgent[RequirementCoverageDraft]):
             normalized = dict(match)
             normalized["matched_operations"] = normalized_operations
             normalized["evidence"] = list(dict.fromkeys(evidence))
+            normalized["rationale"] = self._rationale_or_synthesized(
+                match, normalized["evidence"]
+            )
             normalized_matches.append(normalized)
 
         return {**parsed, "matches": normalized_matches}
+
+    @classmethod
+    def _rationale_or_synthesized(cls, match: dict[str, Any], evidence: list[str]) -> object:
+        """Keep the model's rationale, or rebuild one it omitted.
+
+        ``rationale`` is the only required free-text field in RequirementAPIMatch, so a
+        model that drops it on a handful of matches fails the whole project even though
+        ``evidence`` and ``missing_behaviors`` already carry the same reasoning. Rebuild
+        it from those instead. The prefix keeps a synthesized rationale distinguishable
+        from the model's own words in the run artifacts; no metric reads this field.
+        """
+
+        rationale = match.get("rationale")
+        if isinstance(rationale, str) and rationale.strip():
+            return rationale
+
+        reasons = list(evidence)
+        missing_behaviors = match.get("missing_behaviors")
+        if isinstance(missing_behaviors, list):
+            reasons.extend(f"missing: {item}" for item in missing_behaviors if item)
+        if not reasons:
+            return cls._SYNTHESIZED_RATIONALE + "the model supplied no supporting detail."
+        return cls._SYNTHESIZED_RATIONALE + "; ".join(str(reason) for reason in reasons)
 
     def run(
         self,
