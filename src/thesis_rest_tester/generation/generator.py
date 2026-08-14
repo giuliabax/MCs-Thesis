@@ -1,0 +1,290 @@
+"""Turn the workflow plans of a completed run into one pytest suite per project."""
+
+from __future__ import annotations
+
+import json
+import logging
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from thesis_rest_tester.agents.test_writer import TestWriterAgent
+from thesis_rest_tester.artifacts.writer import ArtifactWriter
+from thesis_rest_tester.config import AppConfig, load_config
+from thesis_rest_tester.domain.compact import body_field_spec
+from thesis_rest_tester.domain.executable import ExecutableTestCase
+from thesis_rest_tester.domain.models import (
+    OpenAPIOperation,
+    TestStrategyItem,
+    WorkflowPlan,
+)
+from thesis_rest_tester.generation.renderer import render_conftest, render_suite
+from thesis_rest_tester.llm import LMStudioLLMClient, MockLLMClient
+from thesis_rest_tester.llm.base import LLMClient
+
+_logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectSuite:
+    project_name: str
+    suite_dir: Path
+    cases: list[ExecutableTestCase]
+    # Strategy items that produced no test, with the reason. A partial suite is a
+    # reportable outcome, not a failure: one unusable item must not cost the project.
+    skipped: list[tuple[str, str]] = field(default_factory=list)
+
+    @property
+    def requested(self) -> int:
+        return len(self.cases) + len(self.skipped)
+
+
+@dataclass(frozen=True, slots=True)
+class GenerationResult:
+    run_dir: Path
+    suites: list[ProjectSuite]
+
+    @property
+    def total_cases(self) -> int:
+        return sum(len(suite.cases) for suite in self.suites)
+
+    @property
+    def total_skipped(self) -> int:
+        return sum(len(suite.skipped) for suite in self.suites)
+
+
+class SuiteGenerator:
+    """Generate executable suites from the artifacts of a completed planning run."""
+
+    def __init__(
+        self,
+        run_dir: str | Path,
+        llm_client: LLMClient,
+        config: AppConfig,
+        *,
+        prompt_root: str | Path | None = None,
+    ) -> None:
+        self._run_dir = Path(run_dir)
+        self._llm_client = llm_client
+        self._config = config
+        repository_root = Path(__file__).resolve().parents[3]
+        self._prompt_root = (
+            Path(prompt_root) if prompt_root is not None else repository_root / "prompts"
+        )
+
+    def run(self, *, only: list[str] | None = None) -> GenerationResult:
+        projects_dir = self._run_dir / "projects"
+        if not projects_dir.is_dir():
+            raise FileNotFoundError(f"No projects directory inside {self._run_dir}")
+
+        suites: list[ProjectSuite] = []
+        for project_dir in sorted(projects_dir.iterdir()):
+            if not project_dir.is_dir():
+                continue
+            if only and project_dir.name not in only:
+                continue
+            plan_file = project_dir / "workflow_plan.json"
+            if not plan_file.is_file():
+                _logger.warning("%s has no workflow_plan.json; skipping", project_dir.name)
+                continue
+            suites.append(self._generate_project(project_dir, plan_file))
+        return GenerationResult(self._run_dir, suites)
+
+    def _generate_project(self, project_dir: Path, plan_file: Path) -> ProjectSuite:
+        plan = WorkflowPlan.model_validate_json(plan_file.read_text(encoding="utf-8"))
+        operations = _load_operations(project_dir)
+        suite_dir = project_dir / "suite"
+        writer = ArtifactWriter(suite_dir / "agent")
+
+        agent = TestWriterAgent(
+            llm_client=self._llm_client,
+            prompt_path=self._prompt_root / "generation/test_writer_agent.md",
+            artifact_writer=writer,
+            temperature=self._config.llm.temperature,
+            max_tokens=self._config.llm.max_tokens_for("test_writer"),
+            think="test_writer" in self._config.llm.reasoning_agents,
+        )
+
+        cases: list[ExecutableTestCase] = []
+        skipped: list[tuple[str, str]] = []
+        used_names: set[str] = set()
+        _logger.info(
+            "Generating %d test(s) for %s", len(plan.strategy_items), plan.project_name
+        )
+        for index, item in enumerate(plan.strategy_items, start=1):
+            stem = f"item{index:02d}_{item.requirement_id}"
+            try:
+                case, _ = agent.run(item, operations, artifact_stem=stem)
+            except Exception as exc:  # noqa: BLE001 - one item must not fail the project
+                reason = f"{type(exc).__name__}: {exc}"
+                _logger.warning(
+                    "%s item %d (%s) produced no test: %s",
+                    plan.project_name,
+                    index,
+                    item.requirement_id,
+                    reason,
+                )
+                skipped.append((f"{item.requirement_id} {item.http_method} {item.api_endpoint}",
+                                reason))
+                continue
+            case = _deduplicate_name(case, used_names)
+            used_names.add(case.name)
+            cases.append(case)
+
+        _write_suite(suite_dir, plan, cases, skipped, self._config)
+        return ProjectSuite(plan.project_name, suite_dir, cases, skipped)
+
+
+def generate_suites(
+    config_path: str | Path,
+    run_dir: str | Path,
+    *,
+    projects: list[str] | None = None,
+    dry_run: bool = False,
+    llm_client: LLMClient | None = None,
+) -> GenerationResult:
+    """Entry point used by the CLI: build the client, then generate every suite."""
+
+    config = load_config(config_path)
+    client = llm_client or _build_client(config, Path(run_dir), projects, dry_run=dry_run)
+    return SuiteGenerator(run_dir, client, config).run(only=projects)
+
+
+def _build_client(
+    config: AppConfig,
+    run_dir: Path,
+    projects: list[str] | None,
+    *,
+    dry_run: bool,
+) -> LLMClient:
+    if dry_run:
+        return MockLLMClient(_mock_responses(run_dir, projects))
+    override = config.llm.overrides.get("test_writer")
+    model = override.model if override is not None and override.reroutes else config.llm.model
+    return LMStudioLLMClient(
+        model=model,
+        base_url=config.llm.base_url,
+        default_temperature=config.llm.temperature,
+        default_max_tokens=config.llm.max_tokens_for("test_writer"),
+        timeout=config.llm.timeout_seconds,
+    )
+
+
+def _mock_responses(run_dir: Path, projects: list[str] | None) -> list[str]:
+    """One deterministic test case per strategy item, in the order the generator asks.
+
+    The fixture exercises the whole path---schema validation, contract reconciliation,
+    rendering---without a model call, which is what makes the generator testable.
+    """
+
+    responses: list[str] = []
+    projects_dir = run_dir / "projects"
+    if not projects_dir.is_dir():
+        return responses
+    for project_dir in sorted(projects_dir.iterdir()):
+        if not project_dir.is_dir() or (projects and project_dir.name not in projects):
+            continue
+        plan_file = project_dir / "workflow_plan.json"
+        if not plan_file.is_file():
+            continue
+        plan = WorkflowPlan.model_validate_json(plan_file.read_text(encoding="utf-8"))
+        operations = {
+            (operation.method, operation.path): operation
+            for operation in _load_operations(project_dir)
+        }
+        for index, item in enumerate(plan.strategy_items, start=1):
+            operation = operations.get((item.http_method, item.api_endpoint))
+            responses.append(json.dumps(_mock_case(index, item, operation), ensure_ascii=False))
+    return responses
+
+
+def _mock_case(index: int, item: TestStrategyItem, operation: OpenAPIOperation | None) -> dict:
+    body: dict[str, object] | None = None
+    spec = body_field_spec(operation.request_body_schema) if operation else None
+    if spec is not None:
+        types: dict[str, str] = spec["properties"]  # type: ignore[assignment]
+        body = {name: _mock_value(types.get(name, "string")) for name in types}
+    status = [int(code) for code in item.expected_status_codes if code.isdigit()] or [200]
+    return {
+        "name": f"test_{item.requirement_id.lower()}_{index:02d}",
+        "requirement_id": item.requirement_id,
+        "test_type": item.test_type,
+        "description": f"Dry-run fixture for {item.requirement_id}.",
+        "setup": [],
+        "steps": [
+            {
+                "description": item.prompt[:120],
+                "request": {
+                    "method": item.http_method,
+                    "path": item.api_endpoint,
+                    "json_body": body,
+                },
+                "expect_status": status,
+                "captures": [],
+                "assertions": [],
+            }
+        ],
+        "cleanup": [],
+    }
+
+
+def _mock_value(declared: str) -> object:
+    return {
+        "integer": 1,
+        "number": 1,
+        "boolean": True,
+        "array": [],
+        "object": {},
+    }.get(declared, "value_{{unique}}")
+
+
+def _deduplicate_name(case: ExecutableTestCase, used: set[str]) -> ExecutableTestCase:
+    """Two items on the same requirement can yield the same name; pytest needs unique ones."""
+
+    if case.name not in used:
+        return case
+    suffix = 2
+    while f"{case.name}_{suffix}" in used:
+        suffix += 1
+    return case.model_copy(update={"name": f"{case.name}_{suffix}"})
+
+
+def _load_operations(project_dir: Path) -> list[OpenAPIOperation]:
+    operations_file = project_dir / "openapi_operations.json"
+    if not operations_file.is_file():
+        raise FileNotFoundError(f"No openapi_operations.json in {project_dir}")
+    raw = json.loads(operations_file.read_text(encoding="utf-8"))
+    return [OpenAPIOperation.model_validate(entry) for entry in raw]
+
+
+def _write_suite(
+    suite_dir: Path,
+    plan: WorkflowPlan,
+    cases: list[ExecutableTestCase],
+    skipped: list[tuple[str, str]],
+    config: AppConfig,
+) -> None:
+    writer = ArtifactWriter(suite_dir)
+    base_url = plan.sut_base_url or "http://localhost:8080"
+    writer.write_text(
+        "conftest.py", render_conftest(base_url, config.execution.timeout_seconds)
+    )
+    module_name = f"test_{plan.project_name.replace('-', '_')}.py"
+    writer.write_text(module_name, render_suite(plan.project_name, cases))
+    # Pins the suite as its own pytest rootdir. Without it, pytest walks up to the
+    # repository's own pytest.ini, whose testpaths and pythonpath have nothing to do with
+    # a generated suite -- and which only happens to be harmless while the run directory
+    # sits inside the checkout.
+    writer.write_text("pytest.ini", "[pytest]\n")
+    writer.write_json(
+        "generation_report.json",
+        {
+            "project_name": plan.project_name,
+            "run_id": plan.run_id,
+            "sut_base_url": base_url,
+            "strategy_items": len(plan.strategy_items),
+            "tests_generated": len(cases),
+            "tests_skipped": len(skipped),
+            "skipped": [{"item": item, "reason": reason} for item, reason in skipped],
+            "cases": [case.model_dump(mode="json") for case in cases],
+        },
+    )
