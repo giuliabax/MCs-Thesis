@@ -43,6 +43,12 @@ inputs:
     description_pdf: data/requirements/participium-description.pdf
     user_stories_xlsx: data/requirements/participium-userstories.xlsx
     faq_pdf: data/requirements/participium-faq.pdf
+  # Five projects are read from a document deeper in their repository rather than from
+  # the swagger.yaml at their root. The two describe exactly the same operations -- same
+  # paths, same methods, verified one by one -- but the root file names its request
+  # bodies without defining them, so those bodies reach the pipeline undescribed. The
+  # deeper document is the team's own and carries the definitions, which is why it is
+  # preferred: it is a better copy of the same contract, not a different contract.
   projects:
     - name: participium-team01
       openapi_path: projects/participium-team01/swagger.yaml
@@ -57,13 +63,13 @@ inputs:
       openapi_path: projects/participium-team04/swagger.yaml
       sut_base_url: http://localhost:8083
     - name: participium-team05
-      openapi_path: projects/participium-team05/swagger.yaml
+      openapi_path: projects/participium-team05/server/docs/swagger.yaml
       sut_base_url: http://localhost:8084
     - name: participium-team06
       openapi_path: projects/participium-team06/swagger.yaml
       sut_base_url: http://localhost:8085
     - name: participium-team07
-      openapi_path: projects/participium-team07/swagger.yaml
+      openapi_path: projects/participium-team07/server/swagger.json
       sut_base_url: http://localhost:8086
     - name: participium-team08
       openapi_path: projects/participium-team08/swagger.yaml
@@ -81,16 +87,16 @@ inputs:
       openapi_path: projects/participium-team12/swagger.yaml
       sut_base_url: http://localhost:8091
     - name: participium-team13
-      openapi_path: projects/participium-team13/swagger.yaml
+      openapi_path: projects/participium-team13/docs/swagger.yaml
       sut_base_url: http://localhost:8092
     - name: participium-team14
-      openapi_path: projects/participium-team14/swagger.yaml
+      openapi_path: projects/participium-team14/doc/OpenAPI_swagger.yml
       sut_base_url: http://localhost:8093
     - name: participium-team15
       openapi_path: projects/participium-team15/swagger.yaml
       sut_base_url: http://localhost:8094
     - name: participium-team16
-      openapi_path: projects/participium-team16/swagger.yaml
+      openapi_path: projects/participium-team16/api/openapi.yaml
       sut_base_url: http://localhost:8095
     - name: participium-team17
       openapi_path: projects/participium-team17/swagger.yaml

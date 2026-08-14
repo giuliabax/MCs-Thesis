@@ -26,7 +26,7 @@ inputs:
     faq_pdf: data/requirements/participium-faq.pdf
   projects:
     - name: participium-team07
-      openapi_path: projects/participium-team07/swagger.yaml
+      openapi_path: projects/participium-team07/server/swagger.json
       sut_base_url: http://localhost:8086
 
 execution:
