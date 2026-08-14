@@ -3,9 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from pydantic import TypeAdapter
+
 from thesis_rest_tester.agents.requirement_api_matcher import RequirementAPIMatcherAgent
 from thesis_rest_tester.agents.requirements_analyst import RequirementsAnalystAgent
 from thesis_rest_tester.artifacts.writer import ArtifactWriter
+from thesis_rest_tester.domain.coverage import RequirementCoverageDraft
 from thesis_rest_tester.domain.models import OpenAPIOperation, RequirementItem
 from thesis_rest_tester.domain.schemas import RequirementsAnalysis, SourceRequirement
 from thesis_rest_tester.llm.base import MockLLMClient
@@ -263,3 +266,62 @@ def test_matcher_agent_lifts_operation_level_evidence(tmp_path: Path) -> None:
     assert match.matched_operations[0].method == "POST"
     assert match.evidence == ["Citizen registration endpoint", "Register a new citizen"]
     assert coverage.validation_warnings == []
+
+
+def test_matcher_synthesizes_rationale_the_model_omitted() -> None:
+    """A missing rationale must not fail the project: rebuild it from the evidence."""
+
+    parsed = {
+        "matches": [
+            {
+                "requirement_id": "PT12",
+                "status": "implemented",
+                "matched_operations": [],
+                "evidence": ["POST /api/telegram/reports creates a report"],
+                "missing_behaviors": [],
+            },
+            {
+                "requirement_id": "PT26",
+                "status": "partially_implemented",
+                "matched_operations": [],
+                "evidence": ["GET /api/messages exists"],
+                "missing_behaviors": ["no POST for internal notes"],
+            },
+            {
+                "requirement_id": "PT01",
+                "status": "implemented",
+                "matched_operations": [],
+                "evidence": ["Registration endpoint"],
+                "missing_behaviors": [],
+                "rationale": "Registration is exposed.",
+            },
+        ]
+    }
+
+    normalized = RequirementAPIMatcherAgent._preprocess_parsed_json(
+        RequirementAPIMatcherAgent, parsed
+    )
+    draft = TypeAdapter(RequirementCoverageDraft).validate_python(normalized)
+
+    prefix = RequirementAPIMatcherAgent._SYNTHESIZED_RATIONALE
+    by_id = {match.requirement_id: match.rationale for match in draft.matches}
+    # A rationale the model did supply is passed through untouched and unmarked.
+    assert by_id["PT01"] == "Registration is exposed."
+    assert by_id["PT12"] == prefix + "POST /api/telegram/reports creates a report"
+    assert by_id["PT26"] == (
+        prefix + "GET /api/messages exists; missing: no POST for internal notes"
+    )
+
+
+def test_matcher_synthesizes_rationale_without_any_supporting_detail() -> None:
+    parsed = {"matches": [{"requirement_id": "PT02", "status": "not_assessable"}]}
+
+    normalized = RequirementAPIMatcherAgent._preprocess_parsed_json(
+        RequirementAPIMatcherAgent, parsed
+    )
+    draft = TypeAdapter(RequirementCoverageDraft).validate_python(normalized)
+
+    assert draft.matches[0].rationale == (
+        RequirementAPIMatcherAgent._SYNTHESIZED_RATIONALE
+        + "the model supplied no supporting detail."
+    )
