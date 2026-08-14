@@ -12,6 +12,11 @@ never by the model:
 ``{{unique}}``
     Replaced by a value unique to the test invocation, so that repeated runs and
     parallel tests cannot collide on the same resource.
+``{{long_N}}``
+    Replaced by a string of N characters. A boundary test on a length limit needs a
+    long value, and without this the model writes one out literally -- an observed case
+    emitted ten thousand characters, exhausting its token budget to produce a test that
+    was then discarded.
 ``{{capture_name}}``
     Replaced by a value captured from an earlier step's response, which is how a step
     consumes an identifier or a token produced by the step before it.
@@ -27,9 +32,15 @@ from pydantic import Field, field_validator
 
 from thesis_rest_tester.domain.models import DomainModel
 
-# A capture name doubles as a Python local, so it must be a plain identifier.
-_CAPTURE_NAME = re.compile(r"^[a-z_][a-z0-9_]*$")
-_PLACEHOLDER = re.compile(r"\{\{\s*([a-z_][a-z0-9_]*)\s*\}\}")
+# A capture name doubles as a Python local, so it must be a plain identifier -- but
+# any valid one. Requiring lower case rejected `reportId`, which is both a legal
+# Python name and the spelling the contracts themselves use in their path
+# parameters, and cost roughly a quarter of all discarded tests.
+_CAPTURE_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_PLACEHOLDER = re.compile(r"\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\}")
+# Resolved by the renderer rather than captured from a response, so they never count
+# as undefined.
+_BUILTIN_PLACEHOLDER = re.compile(r"^(unique|long_\d+)$")
 
 
 class RequestSpec(DomainModel):
@@ -69,7 +80,7 @@ class Capture(DomainModel):
         value = value.strip()
         if not _CAPTURE_NAME.fullmatch(value) or keyword.iskeyword(value):
             raise ValueError(
-                "capture name must be a lowercase Python identifier and not a keyword"
+                "capture name must be a valid Python identifier and not a keyword"
             )
         return value
 
@@ -155,7 +166,7 @@ class ExecutableTestCase(DomainModel):
         missing: list[str] = []
         for step in self.all_steps:
             for name in _placeholders_in(step.request):
-                if name != "unique" and name not in available:
+                if not _BUILTIN_PLACEHOLDER.match(name) and name not in available:
                     missing.append(name)
             available.update(capture.name for capture in step.captures)
         return sorted(dict.fromkeys(missing))

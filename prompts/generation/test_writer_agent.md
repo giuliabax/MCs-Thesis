@@ -64,6 +64,9 @@ Two forms may appear in any string, and the renderer resolves them:
 - `{{unique}}` — a value unique to this test invocation. **Use it in every value that
   must not collide**: usernames, emails, titles, any natural key. Never invent a fixed
   literal for these.
+- `{{long_N}}` — a string of exactly N characters, for testing a length limit. Write
+  `{{long_10000}}`, **never** ten thousand literal characters: the renderer builds the
+  value, and typing it out wastes your entire response budget on padding.
 - `{{name}}` — the value of a capture from an earlier step. A capture must be defined by
   an earlier step before it can be referenced.
 

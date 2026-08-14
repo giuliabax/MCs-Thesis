@@ -639,3 +639,65 @@ def test_generated_conftest_treats_a_missing_field_as_empty() -> None:
 
     assert is_empty(None) and is_empty([]) and is_empty("") and is_empty({})
     assert not is_empty([1]) and not is_empty("x") and not is_empty(0)
+
+
+def test_capture_names_may_be_camel_case(tmp_path) -> None:
+    """`reportId` is a legal Python name and the spelling the contracts use themselves.
+
+    Requiring lower case rejected roughly a quarter of all discarded tests, and would
+    also have left `{{reportId}}` unrecognised as a placeholder -- rendering it into the
+    URL as literal text rather than substituting the captured value.
+    """
+
+    response = _response(
+        setup=[
+            {
+                "description": "Read reports.",
+                "request": {"method": "GET", "path": "/reports"},
+                "expect_status": [200],
+                "captures": [{"name": "reportId", "source": "json", "expression": "id"}],
+            }
+        ],
+        steps=[
+            {
+                "description": "Delete the report.",
+                "request": {"method": "DELETE", "path": "/reports/{{reportId}}"},
+                "expect_status": [204],
+            }
+        ],
+    )
+
+    case, _ = _agent(tmp_path, [response]).run(_item(), _operations(), artifact_stem="s")
+
+    assert case.setup[0].captures[0].name == "reportId"
+    assert case.undefined_placeholders() == []
+    source = render_suite("p", [case])
+    ast.parse(source)
+    assert 'f"{base_url}/reports/{reportId}"' in source
+
+
+def test_long_placeholder_becomes_a_repetition_not_a_literal() -> None:
+    """A boundary test needs the length, not the characters.
+
+    Without this the model types the padding out: one observed case emitted ten thousand
+    literal characters, exhausted its token budget, and was discarded anyway.
+    """
+
+    case = _case(
+        test_type="edge_case",
+        steps=[
+            _step(
+                "POST",
+                "/auth/login",
+                expect_status=[400],
+                request={"json_body": {"username": "{{long_5000}}", "password": "p"}},
+            )
+        ],
+    )
+
+    assert case.undefined_placeholders() == []
+    source = render_suite("p", [case])
+    ast.parse(source)
+    assert '"A" * 5000' in source
+    # And the padding itself never appears in the generated module.
+    assert "AAAA" not in source

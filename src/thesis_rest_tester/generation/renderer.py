@@ -18,7 +18,7 @@ from thesis_rest_tester.domain.executable import (
     TestStep,
 )
 
-_PLACEHOLDER = re.compile(r"\{\{\s*([a-z_][a-z0-9_]*)\s*\}\}")
+_PLACEHOLDER = re.compile(r"\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\}")
 _INDENT = "    "
 
 CONFTEST = '''"""Fixtures for the generated suite. Regenerated with it; do not edit by hand."""
@@ -272,7 +272,7 @@ def _string(text: str) -> str:
     # must not become the string "17" merely because it passed through a template.
     stripped = _PLACEHOLDER.sub("", text)
     if len(names) == 1 and not stripped.strip():
-        return names[0]
+        return _expression_for(names[0])
     return _interpolate(text)
 
 
@@ -285,10 +285,22 @@ def _interpolate(text: str, *, force_fstring: bool = False) -> str:
     position = 0
     for match in _PLACEHOLDER.finditer(text):
         out.append(_escape_message(text[position : match.start()]))
-        out.append("{" + match.group(1) + "}")
+        out.append("{" + _expression_for(match.group(1)) + "}")
         position = match.end()
     out.append(_escape_message(text[position:]))
     return 'f"' + "".join(out) + '"'
+
+
+def _expression_for(name: str) -> str:
+    """The Python expression a placeholder resolves to.
+
+    ``long_N`` becomes a repetition rather than a literal: a boundary test needs the
+    length, not the characters, and asking a model to type them out costs thousands of
+    tokens for a value the renderer can build in one.
+    """
+
+    match = re.fullmatch(r"long_(\d+)", name)
+    return f'"A" * {match.group(1)}' if match else name
 
 
 def _literal(text: str) -> str:

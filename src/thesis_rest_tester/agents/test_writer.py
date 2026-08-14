@@ -179,7 +179,11 @@ def _admissible_cleanup(
         if not is_documented(step):
             dropped.append(f"{target} (not in the contract)")
             continue
-        required = {name for name in _placeholder_names(step) if name != "unique"}
+        required = {
+            name
+            for name in _placeholder_names(step)
+            if not _BUILTIN_PLACEHOLDER.match(name)
+        }
         orphaned = sorted(required - available)
         if orphaned:
             dropped.append(f"{target} (needs {', '.join(orphaned)}, no longer captured)")
@@ -197,8 +201,9 @@ def _placeholder_names(step: TestStep) -> set[str]:
     return {name for fragment in fragments for name in _PLACEHOLDER.findall(fragment)}
 
 
-_PLACEHOLDER = re.compile(r"\{\{\s*([a-z_][a-z0-9_]*)\s*\}\}")
-_PLACEHOLDER_ONLY = re.compile(r"^\s*\{\{\s*[a-z_][a-z0-9_]*\s*\}\}\s*$")
+_PLACEHOLDER = re.compile(r"\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\}")
+_BUILTIN_PLACEHOLDER = re.compile(r"^(unique|long_\d+)$")
+_PLACEHOLDER_ONLY = re.compile(r"^\s*\{\{\s*[A-Za-z_][A-Za-z0-9_]*\s*\}\}\s*$")
 # Test types whose whole purpose is to send something the contract does not accept.
 _MAY_VIOLATE_SCHEMA = {"negative", "edge_case"}
 
