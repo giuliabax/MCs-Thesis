@@ -62,12 +62,31 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
         operations: list[OpenAPIOperation],
         budget: BudgetConfig,
         coverage: ProjectRequirementCoverage,
+        correction: str | None = None,
     ) -> tuple[list[TestStrategyItem], AgentOutput]:
+        """Plan the strategy. ``correction`` says what a previous plan got wrong.
+
+        A feedback iteration that re-issued this call unchanged would reproduce the plan
+        it is trying to repair, so the note is the only thing distinguishing the two.
+        """
+
+        self._correction = correction
         if self._batch_by_requirement:
             return self._run_batched(
                 requirements_analysis, api_analysis, operations, budget, coverage
             )
         return self._run_single_call(requirements_analysis, api_analysis, operations, budget)
+
+    def _with_correction(self, user_prompt: str) -> str:
+        """Append the feedback note, where it reads as the last instruction given."""
+
+        correction = getattr(self, "_correction", None)
+        if not correction:
+            return user_prompt
+        return user_prompt + (
+            "\n\nA previous plan for this project produced tests that could not succeed. "
+            "Correct it as described below:\n" + correction
+        )
 
     def _run_single_call(
         self,
@@ -85,7 +104,7 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
             "api_analysis": compact_api_analysis(api_analysis),
             "budget": budget.model_dump(mode="json"),
         }
-        user_prompt = (
+        user_prompt = self._with_correction(
             "Create the test strategy from this planning context. "
             "Return only a strict JSON array.\n\n"
             + json.dumps(payload, ensure_ascii=False)
@@ -191,7 +210,7 @@ class TestStrategyPlannerAgent(BaseAgent[list[TestStrategyItem]]):
                     "api_analysis": compact_api_analysis(batch_api),
                     "budget": batch_budget.model_dump(mode="json"),
                 }
-                user_prompt = (
+                user_prompt = self._with_correction(
                     f"Create test strategy items for batch {index}/{len(batches)} of this "
                     "project's requirements. Each batch is planned independently and merged "
                     "afterward, so do not worry about the diversity targets for the whole "

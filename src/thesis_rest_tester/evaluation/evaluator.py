@@ -30,9 +30,9 @@ from typing import Any
 from thesis_rest_tester.artifacts.writer import ArtifactWriter
 from thesis_rest_tester.domain.compact import body_field_spec, body_problems
 from thesis_rest_tester.domain.evaluation import (
+    Diagnosis,
     EvaluationReport,
     ProjectEvaluation,
-    TestDiagnosis,
 )
 from thesis_rest_tester.domain.execution import ExecutionReport, ProjectExecutionRecord
 from thesis_rest_tester.domain.models import TestStrategyItem
@@ -205,7 +205,7 @@ class Evaluator:
             regenerate_items=sorted(dict.fromkeys(regenerate)),
         )
 
-    def _diagnose(self, case: dict[str, Any], evidence: ProjectEvidence) -> TestDiagnosis:
+    def _diagnose(self, case: dict[str, Any], evidence: ProjectEvidence) -> Diagnosis:
         name = str(case.get("test_name", ""))
         message = str(case.get("message") or "")
         phase = str(case.get("failure_phase") or "unknown")
@@ -248,7 +248,7 @@ class Evaluator:
             if diagnosis is not None:
                 return diagnosis
 
-        return TestDiagnosis(
+        return Diagnosis(
             test_name=name,
             requirement_id=case.get("requirement_id"),
             cause="unknown",
@@ -276,7 +276,7 @@ class _RuleContext:
         return str(value) if value else (self.item.requirement_id if self.item else None)
 
     def diagnose(self, cause: str, rule: str, evidence: list[str], suggestion: str):
-        return TestDiagnosis(
+        return Diagnosis(
             test_name=self.test_name,
             requirement_id=self.requirement_id,
             cause=cause,  # type: ignore[arg-type]
@@ -286,7 +286,7 @@ class _RuleContext:
         )
 
 
-def _rule_environment(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_environment(context: _RuleContext) -> Diagnosis | None:
     """Something the service depends on is not present on this machine.
 
     First, and deliberately so. team13's signup answered `400 "Failed to send verification
@@ -314,7 +314,7 @@ def _rule_environment(context: _RuleContext) -> TestDiagnosis | None:
     return None
 
 
-def _rule_environment_rate_limited(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_environment_rate_limited(context: _RuleContext) -> Diagnosis | None:
     """The service throttled the suite.
 
     A property of running dozens of tests back to back against one instance, not of any
@@ -332,7 +332,7 @@ def _rule_environment_rate_limited(context: _RuleContext) -> TestDiagnosis | Non
     )
 
 
-def _rule_generation_login_without_account(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_generation_login_without_account(context: _RuleContext) -> Diagnosis | None:
     """The test tried to authenticate as a user it never created.
 
     The commonest failure of all once setup failures stopped being misfiled. Every project
@@ -359,7 +359,7 @@ def _rule_generation_login_without_account(context: _RuleContext) -> TestDiagnos
     )
 
 
-def _rule_sut_accepted_invalid_request(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_sut_accepted_invalid_request(context: _RuleContext) -> Diagnosis | None:
     """A negative test expected a rejection and the service accepted the request.
 
     This is a finding rather than a fault: the test did exactly what it was written to do,
@@ -380,7 +380,7 @@ def _rule_sut_accepted_invalid_request(context: _RuleContext) -> TestDiagnosis |
     )
 
 
-def _rule_generation_asserted_absent_field(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_generation_asserted_absent_field(context: _RuleContext) -> Diagnosis | None:
     """The request succeeded, and the assertion named a field the response does not carry.
 
     Recognisable because the comparison resolved to None: `assert None == 'Test Citizen'`
@@ -403,7 +403,7 @@ def _rule_generation_asserted_absent_field(context: _RuleContext) -> TestDiagnos
     )
 
 
-def _rule_planning_contradicted_codes(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_planning_contradicted_codes(context: _RuleContext) -> Diagnosis | None:
     """The strategy expected a status the contract never documents for that operation.
 
     The written test is faithful to its instruction, so rewriting it reproduces the same
@@ -433,7 +433,7 @@ def _rule_planning_contradicted_codes(context: _RuleContext) -> TestDiagnosis | 
     return None
 
 
-def _rule_generation_missing_auth(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_generation_missing_auth(context: _RuleContext) -> Diagnosis | None:
     """Rejected for want of credentials the test never obtained.
 
     Only when the test is not *about* being unauthorised: a negative test that omits the
@@ -455,7 +455,7 @@ def _rule_generation_missing_auth(context: _RuleContext) -> TestDiagnosis | None
     )
 
 
-def _rule_generation_wrong_operation(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_generation_wrong_operation(context: _RuleContext) -> Diagnosis | None:
     """The test called a documented operation, but not the one it was asked to test.
 
     team16 is the case this rule exists for. Its contract says `POST /auth/users` *Logs
@@ -494,7 +494,7 @@ def _rule_generation_wrong_operation(context: _RuleContext) -> TestDiagnosis | N
     )
 
 
-def _rule_generation_assumed_data(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_generation_assumed_data(context: _RuleContext) -> Diagnosis | None:
     """It asserted a collection was populated without ever populating it.
 
     Every project starts from an empty database by design, so a test that reads a list it
@@ -514,7 +514,7 @@ def _rule_generation_assumed_data(context: _RuleContext) -> TestDiagnosis | None
     )
 
 
-def _rule_contract_mismatch(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_contract_mismatch(context: _RuleContext) -> Diagnosis | None:
     """The body satisfied the contract and the service rejected it anyway.
 
     This must be decided before blaming the generator, and the two are indistinguishable
@@ -548,7 +548,7 @@ def _rule_contract_mismatch(context: _RuleContext) -> TestDiagnosis | None:
     )
 
 
-def _rule_generation_rejected_request(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_generation_rejected_request(context: _RuleContext) -> Diagnosis | None:
     """The service rejected a request that did not, in fact, satisfy the contract."""
 
     if not _rejected_as_malformed(context):
@@ -595,7 +595,7 @@ def _first_rejected_step(context: _RuleContext) -> tuple[dict[str, Any], dict[st
     return None
 
 
-def _rule_planning_endpoint_absent(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_planning_endpoint_absent(context: _RuleContext) -> Diagnosis | None:
     """The planned operation answered 404 on a path carrying no identifier.
 
     A 404 on `/reports/{id}` says the resource is missing, which is a test's own doing. A
@@ -618,7 +618,7 @@ def _rule_planning_endpoint_absent(context: _RuleContext) -> TestDiagnosis | Non
     )
 
 
-def _rule_sut_defect(context: _RuleContext) -> TestDiagnosis | None:
+def _rule_sut_defect(context: _RuleContext) -> Diagnosis | None:
     """A 5xx that nothing else explains: the finding the pipeline exists to produce."""
 
     server_error = [code for code in context.statuses if 500 <= code < 600]

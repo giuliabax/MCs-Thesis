@@ -60,17 +60,31 @@ class TestWriterAgent(BaseAgent[ExecutableTestCase]):
         operations: list[OpenAPIOperation],
         *,
         artifact_stem: str,
+        correction: str | None = None,
     ) -> tuple[ExecutableTestCase, AgentOutput]:
+        """Write one test, optionally told what the previous attempt got wrong.
+
+        Without the correction a second iteration is an expensive way to obtain the first
+        one again: the same prompt at the same temperature reproduces the same output. It
+        is placed after the payload so that it reads as the last instruction given.
+        """
+
         self._raw_artifact_name = f"{artifact_stem}.raw.txt"
         payload = {
             "strategy_item": item.model_dump(mode="json"),
             "available_operations": compact_operations_for_writing(operations),
         }
-        case, output = self.call_and_validate(
+        instruction = (
             "Write one executable test for this strategy item, using only the operations "
             "listed. Return only a strict JSON object.\n\n"
             + json.dumps(payload, ensure_ascii=False)
         )
+        if correction:
+            instruction += (
+                "\n\nA previous attempt at this test failed. Correct it as described "
+                "below, and change nothing else about the approach:\n" + correction
+            )
+        case, output = self.call_and_validate(instruction)
         case = self._reconcile(case, item, operations)
         return case, output.model_copy(update={"parsed_json": case.model_dump(mode="json")})
 

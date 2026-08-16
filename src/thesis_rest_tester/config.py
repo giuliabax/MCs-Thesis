@@ -25,7 +25,10 @@ _PLANNING_AGENTS = (
 )
 # Agents of the generation stage, configured through the same per-agent settings.
 _GENERATION_AGENTS = ("test_writer",)
-_CONFIGURABLE_AGENTS = (*_PLANNING_AGENTS, *_GENERATION_AGENTS)
+# The evaluation stage's only agent. Metric collection and failure classification are
+# deterministic; the model is used solely to turn a diagnosis into an instruction.
+_EVALUATION_AGENTS = ("feedback_manager",)
+_CONFIGURABLE_AGENTS = (*_PLANNING_AGENTS, *_GENERATION_AGENTS, *_EVALUATION_AGENTS)
 
 
 class StrictConfigModel(BaseModel):

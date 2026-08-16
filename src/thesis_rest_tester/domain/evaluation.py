@@ -57,7 +57,7 @@ DiagnosisCause = Literal[
 ACTIONABLE_CAUSES: frozenset[str] = frozenset({"generation", "planning"})
 
 
-class TestDiagnosis(DomainModel):
+class Diagnosis(DomainModel):
     """Why one test failed, and what would have to change for it to pass."""
 
     test_name: str
@@ -77,7 +77,7 @@ class ProjectEvaluation(DomainModel):
 
     project_name: str
     metrics: MetricSnapshot
-    diagnoses: list[TestDiagnosis] = Field(default_factory=list)
+    diagnoses: list[Diagnosis] = Field(default_factory=list)
     # Requirement ids whose strategy items must be planned again before any test for them
     # can succeed.
     replan_requirements: list[str] = Field(default_factory=list)

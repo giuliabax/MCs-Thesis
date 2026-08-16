@@ -40,6 +40,10 @@ class MockLLMClient(LLMClient):
     def __init__(self, responses: Iterable[str], model: str = "mock-llm") -> None:
         self._responses = deque(responses)
         self._model = model
+        # Every user prompt received, in order. Kept so a test can assert on what was
+        # actually asked -- the feedback loop's whole premise is that the second attempt
+        # is prompted differently from the first, and nothing else can verify that.
+        self.prompts: list[str] = []
 
     def generate(
         self,
@@ -49,7 +53,8 @@ class MockLLMClient(LLMClient):
         max_tokens: int | None = None,
         think: bool = True,
     ) -> LLMResponse:
-        del system_prompt, user_prompt, temperature, max_tokens, think
+        del system_prompt, temperature, max_tokens, think
+        self.prompts.append(user_prompt)
         if not self._responses:
             raise RuntimeError("MockLLMClient has no responses remaining")
         return LLMResponse(

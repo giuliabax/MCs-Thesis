@@ -17,6 +17,7 @@ from thesis_rest_tester.domain.models import (
     TestStrategyItem,
     WorkflowPlan,
 )
+from thesis_rest_tester.evaluation.evaluator import strategy_item_key
 from thesis_rest_tester.generation.renderer import render_conftest, render_suite
 from thesis_rest_tester.llm import LMStudioLLMClient, MockLLMClient
 from thesis_rest_tester.llm.base import LLMClient
@@ -62,10 +63,22 @@ class SuiteGenerator:
         config: AppConfig,
         *,
         prompt_root: str | Path | None = None,
+        regenerate: dict[str, list[str]] | None = None,
+        corrections: dict[str, dict[str, str]] | None = None,
     ) -> None:
         self._run_dir = Path(run_dir)
         self._llm_client = llm_client
         self._config = config
+        # Per project, the strategy items to write again; every other test in that
+        # project's suite is carried over from the previous iteration untouched.
+        #
+        # Rewriting a whole suite to repair three tests would be worse than wasteful: it
+        # would churn the tests that already worked, so any change in the totals could be
+        # attributed to the reshuffle as easily as to the feedback, and the comparison
+        # between iterations -- the thing the loop exists to produce -- would say nothing.
+        self._regenerate = regenerate or {}
+        # Per project, per item, the note the Feedback Manager wrote for it.
+        self._corrections = corrections or {}
         repository_root = Path(__file__).resolve().parents[3]
         self._prompt_root = (
             Path(prompt_root) if prompt_root is not None else repository_root / "prompts"
@@ -104,16 +117,47 @@ class SuiteGenerator:
             think="test_writer" in self._config.llm.reasoning_agents,
         )
 
+        wanted = set(self._regenerate.get(plan.project_name, []))
+        notes = self._corrections.get(plan.project_name, {})
+        previous = _previous_cases(suite_dir) if wanted else {}
+        if wanted:
+            _logger.info(
+                "Regenerating %d of %d test(s) for %s; the rest are carried over",
+                len(wanted),
+                len(plan.strategy_items),
+                plan.project_name,
+            )
+        else:
+            _logger.info(
+                "Generating %d test(s) for %s", len(plan.strategy_items), plan.project_name
+            )
+
         cases: list[ExecutableTestCase] = []
         skipped: list[tuple[str, str]] = []
+        item_keys: dict[str, str] = {}
         used_names: set[str] = set()
-        _logger.info(
-            "Generating %d test(s) for %s", len(plan.strategy_items), plan.project_name
-        )
+
         for index, item in enumerate(plan.strategy_items, start=1):
+            key = strategy_item_key(
+                item.requirement_id, item.http_method, item.api_endpoint, item.test_type
+            )
+            # A targeted iteration touches only the items it was asked about. Anything
+            # else keeps the test it already had -- or keeps having none, if it was
+            # skipped before, since re-attempting it would be a change nobody asked for.
+            if wanted and key not in wanted:
+                carried = previous.get(key)
+                if carried is not None:
+                    carried = _deduplicate_name(carried, used_names)
+                    used_names.add(carried.name)
+                    item_keys[carried.name] = key
+                    cases.append(carried)
+                continue
+
             stem = f"item{index:02d}_{item.requirement_id}"
             try:
-                case, _ = agent.run(item, operations, artifact_stem=stem)
+                case, _ = agent.run(
+                    item, operations, artifact_stem=stem, correction=notes.get(key)
+                )
             except Exception as exc:  # noqa: BLE001 - one item must not fail the project
                 reason = f"{type(exc).__name__}: {exc}"
                 _logger.warning(
@@ -128,9 +172,10 @@ class SuiteGenerator:
                 continue
             case = _deduplicate_name(case, used_names)
             used_names.add(case.name)
+            item_keys[case.name] = key
             cases.append(case)
 
-        _write_suite(suite_dir, plan, cases, skipped, self._config)
+        _write_suite(suite_dir, plan, cases, skipped, self._config, item_keys)
         return ProjectSuite(plan.project_name, suite_dir, cases, skipped)
 
 
@@ -262,7 +307,16 @@ def _write_suite(
     cases: list[ExecutableTestCase],
     skipped: list[tuple[str, str]],
     config: AppConfig,
+    item_keys: dict[str, str] | None = None,
 ) -> None:
+    """Write the suite and the report that records how it was produced.
+
+    ``item_keys`` maps a test's name to the strategy item that produced it, and exists so
+    that a later iteration can regenerate named tests and leave the rest untouched. The
+    join cannot be reconstructed afterwards: a case records its requirement and test type
+    but not its endpoint, and two items may share that pair.
+    """
+
     writer = ArtifactWriter(suite_dir)
     base_url = plan.sut_base_url or "http://localhost:8080"
     writer.write_text(
@@ -285,6 +339,43 @@ def _write_suite(
             "tests_generated": len(cases),
             "tests_skipped": len(skipped),
             "skipped": [{"item": item, "reason": reason} for item, reason in skipped],
-            "cases": [case.model_dump(mode="json") for case in cases],
+            "cases": [
+                {
+                    **case.model_dump(mode="json"),
+                    "strategy_item": (item_keys or {}).get(case.name),
+                }
+                for case in cases
+            ],
         },
     )
+
+
+def _previous_cases(suite_dir: Path) -> dict[str, ExecutableTestCase]:
+    """The tests an earlier iteration produced, keyed by the strategy item behind each.
+
+    Only cases whose report records a `strategy_item` can be carried over. A suite written
+    before that key existed has none, and such a case is dropped rather than guessed at:
+    matching on requirement and test type alone would silently pair a repaired item with
+    a stale test, which is worse than regenerating it.
+    """
+
+    report = suite_dir / "generation_report.json"
+    if not report.is_file():
+        return {}
+    try:
+        data = json.loads(report.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        _logger.warning("Could not read %s; regenerating this project in full", report)
+        return {}
+
+    carried: dict[str, ExecutableTestCase] = {}
+    for entry in data.get("cases", []):
+        key = entry.get("strategy_item") if isinstance(entry, dict) else None
+        if not key:
+            continue
+        payload = {name: value for name, value in entry.items() if name != "strategy_item"}
+        try:
+            carried[str(key)] = ExecutableTestCase.model_validate(payload)
+        except ValueError:
+            _logger.debug("A previously generated case in %s no longer validates", report)
+    return carried

@@ -89,7 +89,27 @@ class Replanner:
             Path(prompt_root) if prompt_root is not None else repository_root / "prompts"
         )
 
-    def run(self, *, only: list[str] | None = None, output_run: Path | None = None) -> ReplanResult:
+    def run(
+        self,
+        *,
+        only: list[str] | None = None,
+        output_run: Path | None = None,
+        requirements: dict[str, list[str]] | None = None,
+        planning_notes: dict[str, str] | None = None,
+    ) -> ReplanResult:
+        """Plan the strategy again, for whole projects or for named requirements.
+
+        ``requirements`` narrows the work per project: only the strategy items belonging
+        to those requirement ids are planned again, and the rest of the project's strategy
+        is kept as it was. This is what a feedback iteration needs -- replanning a whole
+        project to repair two requirements would churn the items that were working, and
+        any change in the totals could then be attributed to the churn as easily as to the
+        feedback.
+
+        ``output_run`` may be the source run itself, which is how the loop advances a run
+        in place rather than accumulating a directory per iteration.
+        """
+
         source_projects = self._source / "projects"
         if not source_projects.is_dir():
             raise FileNotFoundError(f"No projects directory inside {self._source}")
@@ -97,9 +117,11 @@ class Replanner:
         stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         destination = output_run or self._source.parent / f"{stamp}-replanned"
         writer = ArtifactWriter(destination)
-        self._carry_run_artifacts(destination)
+        in_place = destination.resolve() == self._source.resolve()
+        if not in_place:
+            self._carry_run_artifacts(destination)
 
-        requirements = RequirementsAnalysis.model_validate_json(
+        requirements_analysis = RequirementsAnalysis.model_validate_json(
             (self._source / "requirements_analysis.json").read_text(encoding="utf-8")
         )
         client = self._injected_client or self._build_client()
@@ -118,10 +140,13 @@ class Replanner:
                 self._replan_project(
                     project_dir,
                     destination / "projects" / project_dir.name,
-                    requirements,
+                    requirements_analysis,
                     client,
                     base_urls.get(project_dir.name),
                     destination.name,
+                    only_requirements=(requirements or {}).get(project_dir.name),
+                    correction=(planning_notes or {}).get(project_dir.name),
+                    in_place=in_place,
                 )
             )
 
@@ -158,13 +183,18 @@ class Replanner:
         client: LLMClient,
         sut_base_url: str | None,
         run_id: str,
+        *,
+        only_requirements: list[str] | None = None,
+        correction: str | None = None,
+        in_place: bool = False,
     ) -> ReplannedProject:
         name = source_dir.name
         writer = ArtifactWriter(destination_dir)
-        for artifact in _CARRIED_ARTIFACTS:
-            source_file = source_dir / artifact
-            if source_file.is_file():
-                shutil.copyfile(source_file, destination_dir / artifact)
+        if not in_place:
+            for artifact in _CARRIED_ARTIFACTS:
+                source_file = source_dir / artifact
+                if source_file.is_file():
+                    shutil.copyfile(source_file, destination_dir / artifact)
 
         previous = json.loads((source_dir / "test_strategy.json").read_text(encoding="utf-8"))
         api = APIAnalysis.model_validate_json(
@@ -182,6 +212,34 @@ class Replanner:
         scoped_requirements, scoped_api, scoped_operations = Orchestrator._project_scope(
             requirements, api, operations, coverage
         )
+
+        # A targeted replan narrows the planner to the requirements that failed, and keeps
+        # every other strategy item exactly as it was. Replanning the whole project would
+        # churn items that were working, and any change in the totals could then be read
+        # as the churn rather than as the repair.
+        kept: list[TestStrategyItem] = []
+        if only_requirements:
+            wanted = set(only_requirements)
+            scoped_requirements = scoped_requirements.model_copy(
+                update={
+                    "requirements": [
+                        requirement
+                        for requirement in scoped_requirements.requirements
+                        if requirement.id in wanted
+                    ]
+                }
+            )
+            kept = [
+                TestStrategyItem.model_validate(entry)
+                for entry in previous
+                if entry.get("requirement_id") not in wanted
+            ]
+            _logger.info(
+                "%s: replanning %d requirement(s), keeping %d existing item(s)",
+                name,
+                len(scoped_requirements.requirements),
+                len(kept),
+            )
 
         items: list[TestStrategyItem] = []
         error: str | None = None
@@ -202,10 +260,15 @@ class Replanner:
                     scoped_operations,
                     self._config.budget,
                     coverage,
+                    correction=correction,
                 )
             except Exception as exc:  # noqa: BLE001 - one project must not fail the batch
                 error = f"{type(exc).__name__}: {exc}"
                 _logger.warning("%s could not be re-planned: %s", name, error)
+
+        # The repaired items join the ones that were left alone. On a whole-project
+        # replan `kept` is empty and this is simply the new strategy.
+        items = [*kept, *items]
 
         writer.write_json(
             "test_strategy.json", [item.model_dump(mode="json") for item in items]

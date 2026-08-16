@@ -9,6 +9,7 @@ from thesis_rest_tester.domain.models import MetricSnapshot
 from thesis_rest_tester.evaluation.coverage import evaluate_requirement_coverage
 from thesis_rest_tester.evaluation.evaluator import evaluate_run
 from thesis_rest_tester.execution.executor import execute_suites
+from thesis_rest_tester.feedback_loop import run_feedback_loop
 from thesis_rest_tester.generation.generator import generate_suites
 from thesis_rest_tester.logging_utils import configure_logging
 from thesis_rest_tester.orchestrator import Orchestrator
@@ -115,6 +116,23 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate_run_parser.add_argument(
         "--project", action="append", default=None, help="Limit to this project; repeatable"
     )
+    loop_parser = subparsers.add_parser(
+        "loop",
+        help="Repair, re-execute and re-evaluate until the suites stop improving",
+    )
+    loop_parser.add_argument("--run-dir", required=True, help="An executed and evaluated run")
+    loop_parser.add_argument("--config", required=True, help="Path to a YAML configuration")
+    loop_parser.add_argument(
+        "--max-iterations",
+        type=int,
+        default=3,
+        help="Including the baseline already on disk (default: 3)",
+    )
+    loop_parser.add_argument(
+        "--no-docker",
+        action="store_true",
+        help="Assume the services are already running; do not start or stop containers",
+    )
     evaluate_parser = subparsers.add_parser(
         "evaluate-coverage",
         help="Compare inferred requirement coverage with a manual ground-truth file",
@@ -205,6 +223,28 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(f"  regenerate: {len(project.regenerate_items)} item(s)")
         actionable = report.actionable_projects
         print(f"\nactionable projects: {len(actionable)}")
+        return 0
+    if args.command == "loop":
+        result = run_feedback_loop(
+            args.run_dir,
+            args.config,
+            max_iterations=args.max_iterations,
+            use_docker=not args.no_docker,
+        )
+        for outcome in result.iterations:
+            rate = outcome.mean_pass_rate
+            print(
+                f"iteration {outcome.iteration}: "
+                f"mean pass rate {'-' if rate is None else f'{rate:.3f}'}"
+                + (f", replanned {len(outcome.replanned)}" if outcome.replanned else "")
+                + (
+                    f", regenerated {sum(outcome.regenerated.values())} test(s)"
+                    if outcome.regenerated
+                    else ""
+                )
+            )
+        print(f"stopped: {result.stopped_because}")
+        print(f"output_folder: {result.run_dir}")
         return 0
     if args.command == "evaluate-coverage":
         report = evaluate_requirement_coverage(args.run_dir, args.ground_truth)
