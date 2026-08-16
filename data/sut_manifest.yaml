@@ -5,12 +5,21 @@
 # time: entries start as `unverified` and become `runnable` only once the project has
 # actually answered its readiness probe and passed the base-URL plausibility check.
 #
-# base_url is an ORIGIN PLUS A PATH PREFIX. The prefix is not recoverable from any
-# artifact -- the OpenAPI loader never read `servers`, and the reconstructed contracts do
-# not carry it -- yet both projects verified so far mount their routes under one. Getting
-# it wrong makes every request 404 and looks like a broken service rather than a broken
-# harness. Always 127.0.0.1, never localhost: Windows resolves localhost to ::1 first
-# while Docker publishes on IPv4.
+# base_url is an ORIGIN PLUS A PATH PREFIX, and the rule for whether to include the
+# prefix is not the obvious one: it belongs here only when the project's swagger does not
+# already spell it into its own paths. team09 and team10 write theirs out, so their base
+# URL is the bare origin; team01, team05 and team12 do not, so theirs carries it. team07
+# has no prefix at all and mixes shapes, with `/users/temporary` next to
+# `/api/user/profile` as literal routes. Getting this wrong 404s every request and looks
+# like a broken service rather than a broken harness.
+#
+# Always 127.0.0.1, never localhost: Windows resolves localhost to ::1 first while Docker
+# publishes on IPv4.
+#
+# The default readiness probe hits `/` and refuses an HTML answer, so that a web client
+# served from the same origin cannot be mistaken for a working API. That refusal is right
+# but it is not rare: team04, team09 and team16 all serve a client alongside their API and
+# each had to be given a documented operation to probe instead.
 #
 # provenance mirrors the spec-provenance column of docs/run-results-2026-07-21.md section
 # 4. It must say honestly which projects ran as their teams delivered them and which we
@@ -94,12 +103,13 @@ projects:
       accept_status: [200]
     reset_paths: []
 
-  # --- not yet established -----------------------------------------------------------
-  # Each of these needs its route prefix read from the source and, where noted, files we
-  # must supply. See docs and the plan for what is expected per project.
+  # --- the rest of the corpus ----------------------------------------------------------
+  # Thirteen of the eighteen start and answer their probe. The five that do not are
+  # recorded below with a specific blocker each; docs/execution-results-loop1.md reports
+  # what every project produced.
 
   participium-team01:
-    status: unverified
+    status: runnable
     provenance: compose_extended
     provenance_notes: >
       We added data/compose_overlays/team01.api.yml, which defines the API service the
@@ -178,7 +188,7 @@ projects:
     reset_paths: []
 
   participium-team05:
-    status: unverified
+    status: runnable
     provenance: compose_extended
     provenance_notes: >
       Two things had to be supplied. Docker/prod.env, because none of its ${DB_*} carries
@@ -238,7 +248,7 @@ projects:
     reset_paths: []
 
   participium-team17:
-    status: unverified
+    status: runnable
     provenance: env_supplied
     provenance_notes: >
       We supplied Back-end/.env and Front-end/.env. The frontend is never exercised by the
@@ -266,7 +276,7 @@ projects:
     reset_paths: []
 
   participium-team04:
-    status: unverified
+    status: runnable
     provenance: env_supplied
     provenance_notes: >
       We supplied .env, declared by all four services including both database containers,
@@ -295,7 +305,7 @@ projects:
     reset_paths: []
 
   participium-team02:
-    status: unverified
+    status: runnable
     provenance: env_supplied
     provenance_notes: >
       We supplied .env. The service already receives NODE_ENV, PORT and DB_PATH from
@@ -316,7 +326,7 @@ projects:
     reset_paths: []
 
   participium-team07:
-    status: unverified
+    status: runnable
     provenance: original
     root: projects/participium-team07
     compose:
@@ -332,7 +342,7 @@ projects:
     reset_paths: []
 
   participium-team10:
-    status: unverified
+    status: runnable
     provenance: original
     root: projects/participium-team10
     compose:
@@ -358,7 +368,7 @@ projects:
       execution sample proves too small without it.
 
   participium-team09:
-    status: unverified
+    status: runnable
     provenance: compose_extended
     provenance_notes: >
       Started from the team's own docker-compose-hub.yml rather than docker-compose.yml,
@@ -389,7 +399,7 @@ projects:
     reset_paths: []
 
   participium-team14:
-    status: unverified
+    status: runnable
     provenance: env_supplied
     provenance_notes: >
       We supplied an interpolation env file, not a service env file: ${DB_PORT} and
@@ -434,7 +444,7 @@ projects:
     reset_paths: []
 
   participium-team15:
-    status: unverified
+    status: runnable
     provenance: env_supplied
     provenance_notes: >
       We supplied an interpolation env file. docker-compose.yaml substitutes
@@ -457,7 +467,7 @@ projects:
     reset_paths: []
 
   participium-team18:
-    status: unverified
+    status: runnable
     provenance: compose_extended
     provenance_notes: >
       We added data/compose_overlays/team18.api.yml, which defines the API service the
