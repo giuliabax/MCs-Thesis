@@ -11,6 +11,7 @@ from pydantic import TypeAdapter, ValidationError
 from thesis_rest_tester.artifacts.writer import ArtifactWriter
 from thesis_rest_tester.domain.models import AgentOutput
 from thesis_rest_tester.llm.base import LLMClient
+from thesis_rest_tester.llm.usage import recording_stage
 
 
 class AgentResponseError(RuntimeError):
@@ -57,13 +58,18 @@ class BaseAgent[T]:
         last_error: json.JSONDecodeError | ValidationError | None = None
 
         for attempt in range(max_validation_retries + 1):
-            response = self._llm_client.generate(
-                system_prompt=self._system_prompt,
-                user_prompt=current_prompt,
-                temperature=self._temperature,
-                max_tokens=self._max_tokens,
-                think=self._think,
-            )
+            # Announce which stage is spending, so that a recording client can attribute
+            # the call. Wrapping the call rather than the method covers the retries an
+            # agent makes internally -- an escalated budget, a schema repair -- which a
+            # count kept by the caller would miss and which a cost figure must include.
+            with recording_stage(self.name):
+                response = self._llm_client.generate(
+                    system_prompt=self._system_prompt,
+                    user_prompt=current_prompt,
+                    temperature=self._temperature,
+                    max_tokens=self._max_tokens,
+                    think=self._think,
+                )
             self._artifact_writer.write_text(self._raw_artifact_name, response.text)
 
             try:

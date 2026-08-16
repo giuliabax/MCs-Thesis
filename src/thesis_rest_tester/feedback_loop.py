@@ -33,6 +33,7 @@ from thesis_rest_tester.execution.executor import execute_suites
 from thesis_rest_tester.generation.generator import SuiteGenerator
 from thesis_rest_tester.llm import LMStudioLLMClient
 from thesis_rest_tester.llm.base import LLMClient
+from thesis_rest_tester.llm.usage import UsageRecorder
 from thesis_rest_tester.replanner import Replanner
 
 _logger = logging.getLogger(__name__)
@@ -307,11 +308,14 @@ def run_feedback_loop(
         default_max_tokens=config.llm.max_tokens,
         timeout=config.llm.timeout_seconds,
     )
+    recorder = UsageRecorder(client)
     loop = FeedbackLoop(
         run_dir,
         config,
-        client,
+        recorder,
         max_iterations=max_iterations,
         use_docker=use_docker,
     )
-    return loop.run()
+    result = loop.run()
+    ArtifactWriter(Path(run_dir)).write_json("usage.feedback_loop.json", recorder.report())
+    return result

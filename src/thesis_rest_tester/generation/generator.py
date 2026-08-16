@@ -21,6 +21,7 @@ from thesis_rest_tester.evaluation.evaluator import strategy_item_key
 from thesis_rest_tester.generation.renderer import render_conftest, render_suite
 from thesis_rest_tester.llm import LMStudioLLMClient, MockLLMClient
 from thesis_rest_tester.llm.base import LLMClient
+from thesis_rest_tester.llm.usage import UsageRecorder
 
 _logger = logging.getLogger(__name__)
 
@@ -191,7 +192,12 @@ def generate_suites(
 
     config = load_config(config_path)
     client = llm_client or _build_client(config, Path(run_dir), projects, dry_run=dry_run)
-    return SuiteGenerator(run_dir, client, config).run(only=projects)
+    recorder = UsageRecorder(client)
+    result = SuiteGenerator(run_dir, recorder, config).run(only=projects)
+    # Written per stage rather than per run: a later stage would otherwise overwrite it,
+    # and RQ3 asks what each part of the pipeline costs, not only the total.
+    ArtifactWriter(Path(run_dir)).write_json("usage.generation.json", recorder.report())
+    return result
 
 
 def _build_client(
