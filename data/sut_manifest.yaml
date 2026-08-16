@@ -67,12 +67,19 @@ projects:
 
   participium-team13:
     status: runnable
-    provenance: original
+    provenance: compose_extended
+    provenance_notes: >
+      We added data/compose_overlays/team13.mail.yml. The project itself runs as
+      delivered; what it cannot supply is a reachable mail server. Its compose points
+      Nodemailer at the team's own GMX mailbox, whose credentials no longer work, and the
+      application treats a failed send as a failed registration -- so signup answered
+      400 "Failed to send verification email" and took six tests out in setup. The
+      overlay adds a mail catcher and points SMTP_HOST at it.
     root: projects/participium-team13
     compose:
-      files: [docker-compose.yml]
+      files: [docker-compose.yml, ../../data/compose_overlays/team13.mail.yml]
       project_name: exec-team13
-      services: [db, minio, minio-init, server]
+      services: [db, minio, minio-init, mailhog, server]
     api:
       # server/src/config/constants.ts: API_PREFIX = "/api"; the swagger declares /session,
       # /citizen/signup with the prefix stripped.
@@ -93,35 +100,243 @@ projects:
 
   participium-team01:
     status: unverified
+    provenance: compose_extended
+    provenance_notes: >
+      We added data/compose_overlays/team01.api.yml, which defines the API service the
+      project's own compose file omits -- it declares postgres and nothing else. The
+      overlay builds the root Dockerfile the team already ships and runs the server alone
+      rather than its `npm start`, which would also launch the Vite dev client the suite
+      never touches. The DB_* it passes repeat what the team's compose gives postgres.
+    root: projects/participium-team01
+    compose:
+      files: [docker-compose.yaml, ../../data/compose_overlays/team01.api.yml]
+      project_name: exec-team01
+      services: [postgres, server]
+    api:
+      # server/index.mjs listens on 3001 and mounts every router under /api; the swagger
+      # declares /admin, /admin/companies/... without the prefix.
+      base_url: http://127.0.0.1:3001/api
+      service: server
+    # A bind mount, so `down -v` leaves it behind and run 2 would inherit run 1's data.
+    reset_paths: [db_data]
+
+  participium-team06:
+    status: unrunnable
+    blocker: external_dependency
     reason: >
-      Its compose file starts only postgres; the API has no service definition and will
-      need an overlay built from the root Dockerfile. Route prefix not yet read.
+      Its API cannot start without a Telegram bot token that Telegram itself accepts. The
+      bot runs inside the API process, and the grammy library validates the token at
+      startup by calling Telegram's getMe, so the container dies on
+      "GrammyError: Call to 'getMe' failed! (401: Unauthorized: invalid token specified)".
+      A placeholder cannot work here, unlike team12, which only checks that the variable
+      is defined: this one needs a live credential for a third-party service, which is the
+      same category as team08's Supabase. Everything else about the project is sound --
+      postgres starts, and its migrator ran to completion, seeding the schema.
+    provenance: env_supplied
+    provenance_notes: >
+      We supplied server/.env; the API never got past the bot's token check for it to
+      matter.
+    root: projects/participium-team06
+    compose:
+      # The only project whose compose file is named compose.yaml.
+      files: [compose.yaml]
+      project_name: exec-team06
+      services: [postgres, migrator, api]
+      materialize_env_files:
+        - source: data/sut_env/team06.server.env
+          target: server/.env
+    api:
+      base_url: http://127.0.0.1:3000
+      service: api
+    reset_paths: []
 
-  participium-team02:
-    status: unverified
-    reason: "Declares env_file .env, which does not exist. Route prefix not yet read."
-
-  participium-team03:
-    status: unverified
-    reason: "Declares env_file ../.env, which does not exist. Route prefix not yet read."
-
-  participium-team04:
-    status: unverified
+  participium-team11:
+    status: unrunnable
+    blocker: image_unavailable
     reason: >
-      Next.js app; declares env_file .env on three services, none present. Also the
-      structural outlier of the planning phase, with only 9 REST operations.
+      Its compose file pulls carmelogulino/participium, which the registry refuses --
+      "pull access denied ... repository does not exist or may require authorisation".
+      The image was never published, or was published privately and later removed. Unlike
+      team09, which hit a comparable problem, this project ships no Dockerfile anywhere,
+      so there is nothing to build in its place: every service is declared by image only.
+      What the repository contains cannot be turned into a running system.
+    provenance: env_supplied
+    provenance_notes: >
+      We supplied .env, declared by backend and telegram; no image ever existed to read
+      it.
+    root: projects/participium-team11
+    compose:
+      files: [docker-compose.yml]
+      project_name: exec-team11
+      services: [db, backend]
+      materialize_env_files:
+        - source: data/sut_env/team11.env
+          target: .env
+    api:
+      base_url: http://127.0.0.1:3000
+      service: backend
+    reset_paths: []
 
   participium-team05:
     status: unverified
-    reason: "Declares env_file ./prod.env, absent; ${DB_*} have no defaults."
+    provenance: compose_extended
+    provenance_notes: >
+      Two things had to be supplied. Docker/prod.env, because none of its ${DB_*} carries
+      a compose default and the same names are substituted into both the database and the
+      server. And data/compose_overlays/team05.secrets.yml, because
+      server/src/config/index.ts reads every setting from /run/secrets/<NAME> while the
+      compose file declares no `secrets:` section at all -- the container died on
+      "ENOENT: open '/run/secrets/APP_PORT'" before it could listen.
+    root: projects/participium-team05
+    compose:
+      files:
+        - Docker/docker-compose.prod.yaml
+        - ../../data/compose_overlays/team05.secrets.yml
+      project_name: exec-team05
+      services: [db, server]
+      materialize_env_files:
+        - source: data/sut_env/team05.prod.env
+          target: Docker/prod.env
+      # The same file also resolves the ${DB_*} inside the compose file itself.
+      interpolation_env_file: data/sut_env/team05.prod.env
+    api:
+      # server/src/config/index.ts:63 sets BASE_URL = "/api"; the swagger declares
+      # /categories and /reports without it.
+      base_url: http://127.0.0.1:3000/api
+      service: server
+    reset_paths: []
 
-  participium-team06:
+  participium-team03:
+    status: unrunnable
+    blocker: incomplete_repository
+    reason: >
+      Its build cannot run from the repository as delivered. docker/Dockerfile.db does
+      `RUN npm ci`, which fails without a lockfile, and no package-lock.json exists
+      anywhere in the project -- so `docker compose up` stops at
+      "process /bin/sh -c npm ci did not complete successfully: exit code 1".
+      This is not the withheld-credentials case: a lockfile is meant to be committed, and
+      the project's own Dockerfile depends on it. Generating one from package.json would
+      resolve versions the team never used, which changes what is being tested rather
+      than merely enabling it, so within the 30-minute budget this is recorded rather
+      than worked around. The .env we prepared for it is kept, so only the lockfile
+      stands between this entry and a runnable one.
+    provenance: env_supplied
+    provenance_notes: >
+      We supplied .env, which docker/docker-compose.yml declares as ../.env; the build
+      never got far enough for it to matter.
+    root: projects/participium-team03
+    compose:
+      files: [docker/docker-compose.yml]
+      project_name: exec-team03
+      services: [db, backend]
+      materialize_env_files:
+        - source: data/sut_env/team03.env
+          target: .env
+    api:
+      base_url: http://127.0.0.1:3001
+      service: backend
+    reset_paths: []
+
+  participium-team17:
     status: unverified
-    reason: "Declares env_file ./server/.env, which does not exist."
+    provenance: env_supplied
+    provenance_notes: >
+      We supplied Back-end/.env and Front-end/.env. The frontend is never exercised by the
+      suite, but compose refuses to start a service whose declared env_file is absent, so
+      both had to be written.
+    root: projects/participium-team17
+    compose:
+      files: [docker-compose.yml]
+      project_name: exec-team17
+      services: [backend]
+      materialize_env_files:
+        - source: data/sut_env/team17.backend.env
+          target: Back-end/.env
+        - source: data/sut_env/team17.frontend.env
+          target: Front-end/.env
+    api:
+      base_url: http://127.0.0.1:3000
+      service: backend
+    reset_paths: []
+
+  participium-team04:
+    status: unverified
+    provenance: env_supplied
+    provenance_notes: >
+      We supplied .env, declared by all four services including both database containers,
+      so it carries the POSTGRES_* the images need as well as the application's own
+      settings. Next.js rather than a plain API server.
+    root: projects/participium-team04
+    compose:
+      files: [docker-compose.yml]
+      project_name: exec-team04
+      services: [db, participium]
+      materialize_env_files:
+        - source: data/sut_env/team04.env
+          target: .env
+    api:
+      base_url: http://127.0.0.1:3000
+      service: participium
+    readiness:
+      # A Next.js application: `/` serves the rendered page, and the default probe
+      # rightly refuses to accept HTML as evidence that an API is up. A documented API
+      # route is the honest signal, and 401 counts -- being told to authenticate proves
+      # the route exists and is routing.
+      path: /api/messages
+      accept_status: [200, 401, 403, 404, 405]
+    reset_paths: []
+
+  participium-team02:
+    status: unverified
+    provenance: env_supplied
+    provenance_notes: >
+      We supplied .env. The service already receives NODE_ENV, PORT and DB_PATH from
+      compose, so the file exists chiefly because compose refuses to start without it.
+      Its code also reads SUPABASE_URL and SUPABASE_SERVICE_KEY; if those turn out to be
+      required at startup this is a second external_dependency case after team08.
+    root: projects/participium-team02
+    compose:
+      files: [docker-compose.yml]
+      project_name: exec-team02
+      services: [back-end]
+      materialize_env_files:
+        - source: data/sut_env/team02.env
+          target: .env
+    api:
+      base_url: http://127.0.0.1:3001
+      service: back-end
+    reset_paths: []
 
   participium-team07:
     status: unverified
-    reason: "No env_file declared; expected to run as delivered. Prefix not yet read."
+    provenance: original
+    root: projects/participium-team07
+    compose:
+      files: [docker-compose.yml]
+      project_name: exec-team07
+      services: [server]
+    api:
+      # No prefix at all. server/server.mjs registers absolute routes that differ in
+      # shape -- `/users/temporary` and `/api/user/profile` are both literal -- and the
+      # swagger reproduces each one exactly, so there is nothing to prepend.
+      base_url: http://127.0.0.1:3001
+      service: server
+    reset_paths: []
+
+  participium-team10:
+    status: unverified
+    provenance: original
+    root: projects/participium-team10
+    compose:
+      files: [docker-compose.yml]
+      project_name: exec-team10
+      services: [db, server]
+    api:
+      # server/src/app.ts mounts every router under /api, and the swagger already spells
+      # the prefix into its paths (/api/companies), so the base URL is the origin alone.
+      base_url: http://127.0.0.1:3001
+      service: server
+    reset_paths: []
 
   participium-team08:
     status: unrunnable
@@ -136,40 +351,106 @@ projects:
 
   participium-team09:
     status: unverified
-    reason: >
-      docker-compose.yml starts only redis; the runnable definition is in
-      docker-compose-hub.yml, which needs no overlay, only a second entry in files.
-
-  participium-team10:
-    status: unverified
-    reason: "No env_file declared; expected to run as delivered."
-
-  participium-team11:
-    status: unverified
-    reason: "Declares env_file .env on backend and telegram; neither exists."
-
-  participium-team12:
-    status: unverified
-    reason: >
-      NestJS with a global 'api' prefix (apps/api/src/main.ts). pull_policy is always, so
-      its images must still exist on Docker Hub.
+    provenance: compose_extended
+    provenance_notes: >
+      Started from the team's own docker-compose-hub.yml rather than docker-compose.yml,
+      since the latter defines only redis. Its published image then proved unusable --
+      "no matching manifest for linux/amd64/v3", so it was built for another platform --
+      and data/compose_overlays/team09.build.yml replaces it with a local build of the
+      Dockerfile the project itself ships. Same source, compiled here.
+    root: projects/participium-team09
+    compose:
+      files:
+        - docker-compose-hub.yml
+        - ../../data/compose_overlays/team09.build.yml
+      project_name: exec-team09
+      services: [redis, app]
+    api:
+      # server/index.mjs does `app.use(router)` with no prefix, and routers/index.js
+      # mounts /auth, /users, /admin/users directly -- which is exactly how the swagger
+      # spells them.
+      base_url: http://127.0.0.1:3000
+      service: app
+    reset_paths: []
 
   participium-team14:
     status: unverified
-    reason: >
-      ${DB_PORT} and ${BACKEND_PORT} appear inside ports: with no defaults, so compose
-      refuses to start; .env.example exists and can seed an interpolation env file.
+    provenance: env_supplied
+    provenance_notes: >
+      We supplied an interpolation env file, not a service env file: ${DB_PORT} and
+      ${BACKEND_PORT} appear inside `ports:`, so compose cannot parse the file at all
+      without them. The values are the project's own, copied from its committed
+      .env.example; only the two Resend keys are ours and they are deliberately unusable.
+    root: projects/participium-team14
+    compose:
+      files: [docker-compose.yml]
+      project_name: exec-team14
+      services: [db, redis, backend]
+      interpolation_env_file: data/sut_env/team14.ports.env
+    api:
+      # backend/src mounts /api/auth, /api/reports, /api/users; the swagger declares
+      # /auth/session and friends without the prefix.
+      base_url: http://127.0.0.1:4000/api
+      service: backend
+    reset_paths: []
+
+  participium-team12:
+    status: unverified
+    provenance: compose_extended
+    provenance_notes: >
+      We added data/compose_overlays/team12.telegram.yml, which supplies the single
+      variable its API refuses to boot without: TELEGRAM_BOT_TOKEN. Its compose file
+      defaults every other setting and this one alone has none, because a bot token is a
+      credential and correctly was not committed. A placeholder suffices here, since the
+      application only checks that the variable is defined.
+    root: projects/participium-team12
+    compose:
+      files:
+        - docker-compose.yml
+        - ../../data/compose_overlays/team12.telegram.yml
+      project_name: exec-team12
+      services: [postgres, minio, api]
+    api:
+      # apps/api/src/main.ts:51 calls setGlobalPrefix('api'); the swagger declares
+      # /auth/login and friends without it.
+      base_url: http://127.0.0.1:5000/api
+      service: api
+    reset_paths: []
 
   participium-team15:
     status: unverified
-    reason: "Uses a versioned prefix (Backend/src/config/config.ts). MySQL rather than Postgres."
-
-  participium-team17:
-    status: unverified
-    reason: "Declares env_file on both Back-end and Front-end; neither exists."
+    provenance: original
+    root: projects/participium-team15
+    compose:
+      # The only project whose compose file is named .yaml rather than .yml.
+      files: [docker-compose.yaml]
+      project_name: exec-team15
+      services: [mysql, backend]
+    api:
+      # Backend/src/config/config.ts:4 sets APP_V1_BASE_URL = "/api/v1"; the swagger
+      # declares /auth/login without it.
+      base_url: http://127.0.0.1:8080/api/v1
+      service: backend
+    reset_paths: []
 
   participium-team18:
     status: unverified
-    reason: >
-      Its compose file starts only minio; the API is the root Dockerfile, referenced by no
-      compose file, and will need an overlay.
+    provenance: compose_extended
+    provenance_notes: >
+      We added data/compose_overlays/team18.api.yml, which defines the API service the
+      project's own compose file omits -- it declares minio and nothing else. The
+      application is fully containerised, with a root Dockerfile and a start script; it is
+      simply referenced by no compose file. The overlay's values are the project's own
+      committed .env.example, with MINIO_ENDPOINT pointed at the service name instead of
+      localhost and the mail key left unusable.
+    root: projects/participium-team18
+    compose:
+      files: [docker-compose.yaml, ../../data/compose_overlays/team18.api.yml]
+      project_name: exec-team18
+      services: [minio, api]
+    api:
+      # src mounts /api/admin/roles, /api/admin/internal-users; the swagger declares them
+      # without the prefix.
+      base_url: http://127.0.0.1:3001/api
+      service: api
+    reset_paths: []

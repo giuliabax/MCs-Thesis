@@ -62,6 +62,7 @@ class SuiteExecutor:
         use_docker: bool = True,
         skip_completed: bool = False,
         reset_state: bool = False,
+        attempt_unverified: bool = False,
     ) -> None:
         self._run_dir = Path(run_dir)
         self._config = config
@@ -71,6 +72,11 @@ class SuiteExecutor:
         self._use_docker = use_docker
         self._skip_completed = skip_completed
         self._reset_state = reset_state
+        # `unverified` means "we wrote a recipe but the project has never answered its
+        # probe". Attempting one is how it earns promotion to `runnable`, so the campaign
+        # needs a way to try it without first asserting in the manifest something that is
+        # not yet true.
+        self._attempt_unverified = attempt_unverified
 
     def run(self, *, only: list[str] | None = None) -> ExecutionResult:
         projects_dir = self._run_dir / "projects"
@@ -126,7 +132,10 @@ class SuiteExecutor:
                 (artifact_dir / "report.json").read_text(encoding="utf-8")
             )
 
-        if entry.status != "runnable":
+        attemptable = entry.status == "runnable" or (
+            self._attempt_unverified and entry.status == "unverified" and entry.has_recipe
+        )
+        if not attemptable:
             return self._not_run(name, entry, generated, artifact_dir)
 
         assert entry.api is not None
@@ -330,6 +339,7 @@ def execute_suites(
     use_docker: bool = True,
     skip_completed: bool = False,
     reset_state: bool = False,
+    attempt_unverified: bool = False,
 ) -> ExecutionResult:
     """Entry point used by the CLI."""
 
@@ -346,6 +356,7 @@ def execute_suites(
         use_docker=use_docker,
         skip_completed=skip_completed,
         reset_state=reset_state,
+        attempt_unverified=attempt_unverified,
     )
     return executor.run(only=projects)
 

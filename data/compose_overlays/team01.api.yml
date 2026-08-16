@@ -1,0 +1,47 @@
+# participium-team01: the API service its compose file never defines.
+#
+# docker-compose.yaml declares postgres and nothing else, so the project as delivered
+# starts a database and no application. Everything needed to run the server is present
+# though -- a root Dockerfile that installs both workspaces, and server/package.json with
+# `start: node index.mjs` -- so this overlay defines the missing service rather than
+# inventing one.
+#
+# It deliberately does NOT use the root Dockerfile's own CMD: `npm start` runs the server
+# and the Vite dev client concurrently, and the client is never exercised by the suite
+# while it more than doubles the startup time. The command below runs the server alone,
+# from the image the project already builds.
+#
+# The database credentials repeat what docker-compose.yaml passes to postgres; the server
+# reads them from DB_* (server/services/*.mjs constructs its Pool from them) and the team
+# never wired the two together, because no service existed to wire.
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "index.mjs"]
+    working_dir: /app/server
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: admin
+      DB_PASSWORD: changeme
+      DB_NAME: participium
+      NODE_ENV: production
+      # server/index.mjs constructs a Supabase client at import time and the library
+      # throws "supabaseUrl is required" before the server ever listens, so without these
+      # the container exits immediately. The project is a hybrid: most of its services
+      # query the postgres above through a pg Pool, while file handling goes to Supabase.
+      # These values are syntactically valid and deliberately unreachable, which lets the
+      # application start and confines the failure to the endpoints that genuinely need
+      # the cloud service -- where the evaluator classifies it as an environment cause
+      # rather than a defect in a generated test.
+      SUPABASE_URL: https://unavailable.example.invalid
+      SUPABASE_KEY: unused
+      SUPABASE_ANON_KEY: unused
+      SUPABASE_SERVICE_KEY: unused
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres

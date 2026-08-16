@@ -1,0 +1,33 @@
+# participium-team13: a mail catcher, because signup will not complete without one.
+#
+# Its compose file points Nodemailer at a real mailbox the team owned:
+#
+#   SMTP_HOST: ${SMTP_HOST:-mail.gmx.com}
+#   SMTP_USER: ${SMTP_USER:-participium.turin@gmx.com}
+#
+# Those credentials no longer work, and the application treats a failed send as a failed
+# registration: POST /citizen/signup answers 400 "Failed to send verification email".
+# Nearly every test begins by registering a citizen, so a single unreachable mail server
+# took out six of its tests in setup -- failures that say nothing about the service's
+# behaviour or about the generated tests.
+#
+# MailHog accepts every message and delivers none, which is exactly what is wanted: the
+# registration path completes, and no mail leaves the machine. It is added rather than the
+# SMTP variables merely being pointed somewhere plausible, because a plausible-looking but
+# unreachable host reproduces the same failure.
+
+services:
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+
+  server:
+    environment:
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      SMTP_FROM_NAME: Participium
+      SMTP_FROM_ADDRESS: participium@example.invalid
+    depends_on:
+      - mailhog

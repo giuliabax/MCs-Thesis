@@ -28,6 +28,12 @@ Status = Literal["runnable", "unverified", "unrunnable"]
 Blocker = Literal[
     "no_http_service",
     "missing_env_file",
+    # The build needs a file the repository does not contain. Distinct from
+    # `missing_env_file`, and the distinction matters for fairness: withholding a `.env`
+    # full of credentials is good practice, while omitting a lockfile that the project's
+    # own Dockerfile requires (`npm ci` fails without one) leaves the delivered
+    # repository unable to build itself.
+    "incomplete_repository",
     "invalid_compose",
     "external_dependency",
     "image_unavailable",
@@ -130,6 +136,18 @@ class ProjectManifest(ManifestModel):
     # would not start from the same place. Deleting paths inside a student's repository
     # is destructive, so this is opt-in per project and gated by a flag.
     reset_paths: list[str] = Field(default_factory=list)
+
+    @property
+    def has_recipe(self) -> bool:
+        """Whether this entry says enough to attempt a start.
+
+        An `unverified` project may already carry a full recipe -- someone read its route
+        prefix and wrote the entry -- and simply not have been tried yet. That is the
+        state the bring-up campaign works through, and it is what the executor's
+        ``attempt_unverified`` mode acts on.
+        """
+
+        return self.root is not None and self.compose is not None and self.api is not None
 
     @model_validator(mode="after")
     def validate_project(self) -> ProjectManifest:

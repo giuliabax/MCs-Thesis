@@ -1,0 +1,17 @@
+# participium-team09: build the application instead of pulling the team's published image.
+#
+# docker-compose-hub.yml refers to shayanizadi23/participium:latest, which the daemon
+# refuses:
+#
+#   no matching manifest for linux/amd64/v3 in the manifest list entries
+#
+# The image exists but was published for a different platform, so it cannot run here. The
+# project ships the Dockerfile it was built from, which makes this the mildest of the
+# overlays: the same source, compiled locally, rather than a substitute for it.
+
+services:
+  app:
+    image: !reset null
+    build:
+      context: .
+      dockerfile: Dockerfile

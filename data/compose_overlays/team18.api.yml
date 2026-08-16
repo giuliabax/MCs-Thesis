@@ -1,0 +1,36 @@
+# participium-team18: the API service its compose file never defines.
+#
+# docker-compose.yaml declares minio and nothing else, so the project as delivered starts
+# object storage and no application. The application is fully containerised though -- a
+# root Dockerfile, and package.json with `start: node dist/server.js` -- it is simply
+# referenced by no compose file, so this overlay defines the missing service.
+#
+# The values come from the project's own committed .env.example, with two corrections
+# that are consequences of running under compose rather than on a developer's machine:
+# MINIO_ENDPOINT becomes the service name instead of localhost, and RESEND_API_KEY stays
+# unusable because no mail service exists here.
+#
+# This project needs no database service: it persists locally rather than through one.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      JWT_SECRET: dev-secret
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: "9000"
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: uploads
+      RESEND_API_KEY: unused
+      RESEND_FROM_EMAIL: participium@example.invalid
+      FRONTEND_URL: http://127.0.0.1:5173
+    ports:
+      - "3001:3001"
+    depends_on:
+      - minio
