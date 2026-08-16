@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 from collections.abc import Sequence
 
+from thesis_rest_tester.domain.models import MetricSnapshot
 from thesis_rest_tester.evaluation.coverage import evaluate_requirement_coverage
+from thesis_rest_tester.evaluation.evaluator import evaluate_run
 from thesis_rest_tester.execution.executor import execute_suites
 from thesis_rest_tester.generation.generator import generate_suites
 from thesis_rest_tester.logging_utils import configure_logging
@@ -89,6 +91,30 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Assume the service is already running; do not start or stop containers",
     )
+    execute_parser.add_argument(
+        "--attempt-unverified",
+        action="store_true",
+        help=(
+            "Also try projects the manifest marks unverified but for which it already "
+            "records a full recipe; this is how such a project earns promotion to runnable"
+        ),
+    )
+    evaluate_run_parser = subparsers.add_parser(
+        "evaluate",
+        help="Score an executed run and classify each failure by cause",
+    )
+    evaluate_run_parser.add_argument(
+        "--run-dir", required=True, help="Path to a run folder that has been executed"
+    )
+    evaluate_run_parser.add_argument(
+        "--iteration",
+        type=int,
+        default=1,
+        help="Which feedback iteration this execution belongs to (default: 1)",
+    )
+    evaluate_run_parser.add_argument(
+        "--project", action="append", default=None, help="Limit to this project; repeatable"
+    )
     evaluate_parser = subparsers.add_parser(
         "evaluate-coverage",
         help="Compare inferred requirement coverage with a manual ground-truth file",
@@ -149,6 +175,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             use_docker=not args.no_docker,
             skip_completed=args.skip_completed,
             reset_state=args.reset_state,
+            attempt_unverified=args.attempt_unverified,
         )
         for name, project in result.report.projects.items():
             counts = project.counts
@@ -161,6 +188,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         totals = result.totals
         print(f"total: {totals}")
         print(f"output_folder: {result.run_dir}")
+        return 0
+    if args.command == "evaluate":
+        report = evaluate_run(args.run_dir, iteration=args.iteration, projects=args.project)
+        for name, project in report.projects.items():
+            metrics = project.metrics
+            print(f"{name}: {_format_metrics(metrics)}")
+            if project.inconclusive_reason:
+                print(f"  inconclusive -- {project.inconclusive_reason}")
+                continue
+            for cause, count in sorted(project.cause_counts.items()):
+                print(f"  {cause}: {count}")
+            if project.replan_requirements:
+                print(f"  replan: {', '.join(project.replan_requirements)}")
+            if project.regenerate_items:
+                print(f"  regenerate: {len(project.regenerate_items)} item(s)")
+        actionable = report.actionable_projects
+        print(f"\nactionable projects: {len(actionable)}")
         return 0
     if args.command == "evaluate-coverage":
         report = evaluate_requirement_coverage(args.run_dir, args.ground_truth)
@@ -181,6 +225,20 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 def _format_metric(value: float | None) -> str:
     return "n/a" if value is None else f"{value:.3f}"
+
+
+def _format_metrics(metrics: MetricSnapshot) -> str:
+    """One line per project, with an absent metric shown as absent rather than as zero."""
+
+    def ratio(value: float | None) -> str:
+        return "-" if value is None else f"{value:.2f}"
+
+    return (
+        f"pass={ratio(metrics.pass_rate)} "
+        f"ops={ratio(metrics.operation_coverage)} "
+        f"codes={ratio(metrics.status_code_coverage)} "
+        f"5xx={metrics.server_errors_count or 0}"
+    )
 
 
 if __name__ == "__main__":
