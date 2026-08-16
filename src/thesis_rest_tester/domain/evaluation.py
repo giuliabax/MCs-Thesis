@@ -22,9 +22,18 @@ which stage runs again:
     Neither. Something the system under test depends on is absent here -- a mail server,
     object storage, a cloud database. No amount of replanning or regeneration fixes it,
     so it is excluded from the feedback loop and reported separately.
+``contract_mismatch``
+    The test sent exactly what the contract documents and the service rejected it. The
+    application and its own specification disagree, which is the most valuable thing a
+    contract-derived black-box tester can find and the easiest to misfile: it looks
+    identical to a badly written request. Observed on team05, whose contract declares
+    that login takes ``email`` and ``password`` while the service answers "Username and
+    password are required", and whose signup demands a field the contract never mentions.
+    Excluded from the loop, because neither replanning nor regeneration can reconcile a
+    document with an implementation.
 ``sut_defect``
-    The test is right and the service is wrong. This is the finding the whole pipeline
-    exists to produce, and it must never be fed back as something to repair.
+    The test is right and the service is broken -- a crash rather than a disagreement.
+    This is likewise a finding rather than something to repair.
 ``unknown``
     Unmatched by any rule. Reported as its own category rather than folded into the
     nearest bucket, because a silently misfiled diagnosis would send a healthy project
@@ -40,7 +49,9 @@ from pydantic import Field
 from thesis_rest_tester.domain.models import DomainModel, MetricSnapshot
 
 # Ordered from "we can fix this" to "we should not try to".
-DiagnosisCause = Literal["generation", "planning", "environment", "sut_defect", "unknown"]
+DiagnosisCause = Literal[
+    "generation", "planning", "environment", "contract_mismatch", "sut_defect", "unknown"
+]
 
 # Causes the feedback loop can act on. The other three are reported and left alone.
 ACTIONABLE_CAUSES: frozenset[str] = frozenset({"generation", "planning"})

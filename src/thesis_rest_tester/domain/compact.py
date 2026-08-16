@@ -10,6 +10,8 @@ compaction only shrinks the LLM prompt.
 
 from __future__ import annotations
 
+import re
+
 from thesis_rest_tester.domain.models import OpenAPIOperation, RequirementItem
 from thesis_rest_tester.domain.schemas import APIAnalysis
 
@@ -162,3 +164,70 @@ def compact_api_analysis(api_analysis: APIAnalysis) -> dict[str, object]:
             edge.model_dump(mode="json") for edge in api_analysis.dependency_edges
         ],
     }
+
+
+# A value that is entirely a placeholder: its type is decided at run time by a capture
+# or by the unique-value generator, so nothing can be concluded about it statically.
+_PLACEHOLDER_ONLY = re.compile(r"^\s*\{\{\s*[A-Za-z_][A-Za-z0-9_]*\s*\}\}\s*$")
+
+
+def body_problems(body: object, spec: dict[str, object]) -> list[str]:
+    """Ways in which a request body fails the fields its operation documents.
+
+    Shared by the Generator, which uses it to reject a test before it is written, and by
+    the Evaluator, which uses it to answer the opposite question: when the service
+    rejected a body, had that body in fact satisfied the contract? A body that conforms
+    and is rejected anyway is a disagreement between an application and its own
+    documentation, not a fault in the test -- and attributing it to the generator would
+    send the feedback loop rewriting tests that were already correct.
+    """
+
+    required = [str(name) for name in spec.get("required", []) or []]
+    properties: dict[str, str] = spec.get("properties", {}) or {}  # type: ignore[assignment]
+
+    if body is None:
+        return [f"no body sent, but {', '.join(required)} required"] if required else []
+    if not isinstance(body, dict):
+        return ["body must be a JSON object"]
+
+    problems = [f"missing required field '{name}'" for name in required if name not in body]
+    problems.extend(
+        f"field '{name}' is not documented for this operation"
+        for name in body
+        if name not in properties
+    )
+    problems.extend(
+        problem
+        for name, value in body.items()
+        if name in properties
+        for problem in _field_type_problem(name, value, properties[name])
+    )
+    return problems
+
+
+def _field_type_problem(name: str, value: object, declared: str) -> list[str]:
+    """Flag a literal value whose type contradicts the contract."""
+
+    if isinstance(value, str) and _PLACEHOLDER_ONLY.match(value):
+        return []
+    expected: dict[str, tuple[type, ...]] = {
+        "string": (str,),
+        "integer": (int,),
+        "number": (int, float),
+        "boolean": (bool,),
+        "array": (list,),
+        "object": (dict,),
+    }
+    allowed = expected.get(declared)
+    if allowed is None or value is None:
+        return []
+    # bool is an int subclass; an integer field must not silently accept True.
+    if declared in {"integer", "number"} and isinstance(value, bool):
+        return [f"field '{name}' should be {declared}, got boolean"]
+    if isinstance(value, allowed):
+        return []
+    # A string carrying a placeholder still renders to a string, which is fine for a
+    # string field but says nothing useful for a numeric one.
+    if isinstance(value, str) and "{{" in value and declared != "string":
+        return []
+    return [f"field '{name}' should be {declared}, got {type(value).__name__}"]

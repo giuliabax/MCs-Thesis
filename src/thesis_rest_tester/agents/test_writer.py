@@ -13,7 +13,11 @@ from pydantic import TypeAdapter
 
 from thesis_rest_tester.agents.base import AgentResponseError, BaseAgent
 from thesis_rest_tester.artifacts.writer import ArtifactWriter
-from thesis_rest_tester.domain.compact import body_field_spec, compact_operations_for_writing
+from thesis_rest_tester.domain.compact import (
+    body_field_spec,
+    body_problems,
+    compact_operations_for_writing,
+)
 from thesis_rest_tester.domain.executable import ExecutableTestCase, TestStep
 from thesis_rest_tester.domain.models import AgentOutput, OpenAPIOperation, TestStrategyItem
 from thesis_rest_tester.llm.base import LLMClient
@@ -238,65 +242,9 @@ def _body_problems(case: ExecutableTestCase, operations: list[OpenAPIOperation])
                 continue
             problems.extend(
                 f"{phase} {index} ({step.request.method} {step.request.path}): {problem}"
-                for problem in _compare_body(step.request.json_body, spec)
+                for problem in body_problems(step.request.json_body, spec)
             )
     return problems
-
-
-def _compare_body(body: Any, spec: dict[str, Any]) -> list[str]:
-    required = [str(name) for name in spec.get("required", [])]
-    properties: dict[str, str] = spec.get("properties", {})
-
-    if body is None:
-        return [f"no body sent, but {', '.join(required)} required"] if required else []
-    if not isinstance(body, dict):
-        return ["body must be a JSON object"]
-
-    problems = [f"missing required field '{name}'" for name in required if name not in body]
-    problems.extend(
-        f"field '{name}' is not documented for this operation"
-        for name in body
-        if name not in properties
-    )
-    problems.extend(
-        problem
-        for name, value in body.items()
-        if name in properties
-        for problem in _type_problem(name, value, properties[name])
-    )
-    return problems
-
-
-def _type_problem(name: str, value: Any, declared: str) -> list[str]:
-    """Flag a literal value whose type contradicts the contract.
-
-    Values that are entirely a placeholder are skipped: their type is decided at run
-    time by a capture or by the unique-value generator, so nothing can be concluded here.
-    """
-
-    if isinstance(value, str) and _PLACEHOLDER_ONLY.match(value):
-        return []
-    expected: dict[str, tuple[type, ...]] = {
-        "string": (str,),
-        "integer": (int,),
-        "number": (int, float),
-        "boolean": (bool,),
-        "array": (list,),
-        "object": (dict,),
-    }
-    allowed = expected.get(declared)
-    if allowed is None or value is None:
-        return []
-    # bool is an int subclass; an integer field must not silently accept True.
-    if declared in {"integer", "number"} and isinstance(value, bool):
-        return [f"field '{name}' should be {declared}, got boolean"]
-    if isinstance(value, allowed):
-        return []
-    # A string carrying a placeholder still renders to a string, which is fine for a
-    # string field but says nothing useful for a numeric one.
-    if isinstance(value, str) and "{{" in value and declared != "string":
-        return []
-    return [f"field '{name}' should be {declared}, got {type(value).__name__}"]
 
 
 def _template(path: str) -> str:

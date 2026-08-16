@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any
 
 from thesis_rest_tester.artifacts.writer import ArtifactWriter
+from thesis_rest_tester.domain.compact import body_field_spec, body_problems
 from thesis_rest_tester.domain.evaluation import (
     EvaluationReport,
     ProjectEvaluation,
@@ -62,6 +63,16 @@ _VALIDATION_MESSAGE = re.compile(
 )
 _STATUS_IN_MESSAGE = re.compile(r"returned (\d{3})")
 _AUTH_HEADER = re.compile(r"authorization", re.IGNORECASE)
+_REJECTED_ENDPOINT = re.compile(r"([A-Z]+) (/[^ ]*) returned")
+# A login refused because the account does not exist or the password is wrong.
+_CREDENTIALS_REJECTED = re.compile(
+    r"incorrect (?:username|email|password)|invalid credentials|wrong password"
+    r"|not authenticated|user not found|no such user|bad credentials"
+    r"|is not an admin|unauthorized",
+    re.IGNORECASE,
+)
+# `assert None == 'x'`: a JSON path that resolved to nothing.
+_ASSERTED_NONE = re.compile(r"assert None [=!]=")
 
 
 def strategy_item_key(requirement_id: str, method: str, path: str, test_type: str) -> str:
@@ -85,6 +96,9 @@ class ProjectEvidence:
     generated_cases: dict[str, dict[str, Any]] = field(default_factory=dict)
     exchanges: list[dict[str, Any]] = field(default_factory=list)
     documented_codes: dict[tuple[str, str], set[str]] = field(default_factory=dict)
+    # Keyed by templated path, so a concrete URL from a failure message can be
+    # matched against the operation it addresses.
+    body_specs: dict[tuple[str, str], dict[str, Any]] = field(default_factory=dict)
 
     def exchanges_for(self, test_name: str) -> list[dict[str, Any]]:
         return [item for item in self.exchanges if item.get("test_name") == test_name]
@@ -131,6 +145,7 @@ class Evaluator:
             generated_cases=_load_generated_cases(project_dir / "suite" / "generation_report.json"),
             exchanges=_load_json_list(project_dir / "execution" / "http_exchanges.json"),
             documented_codes=_load_documented_codes(project_dir / "openapi_operations.json"),
+            body_specs=_load_body_specs(project_dir / "openapi_operations.json"),
         )
 
     # --- evaluation -----------------------------------------------------------------
@@ -204,10 +219,15 @@ class Evaluator:
 
         for rule in (
             _rule_environment,
+            _rule_environment_rate_limited,
+            _rule_sut_accepted_invalid_request,
             _rule_planning_contradicted_codes,
             _rule_generation_missing_auth,
+            _rule_generation_login_without_account,
+            _rule_generation_asserted_absent_field,
             _rule_generation_wrong_operation,
             _rule_generation_assumed_data,
+            _rule_contract_mismatch,
             _rule_generation_rejected_request,
             _rule_planning_endpoint_absent,
             _rule_sut_defect,
@@ -294,6 +314,95 @@ def _rule_environment(context: _RuleContext) -> TestDiagnosis | None:
     return None
 
 
+def _rule_environment_rate_limited(context: _RuleContext) -> TestDiagnosis | None:
+    """The service throttled the suite.
+
+    A property of running dozens of tests back to back against one instance, not of any
+    individual test: the same test in isolation would pass. Attributing it to the
+    generator would send the loop rewriting tests whose only fault was arriving quickly.
+    """
+
+    if 429 not in context.statuses and context.message_status != 429:
+        return None
+    return context.diagnose(
+        "environment",
+        "rate_limited",
+        [context.message[:200]],
+        "The service rate-limits; pace the suite or raise the limit for the test run.",
+    )
+
+
+def _rule_generation_login_without_account(context: _RuleContext) -> TestDiagnosis | None:
+    """The test tried to authenticate as a user it never created.
+
+    The commonest failure of all once setup failures stopped being misfiled. Every project
+    starts from an empty database, so a test that posts invented credentials to a login
+    endpoint can only be told they are wrong. The fix belongs to the generator: register
+    the account in setup, then log in with the credentials just used.
+
+    Distinguished from ``authentication_missing``, which is about a request that carried no
+    token at all; here the test did try to obtain one and was refused.
+    """
+
+    if 401 not in context.statuses and context.message_status != 401:
+        return None
+    if context.generated.get("test_type") == "negative":
+        return None
+    if not _CREDENTIALS_REJECTED.search(context.message):
+        return None
+    return context.diagnose(
+        "generation",
+        "login_with_unregistered_credentials",
+        [context.message[:250], "the database starts empty, so no such account exists"],
+        "Regenerate: create the account in setup and log in with those credentials, or "
+        "capture them from the registration response.",
+    )
+
+
+def _rule_sut_accepted_invalid_request(context: _RuleContext) -> TestDiagnosis | None:
+    """A negative test expected a rejection and the service accepted the request.
+
+    This is a finding rather than a fault: the test did exactly what it was written to do,
+    and the service failed to enforce a constraint its own contract documents. It must
+    never be fed back, because the only way to make such a test pass is to stop asking the
+    question.
+    """
+
+    expected_rejection = re.search(r"assert 2\d\d in \((?:4\d\d|5\d\d)", context.message)
+    if not expected_rejection:
+        return None
+    return context.diagnose(
+        "sut_defect",
+        "invalid_request_accepted",
+        [context.message[:250]],
+        "Do not feed this back: the service accepted a request its contract says it "
+        "should reject.",
+    )
+
+
+def _rule_generation_asserted_absent_field(context: _RuleContext) -> TestDiagnosis | None:
+    """The request succeeded, and the assertion named a field the response does not carry.
+
+    Recognisable because the comparison resolved to None: `assert None == 'Test Citizen'`
+    where the left-hand side came from a JSON path. The call worked, so the fault is in
+    what the test expected to find, which is the generator's to correct.
+    """
+
+    if not _ASSERTED_NONE.search(context.message):
+        return None
+    if not any(200 <= code < 300 for code in context.statuses) and not (
+        context.message_status and 200 <= context.message_status < 300
+    ):
+        return None
+    return context.diagnose(
+        "generation",
+        "asserted_field_absent_from_response",
+        [context.message[:250], "the request itself succeeded"],
+        "Regenerate: assert on a field the response actually returns, or capture the "
+        "field name from the contract's response schema.",
+    )
+
+
 def _rule_planning_contradicted_codes(context: _RuleContext) -> TestDiagnosis | None:
     """The strategy expected a status the contract never documents for that operation.
 
@@ -353,10 +462,18 @@ def _rule_generation_wrong_operation(context: _RuleContext) -> TestDiagnosis | N
     user into the system* and `POST /users` *Create user*; the model registered against
     the login endpoint, which answered `404 "User ... not found"`, and thirteen of its
     twenty-four failures follow from that single confusion.
+
+    A failure in ``setup`` is excluded, and the exclusion is not a detail. A test whose
+    precondition fails never proceeds to the behaviour it was written for, so its target
+    operation is missing from the traffic as a *consequence* of the failure rather than as
+    its cause. Without this guard the rule was the most frequently fired of all -- 65
+    diagnoses on the first full run, of which 63 were setup failures being told they had
+    called the wrong endpoint, which would have sent the loop rewriting tests whose only
+    fault was that they could not log in.
     """
 
     item = context.item
-    if item is None or not context.exchanges:
+    if item is None or not context.exchanges or context.phase == "setup":
         return None
     target = (item.http_method.upper(), template_path(item.api_endpoint))
     called = {
@@ -397,14 +514,44 @@ def _rule_generation_assumed_data(context: _RuleContext) -> TestDiagnosis | None
     )
 
 
-def _rule_generation_rejected_request(context: _RuleContext) -> TestDiagnosis | None:
-    """The service rejected the request as malformed where success was expected."""
+def _rule_contract_mismatch(context: _RuleContext) -> TestDiagnosis | None:
+    """The body satisfied the contract and the service rejected it anyway.
 
-    if context.message_status != 400 and 400 not in context.statuses:
+    This must be decided before blaming the generator, and the two are indistinguishable
+    from the error message alone. team05 is the case: its contract states that
+    ``POST /users/login`` takes ``email`` and ``password``, the generated test sends
+    exactly those two fields, and the service answers ``400 "Username and password are
+    required"``. Its signup likewise demands ``emailNotificationsEnabled``, which the
+    contract never mentions. Nothing is wrong with the test; the application and its own
+    documentation disagree, and no iteration of the loop can reconcile them.
+    """
+
+    if not _rejected_as_malformed(context):
         return None
-    if context.generated.get("test_type") in {"negative", "edge_case"}:
+    offending = _first_rejected_step(context)
+    if offending is None:
         return None
-    if not _VALIDATION_MESSAGE.search(context.message):
+    step, spec = offending
+    problems = body_problems((step.get("request") or {}).get("json_body"), spec)
+    if problems:
+        # The body genuinely failed the contract, so this is the generator's to fix.
+        return None
+    return context.diagnose(
+        "contract_mismatch",
+        "conformant_body_rejected",
+        [
+            context.message[:300],
+            f"the body satisfies the documented fields: {sorted(spec.get('properties') or {})}",
+        ],
+        "Do not feed this back: the request matches the contract and the service "
+        "contradicts it. Report the disagreement.",
+    )
+
+
+def _rule_generation_rejected_request(context: _RuleContext) -> TestDiagnosis | None:
+    """The service rejected a request that did not, in fact, satisfy the contract."""
+
+    if not _rejected_as_malformed(context):
         return None
     return context.diagnose(
         "generation",
@@ -412,6 +559,40 @@ def _rule_generation_rejected_request(context: _RuleContext) -> TestDiagnosis | 
         [context.message[:300]],
         "Regenerate: the request does not satisfy the contract it was written against.",
     )
+
+
+def _rejected_as_malformed(context: _RuleContext) -> bool:
+    """A 400 complaining about the request, where success was expected."""
+
+    if context.message_status != 400 and 400 not in context.statuses:
+        return False
+    if context.generated.get("test_type") in {"negative", "edge_case"}:
+        return False
+    return bool(_VALIDATION_MESSAGE.search(context.message))
+
+
+def _first_rejected_step(context: _RuleContext) -> tuple[dict[str, Any], dict[str, Any]] | None:
+    """The step whose endpoint the failure message names, with its documented body spec.
+
+    Returns None when the operation carries no readable schema, since nothing can then be
+    concluded about whether the body conformed -- which is the honest answer for the
+    quarter of this corpus whose request bodies are undescribed.
+    """
+
+    endpoint = _REJECTED_ENDPOINT.search(context.message)
+    if endpoint is None:
+        return None
+    method, path = endpoint.group(1).upper(), endpoint.group(2)
+    spec = context.evidence.body_specs.get((method, template_path(path)))
+    if not spec:
+        return None
+    for step in _all_steps(context.generated):
+        request = step.get("request") or {}
+        if str(request.get("method", "")).upper() == method and template_path(
+            str(request.get("path", ""))
+        ) == template_path(path):
+            return step, spec
+    return None
 
 
 def _rule_planning_endpoint_absent(context: _RuleContext) -> TestDiagnosis | None:
@@ -603,3 +784,17 @@ def _load_documented_codes(path: Path) -> dict[tuple[str, str], set[str]]:
         key = (str(operation.get("method", "")).upper(), str(operation.get("path", "")))
         codes[key] = {str(code) for code in operation.get("response_codes") or []}
     return codes
+
+
+def _load_body_specs(path: Path) -> dict[tuple[str, str], dict[str, Any]]:
+    specs: dict[tuple[str, str], dict[str, Any]] = {}
+    for operation in _load_json_list(path):
+        spec = body_field_spec(operation.get("request_body_schema"))
+        if not spec:
+            continue
+        key = (
+            str(operation.get("method", "")).upper(),
+            template_path(str(operation.get("path", ""))),
+        )
+        specs[key] = spec
+    return specs
