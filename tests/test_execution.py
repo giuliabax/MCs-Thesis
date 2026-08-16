@@ -702,3 +702,31 @@ def test_every_phase_the_stack_records_is_a_phase_the_record_accepts() -> None:
     recorded = {"pull", "build", "up", "ready", "down"}
     accepted = set(get_args(PhaseTiming.model_fields["name"].annotation))
     assert recorded <= accepted
+
+
+def test_a_partial_run_updates_the_roll_up_instead_of_replacing_it(tmp_path) -> None:
+    """Retrying a few projects must not drop the rest from the run-level report.
+
+    Correcting a start-up recipe and re-running only the affected projects is how this
+    campaign proceeds. Rebuilding the report from those alone would leave the run looking
+    as though the others had never been executed, and would hand `evaluate` a run of a
+    few projects to score instead of all of them.
+    """
+
+    run_dir = _run_dir_with_suites(tmp_path, "team-a", "team-b")
+    entry = {
+        "status": "runnable",
+        "root": "projects/x",
+        "compose": {"files": ["docker-compose.yml"], "project_name": "exec-x"},
+        "api": {"base_url": "http://127.0.0.1:5000", "service": "server"},
+    }
+    manifest = _manifest(**{"team-a": dict(entry), "team-b": dict(entry)})
+
+    both = _executor(run_dir, manifest, _RecordingRunner()).run()
+    assert set(both.report.projects) == {"team-a", "team-b"}
+
+    again = _executor(run_dir, manifest, _RecordingRunner()).run(only=["team-b"])
+
+    assert set(again.report.projects) == {"team-a", "team-b"}
+    persisted = json.loads((run_dir / "execution_report.json").read_text(encoding="utf-8"))
+    assert set(persisted["projects"]) == {"team-a", "team-b"}

@@ -108,6 +108,13 @@ class SuiteExecutor:
             run_id=self._run_dir.name,
             manifest_path=str(DEFAULT_MANIFEST),
             started_at=datetime.now(UTC),
+            # A partial run updates the roll-up rather than replacing it. Retrying the
+            # handful of projects whose start-up recipe has just been corrected is the
+            # normal way this campaign proceeds, and rebuilding the report from only
+            # those would drop every other project from it -- leaving the run looking as
+            # though the rest had never been executed, and giving `evaluate` a run of
+            # seven projects to score instead of eighteen.
+            projects=self._previously_recorded(names),
         )
         for name in names:
             record = self._execute_project(name, projects_dir / name)
@@ -268,6 +275,32 @@ class SuiteExecutor:
     @staticmethod
     def _write_project_artifacts(artifact_dir: Path, record: ProjectExecutionRecord) -> None:
         ArtifactWriter(artifact_dir).write_json("report.json", record)
+
+    def _previously_recorded(
+        self, running_now: list[str]
+    ) -> dict[str, ProjectExecutionRecord]:
+        """Records from an earlier execution of this run, minus what is about to re-run.
+
+        Read from the run-level report rather than from each project's own, so that a
+        project deliberately removed from the roll-up stays removed.
+        """
+
+        path = self._run_dir / "execution_report.json"
+        if not path.is_file():
+            return {}
+        try:
+            previous = ExecutionReport.model_validate_json(path.read_text(encoding="utf-8"))
+        except ValueError:
+            _logger.warning("Could not read the previous %s; starting a fresh report", path.name)
+            return {}
+        carried = {
+            name: record
+            for name, record in previous.projects.items()
+            if name not in set(running_now)
+        }
+        if carried:
+            _logger.info("Carrying forward %d project(s) from the previous execution", len(carried))
+        return carried
 
     def _write_run_artifacts(self, report: ExecutionReport) -> None:
         writer = ArtifactWriter(self._run_dir)
