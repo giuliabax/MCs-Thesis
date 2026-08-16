@@ -1,0 +1,78 @@
+# Faults deliberately injected between the suite and the service, to ask whether the
+# generated tests would notice.
+#
+# WHY A PROXY RATHER THAN EDITING THE SERVICES. The eighteen projects span Express,
+# NestJS, Next.js and Flask, with different validation libraries and different persistence
+# layers. Seeding a fault in each one's source is per-stack work, and it could only ever
+# cover the handful of projects that run at all, so the same fault would not mean the same
+# thing across the corpus. A proxy applies one identical catalogue to every project and
+# touches no student code.
+#
+# WHAT THIS MEASURES, AND WHAT IT DOES NOT. A proxy corrupts the *interface*: the status
+# code, the shape of the body, the contents of a collection. So these numbers say whether
+# a suite notices a service breaking its contract. They do not say whether it would notice
+# a wrong implementation that keeps the contract -- a report saved under the wrong user,
+# say, or a total computed incorrectly. That is a real limitation and belongs next to the
+# figure wherever it is reported, not in a footnote.
+#
+# HOW DETECTION IS DECIDED. The suite runs once against the clean service and once per
+# fault. A fault counts as detected when a test that passed clean fails with the fault
+# active. Tests that already failed clean are ignored: they prove nothing either way, and
+# counting them would credit a suite for failures it was producing anyway.
+#
+# Faults are matched by method and by a path pattern, where `{}` matches one path segment.
+# A fault that matches nothing the suite ever calls is reported as not applicable rather
+# than as undetected -- a test cannot notice a fault it never reaches.
+
+version: 1
+
+faults:
+  - id: accept-invalid-create
+    description: >
+      A create endpoint stops validating and accepts anything, answering 201 where it
+      should answer 400. This is the commonest real regression of the four: a validation
+      rule quietly removed. Only a suite that actually sends a malformed body and expects
+      a rejection can see it, which makes it a direct test of whether negative tests are
+      worth generating at all.
+    match:
+      method: POST
+      status_in: [400, 422]
+    mutation:
+      type: force_status
+      status: 201
+
+  - id: created-reported-as-ok
+    description: >
+      A creation answers 200 instead of 201. Harmless to a browser and invisible to a test
+      that accepts any 2xx, which is exactly why it is worth seeding: it measures whether
+      the generated assertions are specific or merely permissive.
+    match:
+      method: POST
+      status_in: [201]
+    mutation:
+      type: swap_status
+      status: 200
+
+  - id: empty-collection
+    description: >
+      A list endpoint always answers with an empty collection. A suite that creates a
+      resource and then looks for it will notice; one that only checks the status code
+      will not.
+    match:
+      method: GET
+      status_in: [200]
+      path_contains: "s"
+    mutation:
+      type: empty_collection
+
+  - id: identifier-dropped
+    description: >
+      The identifier disappears from a creation's response body. Anything that captures it
+      to use in a later step breaks immediately, so this measures whether the suite chains
+      steps or only makes isolated calls.
+    match:
+      method: POST
+      status_in: [200, 201]
+    mutation:
+      type: drop_response_field
+      fields: [id, _id, uuid, reportId, userId]
