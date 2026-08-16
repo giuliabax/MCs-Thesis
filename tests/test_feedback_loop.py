@@ -196,3 +196,22 @@ def test_feedback_that_cannot_be_written_costs_its_notes_and_not_the_iteration(
 
     assert recorder.feedback_calls == ["alpha"]
     assert recorder.regenerated == [{"alpha": ["a|GET /a|happy_path"]}]
+
+
+def test_the_baseline_is_read_and_never_recomputed(tmp_path, monkeypatch, config) -> None:
+    """After one pass the artifacts describe the repaired suites, so re-evaluating them
+    as iteration 1 would overwrite the record of what the pipeline achieved without
+    feedback -- the one thing every later iteration is compared against."""
+
+    baseline = _evaluation(1, {"alpha": {"pass_rate": 0.4}})
+    (tmp_path / "evaluation_report.iteration1.json").write_text(
+        baseline.model_dump_json(), encoding="utf-8"
+    )
+    recorder = _Recorder([])
+    recorder.install(monkeypatch)
+
+    result = _loop(tmp_path, config).run()
+
+    # The queue of fake evaluations is empty: reaching evaluate_run would raise.
+    assert result.iterations[0].evaluation is not None
+    assert result.iterations[0].evaluation.projects["alpha"].metrics.pass_rate == 0.4

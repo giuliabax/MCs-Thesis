@@ -101,11 +101,11 @@ class FeedbackLoop:
         """Iterate from an existing evaluation until nothing improves.
 
         ``baseline`` is the evaluation of the run as it already stands -- normally the
-        first execution, which is the non-iterative configuration the loop is compared
-        against. It is read from disk when not supplied.
+        first execution, which is the non-iterative configuration every later iteration is
+        compared against. It is read from disk when not supplied.
         """
 
-        previous = baseline or evaluate_run(self._run_dir, iteration=1)
+        previous = baseline or self._baseline()
         outcomes: list[IterationOutcome] = [IterationOutcome(iteration=1, evaluation=previous)]
 
         for iteration in range(2, self._max_iterations + 1):
@@ -152,6 +152,22 @@ class FeedbackLoop:
 
         self._write_summary(outcomes)
         return LoopResult(self._run_dir, outcomes)
+
+    def _baseline(self) -> EvaluationReport:
+        """The first iteration's evaluation, read rather than recomputed when it exists.
+
+        This is the non-iterative baseline the whole comparison rests on, and recomputing
+        it would destroy it. After one pass of the loop the artifacts on disk describe the
+        *repaired* suites, so evaluating them again and writing the result as iteration 1
+        would overwrite the record of what the pipeline achieved without feedback -- and
+        would do so silently, leaving a run whose iterations all look alike.
+        """
+
+        existing = self._run_dir / "evaluation_report.iteration1.json"
+        if existing.is_file():
+            _logger.info("Using the recorded iteration-1 evaluation as the baseline")
+            return EvaluationReport.model_validate_json(existing.read_text(encoding="utf-8"))
+        return evaluate_run(self._run_dir, iteration=1)
 
     # --- the repair block --------------------------------------------------------------
 
