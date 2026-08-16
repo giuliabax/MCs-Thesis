@@ -38,6 +38,11 @@ services:
       # the cloud service -- where the evaluator classifies it as an environment cause
       # rather than a defect in a generated test.
       SUPABASE_URL: https://unavailable.example.invalid
+      # server/index.mjs:27 reads SUPABASE_SERVICE_ROLE_KEY specifically. The first
+      # attempt supplied SUPABASE_KEY and SUPABASE_SERVICE_KEY, which got past the URL
+      # check only to fail on "supabaseKey is required" -- the library validates the two
+      # arguments separately, so a near-miss on the name looks like a different fault.
+      SUPABASE_SERVICE_ROLE_KEY: unused
       SUPABASE_KEY: unused
       SUPABASE_ANON_KEY: unused
       SUPABASE_SERVICE_KEY: unused

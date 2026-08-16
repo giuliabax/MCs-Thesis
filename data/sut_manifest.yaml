@@ -243,7 +243,13 @@ projects:
     provenance_notes: >
       We supplied Back-end/.env and Front-end/.env. The frontend is never exercised by the
       suite, but compose refuses to start a service whose declared env_file is absent, so
-      both had to be written.
+      both had to be written. The backend file also carries Firebase and Cloudinary
+      settings. Two layers check them, and only the first is satisfied by a placeholder: a
+      zod schema rejects an absent value outright, and firebase-admin then parses the
+      private key as PEM at import time, failing with "Invalid PEM formatted message" on
+      anything that is not one. FIREBASE_PRIVATE_KEY is therefore a throwaway 2048-bit RSA
+      key generated for this study; it authenticates to nothing, and exists so the parser
+      is satisfied and the server reaches the point of listening.
     root: projects/participium-team17
     compose:
       files: [docker-compose.yml]
@@ -280,10 +286,12 @@ projects:
     readiness:
       # A Next.js application: `/` serves the rendered page, and the default probe
       # rightly refuses to accept HTML as evidence that an API is up. A documented API
-      # route is the honest signal, and 401 counts -- being told to authenticate proves
-      # the route exists and is routing.
+      # route is the honest signal, and every 4xx counts as readiness here -- being told
+      # to authenticate, or that the request is malformed, both prove the route exists
+      # and is routing. The first attempt omitted 400 and rejected a service that was
+      # answering perfectly well.
       path: /api/messages
-      accept_status: [200, 401, 403, 404, 405]
+      accept_status: [200, 400, 401, 403, 404, 405]
     reset_paths: []
 
   participium-team02:
@@ -371,6 +379,13 @@ projects:
       # spells them.
       base_url: http://127.0.0.1:3000
       service: app
+    readiness:
+      # The same application serves its built client from `/`, so the default probe sees
+      # an HTML page and rightly refuses to accept it as evidence that an API is up. A
+      # documented operation is the honest signal: /reports answers 401 without a
+      # session, which proves the route exists and is routing.
+      path: /reports
+      accept_status: [200, 401, 403]
     reset_paths: []
 
   participium-team14:
@@ -395,19 +410,20 @@ projects:
     reset_paths: []
 
   participium-team12:
-    status: unverified
-    provenance: compose_extended
-    provenance_notes: >
-      We added data/compose_overlays/team12.telegram.yml, which supplies the single
-      variable its API refuses to boot without: TELEGRAM_BOT_TOKEN. Its compose file
-      defaults every other setting and this one alone has none, because a bot token is a
-      credential and correctly was not committed. A placeholder suffices here, since the
-      application only checks that the variable is defined.
+    status: unrunnable
+    blocker: external_dependency
+    reason: >
+      Its API cannot start without a Telegram bot token that Telegram itself accepts, the
+      same blocker as team06. A first attempt supplied a placeholder, on the assumption
+      that the application only checked the variable was defined -- it crash-looped on
+      "TELEGRAM_BOT_TOKEN is not defined" before that. It does both: with the variable
+      present, the bot is constructed and validates the token by calling getMe, and the
+      process dies on "401: Unauthorized: invalid token specified". Nothing else stands in
+      the way; postgres came up and TypeORM's retry would have connected.
+    provenance: original
     root: projects/participium-team12
     compose:
-      files:
-        - docker-compose.yml
-        - ../../data/compose_overlays/team12.telegram.yml
+      files: [docker-compose.yml]
       project_name: exec-team12
       services: [postgres, minio, api]
     api:
@@ -419,13 +435,20 @@ projects:
 
   participium-team15:
     status: unverified
-    provenance: original
+    provenance: env_supplied
+    provenance_notes: >
+      We supplied an interpolation env file. docker-compose.yaml substitutes
+      ${RESEND_API_KEY} and ${BOT_BEARER} into the backend, and with nothing to
+      interpolate from they resolve to empty strings, so the Resend client refuses to be
+      constructed -- "Missing API key" -- and the container dies before listening. The
+      check is for presence only, so placeholders suffice.
     root: projects/participium-team15
     compose:
       # The only project whose compose file is named .yaml rather than .yml.
       files: [docker-compose.yaml]
       project_name: exec-team15
       services: [mysql, backend]
+      interpolation_env_file: data/sut_env/team15.interpolation.env
     api:
       # Backend/src/config/config.ts:4 sets APP_V1_BASE_URL = "/api/v1"; the swagger
       # declares /auth/login without it.
