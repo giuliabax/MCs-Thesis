@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import shutil
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -218,8 +219,10 @@ class Replanner:
         # churn items that were working, and any change in the totals could then be read
         # as the churn rather than as the repair.
         kept: list[TestStrategyItem] = []
+        budget = self._config.budget
         if only_requirements:
             wanted = set(only_requirements)
+            eligible = len(scoped_requirements.requirements) or 1
             scoped_requirements = scoped_requirements.model_copy(
                 update={
                     "requirements": [
@@ -227,6 +230,21 @@ class Replanner:
                         for requirement in scoped_requirements.requirements
                         if requirement.id in wanted
                     ]
+                }
+            )
+            # Scale the budget to the share of the project being replanned. The budget is
+            # a whole-project figure, and handing all of it to a narrowed set asks for as
+            # many tests for two requirements as the project was meant to have in total:
+            # one observed replan of two requirements took a project from 12 strategy
+            # items to 54. The same reasoning as the planner's own per-batch share.
+            share = math.ceil(
+                budget.max_tests_per_iteration * len(scoped_requirements.requirements) / eligible
+            )
+            budget = budget.model_copy(
+                update={
+                    "max_tests_per_iteration": max(
+                        3, min(budget.max_tests_per_iteration, share)
+                    )
                 }
             )
             kept = [
@@ -258,7 +276,7 @@ class Replanner:
                     scoped_requirements,
                     scoped_api,
                     scoped_operations,
-                    self._config.budget,
+                    budget,
                     coverage,
                     correction=correction,
                 )
