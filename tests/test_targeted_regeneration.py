@@ -11,6 +11,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from thesis_rest_tester.config import load_config
 from thesis_rest_tester.generation.generator import SuiteGenerator
 from thesis_rest_tester.llm.base import MockLLMClient
@@ -186,3 +188,74 @@ def test_the_correction_reaches_the_model_rewriting_the_test(tmp_path) -> None:
     sent = " ".join(str(prompt) for prompt in client.prompts)
     assert "Create the resource first." in sent
     assert "A previous attempt at this test failed" in sent
+
+
+def test_an_item_with_no_previous_test_is_written_rather_than_dropped(tmp_path) -> None:
+    """Replanning introduces items that never had a test.
+
+    Treating them as "not asked about, so leave alone" silently drops them. That is how
+    one iteration turned 375 tests into 201, with the missing ones absent from the skip
+    list as well, so nothing in the report said they had gone.
+    """
+
+    run_dir, config_path = _build_run(tmp_path)
+    config = load_config(config_path)
+    SuiteGenerator(
+        run_dir,
+        MockLLMClient(
+            [
+                _written_case("test_alpha", "PT01", "/alpha"),
+                _written_case("test_beta", "PT02", "/beta"),
+            ]
+        ),
+        config,
+    ).run()
+
+    # A replan adds a third item that has never been generated.
+    plan_file = run_dir / "projects" / "proj" / "workflow_plan.json"
+    plan = json.loads(plan_file.read_text(encoding="utf-8"))
+    plan["strategy_items"].append(_item("PT03", "GET", "/alpha"))
+    plan_file.write_text(json.dumps(plan), encoding="utf-8")
+
+    SuiteGenerator(
+        run_dir,
+        MockLLMClient([_written_case("test_gamma", "PT03", "/alpha")]),
+        config,
+        regenerate={"proj": ["PT99|GET /nothing|happy_path"]},
+    ).run()
+
+    names = [case["name"] for case in _report(run_dir)["cases"]]
+    assert names == ["test_alpha", "test_beta", "test_gamma"]
+
+
+def test_a_targeted_regeneration_that_can_carry_nothing_is_refused(tmp_path) -> None:
+    """A suite written before the report recorded item keys has no join. Proceeding would
+    empty it, which looks exactly like a very bad iteration rather than a defect."""
+
+    run_dir, config_path = _build_run(tmp_path)
+    config = load_config(config_path)
+    SuiteGenerator(
+        run_dir,
+        MockLLMClient(
+            [
+                _written_case("test_alpha", "PT01", "/alpha"),
+                _written_case("test_beta", "PT02", "/beta"),
+            ]
+        ),
+        config,
+    ).run()
+
+    # Strip the keys, as an older generation report would have them.
+    report_file = run_dir / "projects" / "proj" / "suite" / "generation_report.json"
+    report = json.loads(report_file.read_text(encoding="utf-8"))
+    for case in report["cases"]:
+        case.pop("strategy_item", None)
+    report_file.write_text(json.dumps(report), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="no strategy_item keys"):
+        SuiteGenerator(
+            run_dir,
+            MockLLMClient([]),
+            config,
+            regenerate={"proj": ["PT02|GET /beta|happy_path"]},
+        ).run()

@@ -122,6 +122,19 @@ class SuiteGenerator:
         notes = self._corrections.get(plan.project_name, {})
         previous = _previous_cases(suite_dir) if wanted else {}
         if wanted:
+            # A targeted regeneration that can carry nothing forward is not targeted; it
+            # is a destructive rewrite wearing the same name. This happens for real: a
+            # suite generated before the report recorded which item produced each test has
+            # no join key at all, and an earlier version of this code silently emitted an
+            # empty suite for such a project -- 54 planned items, 0 tests, and nothing in
+            # the skip list to say so. Refusing is the only safe answer, because the
+            # alternative looks exactly like a very bad iteration.
+            if not previous:
+                raise RuntimeError(
+                    f"{plan.project_name}: asked to regenerate {len(wanted)} item(s), but "
+                    f"its existing suite records no strategy_item keys, so nothing can be "
+                    f"carried over. Regenerate this project in full instead."
+                )
             _logger.info(
                 "Regenerating %d of %d test(s) for %s; the rest are carried over",
                 len(wanted),
@@ -142,9 +155,11 @@ class SuiteGenerator:
             key = strategy_item_key(
                 item.requirement_id, item.http_method, item.api_endpoint, item.test_type
             )
-            # A targeted iteration touches only the items it was asked about. Anything
-            # else keeps the test it already had -- or keeps having none, if it was
-            # skipped before, since re-attempting it would be a change nobody asked for.
+            # Carry over what already has a test, regenerate what was asked about, and
+            # write what is new. The third case is not hypothetical: replanning a project
+            # introduces items that never had a test, and treating them like the first
+            # case -- "not asked about, so leave it alone" -- silently drops them, which is
+            # how an iteration once turned 375 tests into 201.
             if wanted and key not in wanted:
                 carried = previous.get(key)
                 if carried is not None:
@@ -152,7 +167,10 @@ class SuiteGenerator:
                     used_names.add(carried.name)
                     item_keys[carried.name] = key
                     cases.append(carried)
-                continue
+                    continue
+                _logger.info(
+                    "%s: %s is new since the last generation; writing it", plan.project_name, key
+                )
 
             stem = f"item{index:02d}_{item.requirement_id}"
             try:
