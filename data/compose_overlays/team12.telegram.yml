@@ -1,0 +1,27 @@
+# participium-team12: the bot token its API refuses to boot without.
+#
+# The application checks twice, and only the second check is the hard one. Without the
+# variable it crash-loops on "TELEGRAM_BOT_TOKEN is not defined"; with any value present it
+# constructs the bot, which validates the token by calling Telegram's getMe and dies on the
+# 401 that an invented one earns. team06 fails in exactly the same way.
+#
+# The token is therefore real, and for that reason it is not written here: this file is
+# version-controlled, so it interpolates the value from data/sut_env/telegram.env, which is
+# not. The repository never carries a working credential.
+#
+# EMAIL_HOST is unrelated -- compose warns about it being unset, and no mail service exists
+# in this environment anyway.
+
+services:
+  api:
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      EMAIL_HOST: mail.example.invalid
+      # Its own compose defaults NODE_ENV to production, and
+      # apps/api/src/providers/database/database.module.ts:49 disables TypeORM's
+      # `synchronize` outside development. The schema is therefore never created, the
+      # startup seeding fails with "relation office does not exist", and every endpoint
+      # answers 500 against an empty database. The project ships no migrations to run in
+      # production's place, so the only way to give it a schema is to let TypeORM build
+      # one -- which is evidently how it was developed.
+      NODE_ENV: development

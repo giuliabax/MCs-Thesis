@@ -84,6 +84,18 @@ projects:
       application treats a failed send as a failed registration -- so signup answered
       400 "Failed to send verification email" and took six tests out in setup. The
       overlay adds a mail catcher and points SMTP_HOST at it.
+
+      The first version of that overlay did not work, and said it did. It was wrong twice,
+      and each fault hid the next, because the application answers every mail failure with
+      the same 400 "Failed to send verification email" whatever the cause. SMTP_USER and
+      SMTP_PASS were set to the empty string, since MailHog needs no credentials, but
+      server/src/services/emailService.ts:28 throws unless both are truthy and an empty
+      string is not. With that corrected the send was attempted and still failed: mailhog
+      declared no network, and every service in docker-compose.yml joins
+      participium-network explicitly, so the catcher sat alone on the default network where
+      the server could not resolve its hostname. None of this was visible until the
+      request-body schemas were resolved, because until then registration failed earlier
+      still, on a missing firstName, and never reached the mail path at all.
     root: projects/participium-team13
     compose:
       files: [docker-compose.yml, ../../data/compose_overlays/team13.mail.yml]
@@ -104,9 +116,12 @@ projects:
     reset_paths: []
 
   # --- the rest of the corpus ----------------------------------------------------------
-  # Thirteen of the eighteen start and answer their probe. The five that do not are
-  # recorded below with a specific blocker each; docs/execution-results-loop1.md reports
-  # what every project produced.
+  # Sixteen of the eighteen start and answer their probe. Only team03 and team08 do not,
+  # each recorded below with a specific blocker; docs/execution-results-loop1.md reports
+  # what every project produced. Three of the sixteen were recorded as unrunnable at first
+  # and are not: team06 and team12 needed a bot token Telegram would accept, and team11
+  # needed its own docker-compose.dev.yml rather than the compose file that pulls an image
+  # the registry no longer serves.
 
   participium-team01:
     status: runnable
@@ -131,21 +146,17 @@ projects:
     reset_paths: [db_data]
 
   participium-team06:
-    status: unrunnable
-    blocker: external_dependency
-    reason: >
-      Its API cannot start without a Telegram bot token that Telegram itself accepts. The
-      bot runs inside the API process, and the grammy library validates the token at
-      startup by calling Telegram's getMe, so the container dies on
-      "GrammyError: Call to 'getMe' failed! (401: Unauthorized: invalid token specified)".
-      A placeholder cannot work here, unlike team12, which only checks that the variable
-      is defined: this one needs a live credential for a third-party service, which is the
-      same category as team08's Supabase. Everything else about the project is sound --
-      postgres starts, and its migrator ran to completion, seeding the schema.
+    status: unverified
     provenance: env_supplied
     provenance_notes: >
-      We supplied server/.env; the API never got past the bot's token check for it to
-      matter.
+      We supplied server/.env. Its BOT_TOKEN is the one real credential in the study: the
+      bot runs inside the API process and the grammy library validates the token by
+      calling Telegram's getMe at startup, so the container died on
+      "401: Unauthorized: invalid token specified" for as long as the value was invented.
+      A throwaway bot registered through BotFather resolves it -- the check requires a
+      credential that can be obtained, not one that can be fabricated. The token lives in
+      data/sut_env/telegram.env, which is gitignored, so the repository never carries a
+      working one.
     root: projects/participium-team06
     compose:
       # The only project whose compose file is named compose.yaml.
@@ -156,34 +167,35 @@ projects:
         - source: data/sut_env/team06.server.env
           target: server/.env
     api:
-      base_url: http://127.0.0.1:3000
+      # server/src/index.ts:56 mounts every router under /api; the swagger declares
+      # /admin/accounts/list and friends without it.
+      base_url: http://127.0.0.1:3000/api
       service: api
     reset_paths: []
 
   participium-team11:
-    status: unrunnable
-    blocker: image_unavailable
-    reason: >
-      Its compose file pulls carmelogulino/participium, which the registry refuses --
-      "pull access denied ... repository does not exist or may require authorisation".
-      The image was never published, or was published privately and later removed. Unlike
-      team09, which hit a comparable problem, this project ships no Dockerfile anywhere,
-      so there is nothing to build in its place: every service is declared by image only.
-      What the repository contains cannot be turned into a running system.
+    status: unverified
     provenance: env_supplied
     provenance_notes: >
-      We supplied .env, declared by backend and telegram; no image ever existed to read
-      it.
+      Started from the team's own docker-compose.dev.yml rather than docker-compose.yml.
+      The latter pulls carmelogulino/participium, which the registry refuses -- the image
+      was never published, or was published privately and later removed. The dev file
+      builds every service from the Dockerfiles under docker/ instead, so the project is
+      buildable from what it ships; an earlier reading of this repository concluded it had
+      no Dockerfile at all, which was wrong. We supply only the .env its backend and
+      telegram services declare.
     root: projects/participium-team11
     compose:
-      files: [docker-compose.yml]
+      files: [docker-compose.dev.yml]
       project_name: exec-team11
       services: [db, backend]
       materialize_env_files:
         - source: data/sut_env/team11.env
           target: .env
     api:
-      base_url: http://127.0.0.1:3000
+      # backend/app.js mounts /api/v1/sessions, /api/v1/roles and the rest under
+      # /api/v1; the swagger declares /categories and friends without it.
+      base_url: http://127.0.0.1:3000/api/v1
       service: backend
     reset_paths: []
 
@@ -420,27 +432,36 @@ projects:
     reset_paths: []
 
   participium-team12:
-    status: unrunnable
-    blocker: external_dependency
-    reason: >
-      Its API cannot start without a Telegram bot token that Telegram itself accepts, the
-      same blocker as team06. A first attempt supplied a placeholder, on the assumption
-      that the application only checked the variable was defined -- it crash-looped on
-      "TELEGRAM_BOT_TOKEN is not defined" before that. It does both: with the variable
-      present, the bot is constructed and validates the token by calling getMe, and the
-      process dies on "401: Unauthorized: invalid token specified". Nothing else stands in
-      the way; postgres came up and TypeORM's retry would have connected.
-    provenance: original
+    status: unverified
+    provenance: compose_extended
+    provenance_notes: >
+      We added data/compose_overlays/team12.telegram.yml, which supplies the bot token its
+      API refuses to boot without. The application checks twice and only the second check
+      is hard: without the variable it crash-loops on "TELEGRAM_BOT_TOKEN is not defined",
+      and with any value present it constructs the bot, which validates the token against
+      Telegram and dies on the 401 an invented one earns -- the same blocker as team06,
+      resolved by the same real credential. The overlay interpolates the value from
+      data/sut_env/telegram.env rather than embedding it, so this tracked file carries no
+      working credential.
     root: projects/participium-team12
     compose:
-      files: [docker-compose.yml]
+      files:
+        - docker-compose.yml
+        - ../../data/compose_overlays/team12.telegram.yml
       project_name: exec-team12
       services: [postgres, minio, api]
+      interpolation_env_file: data/sut_env/telegram.env
     api:
       # apps/api/src/main.ts:51 calls setGlobalPrefix('api'); the swagger declares
       # /auth/login and friends without it.
       base_url: http://127.0.0.1:5000/api
       service: api
+    readiness:
+      # `/api/` answers with an HTML page, which the default probe rightly refuses --
+      # the fourth project of the eighteen to serve a page where its API prefix begins.
+      # A documented, unauthenticated operation is the honest signal.
+      path: /reports/public
+      accept_status: [200, 401, 403]
     reset_paths: []
 
   participium-team15:

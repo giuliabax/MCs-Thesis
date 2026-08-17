@@ -15,18 +15,35 @@
 # registration path completes, and no mail leaves the machine. It is added rather than the
 # SMTP variables merely being pointed somewhere plausible, because a plausible-looking but
 # unreachable host reproduces the same failure.
+#
+# Two things had to be right here, and each one hid the other, because the application
+# reports every mail failure with the same message: 400 "Failed to send verification
+# email", whatever actually went wrong.
+#
+# First, SMTP_USER and SMTP_PASS must be non-empty. MailHog needs no credentials, so both
+# were set to the empty string -- but server/src/services/emailService.ts:28 reads them as
+# `if (!smtpUser || !smtpPass) throw`, and an empty string is falsy in JavaScript. The
+# transport was never built and MailHog was never contacted. MailHog accepts whatever pair
+# it is given (it advertises AUTH PLAIN and validates nothing), so the values are arbitrary.
+#
+# Second, and only visible once the first was fixed, mailhog must join the project's
+# network. Every service in docker-compose.yml declares `participium-network` explicitly,
+# so a service that declares nothing lands on `default` instead, where the server cannot
+# resolve its hostname. The container ran, the mail catcher worked, and nothing could
+# reach it.
 
 services:
   mailhog:
     image: mailhog/mailhog:latest
     restart: unless-stopped
+    networks: [participium-network]
 
   server:
     environment:
       SMTP_HOST: mailhog
       SMTP_PORT: "1025"
-      SMTP_USER: ""
-      SMTP_PASS: ""
+      SMTP_USER: participium
+      SMTP_PASS: participium
       SMTP_FROM_NAME: Participium
       SMTP_FROM_ADDRESS: participium@example.invalid
     depends_on:
