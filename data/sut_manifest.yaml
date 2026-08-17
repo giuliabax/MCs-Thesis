@@ -146,7 +146,7 @@ projects:
     reset_paths: [db_data]
 
   participium-team06:
-    status: unverified
+    status: runnable
     provenance: env_supplied
     provenance_notes: >
       We supplied server/.env. Its BOT_TOKEN is the one real credential in the study: the
@@ -174,7 +174,7 @@ projects:
     reset_paths: []
 
   participium-team11:
-    status: unverified
+    status: runnable
     provenance: env_supplied
     provenance_notes: >
       Started from the team's own docker-compose.dev.yml rather than docker-compose.yml.
@@ -432,7 +432,7 @@ projects:
     reset_paths: []
 
   participium-team12:
-    status: unverified
+    status: runnable
     provenance: compose_extended
     provenance_notes: >
       We added data/compose_overlays/team12.telegram.yml, which supplies the bot token its
