@@ -701,3 +701,37 @@ def test_long_placeholder_becomes_a_repetition_not_a_literal() -> None:
     assert '"A" * 5000' in source
     # And the padding itself never appears in the generated module.
     assert "AAAA" not in source
+
+
+def test_control_characters_in_a_body_do_not_break_the_module() -> None:
+    """An edge case sending unusual characters must not take the whole suite with it.
+
+    Observed on participium-team12: the writer produced a description containing a NUL,
+    among other control characters, which is exactly what an edge-case test about special
+    characters should do. The renderer wrote the byte out verbatim and every one of that
+    project's twenty-five tests died at collection with "source code string cannot contain
+    null bytes" -- a suite lost to one character in one field.
+    """
+
+    hostile = "special: \n\t\r\x00\x1f\u2028\u2029 & \"quotes\" and {braces}"
+    case = _case(
+        test_type="edge_case",
+        steps=[
+            _step(
+                "POST",
+                "/reports",
+                expect_status=[400],
+                request={"json_body": {"description": hostile}},
+            )
+        ],
+    )
+
+    source = render_suite("p", [case])
+    # The module must compile, and must not carry the raw byte into the file.
+    ast.parse(source)
+    assert "\x00" not in source
+    # The value must survive intact: escaping it away would silently change the test.
+    namespace: dict[str, object] = {}
+    body = source.split("json=", 1)[1].split(",\n", 1)[0]
+    exec(f"value = {body}", namespace)  # noqa: S102 - the literal under test
+    assert namespace["value"] == {"description": hostile}

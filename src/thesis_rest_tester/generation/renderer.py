@@ -8,6 +8,7 @@ URL taken from a fixture, unique data per invocation, and teardown in a finally 
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Any
 
@@ -304,18 +305,34 @@ def _expression_for(name: str) -> str:
 
 
 def _literal(text: str) -> str:
-    return '"' + text.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    """A Python string literal holding exactly ``text``, control characters included.
+
+    Escaping only backslashes and quotes is not enough, and the gap is not theoretical: an
+    edge-case test asked to send unusual characters in a field produced a description
+    containing a NUL, the renderer wrote that byte into the module verbatim, and the whole
+    suite of twenty-five tests died at collection on "source code string cannot contain
+    null bytes". The test was reasonable -- control characters in a request body are worth
+    testing -- so the renderer must carry them rather than the suite refusing to load.
+
+    ``json.dumps`` escapes every control character as ``\\uXXXX`` and quotes and
+    backslashes as Python does, and its output is a valid Python literal.
+    ``ensure_ascii=False`` keeps ordinary accented text readable in the generated module,
+    which matters because these files are read by a human when a test fails.
+    """
+
+    return json.dumps(text, ensure_ascii=False)
 
 
 def _escape_message(text: str) -> str:
-    """Escape a fragment destined for an f-string literal."""
+    """Escape a fragment destined for an f-string literal.
 
-    return (
-        text.replace("\\", "\\\\")
-        .replace('"', '\\"')
-        .replace("{", "{{")
-        .replace("}", "}}")
-    )
+    The same control-character problem applies inside an f-string, so the fragment is
+    escaped through a literal first; the surrounding quotes are then stripped, since the
+    caller supplies its own. Braces are doubled last, after ``json.dumps`` has had its say,
+    so that a brace introduced by an escape sequence cannot be doubled by accident.
+    """
+
+    return json.dumps(text, ensure_ascii=False)[1:-1].replace("{", "{{").replace("}", "}}")
 
 
 def _escape_docstring(text: str) -> str:
