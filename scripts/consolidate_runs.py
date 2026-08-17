@@ -20,7 +20,7 @@ import argparse
 import json
 import shutil
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -102,7 +102,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runs-dir", default=str(REPO_ROOT / "data" / "runs"))
     parser.add_argument("--config", default=str(REPO_ROOT / "configs" / "participium.example.yaml"))
-    parser.add_argument("--out", default=None, help="Output run folder (default: data/runs/<ts>-consolidated)")
+    parser.add_argument(
+        "--out",
+        default=None,
+        help="Output run folder (default: data/runs/<ts>-consolidated)",
+    )
     parser.add_argument("--expect", type=int, default=None, help="Fail if fewer projects are found")
     args = parser.parse_args()
 
@@ -139,7 +143,7 @@ def main() -> int:
             print(f"  set {index}: {', '.join(names)}", file=sys.stderr)
         return 1
 
-    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-consolidated"
+    run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-consolidated"
     out_dir = Path(args.out) if args.out else runs_dir / run_id
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "projects").mkdir(exist_ok=True)
