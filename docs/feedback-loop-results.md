@@ -8,6 +8,16 @@ This supersedes `execution-results-loop1.md` as the current campaign: that docum
 describes an earlier run of the same procedure, kept because its figures are cited and
 because comparing the two is the only measurement we have of run-to-run variation.
 
+> **Recomputing these figures.** Every number below is iterations 1–3, over the thirteen
+> projects that reached execution at the time. The run directory has since been executed
+> again, with team06, team11 and team12 brought up, so it also holds a fourth iteration
+> over sixteen projects at a mean pass rate of 0.085 — and executing a project rewrites its
+> `execution/report.json`, so the per-project records now describe that later state rather
+> than this one. Recompute configuration A from `evaluation_report.iteration{1,2,3}.json`,
+> which were written once per iteration and are intact; do not recompute it by summing the
+> per-project execution reports. The same applies to the `-configA` copy, which was taken
+> after the fourth iteration had run.
+
 ---
 
 ## 1. Headline
