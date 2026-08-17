@@ -169,9 +169,17 @@ class Evaluator:
         # A project that never started teaches nothing about the tests it would have run,
         # and its cases are all `not_run`. Diagnosing them would manufacture evidence.
         if record.outcome != "completed":
+            # And it must not carry a pass rate either. A suite whose collection failed
+            # reports one pseudo-case with outcome `error`, which the rate counts as a
+            # test that ran, so a project that executed nothing at all scores 0.0 rather
+            # than None. Observed on participium-team12, where a single unrenderable
+            # character stopped the module loading: twenty-five tests never ran, and the
+            # spurious zero was averaged into the campaign alongside suites that really
+            # had failed everything. Section 4.5 draws exactly this distinction, so the
+            # rate is cleared here, where the executor's own verdict is available.
             return ProjectEvaluation(
                 project_name=evidence.name,
-                metrics=metrics,
+                metrics=metrics.model_copy(update={"pass_rate": None}),
                 inconclusive_reason=record.reason
                 or f"the project did not run: {record.outcome}",
             )
