@@ -86,19 +86,46 @@ disagree, the summary wins.
 
 If an operation has `"auth_required": true`, or its summary says the caller must be
 authenticated, logged in, or an administrator, then **a request without credentials will
-be rejected and the test will prove nothing**. Such a test must, in `setup`:
+be rejected and the test will prove nothing**.
 
-1. call the login operation — find it among the supplied operations by its summary;
-2. capture the token from the response;
-3. send it on every later step as an `Authorization` header.
+**The account you log in as does not exist until you create it.** Every test runs against
+a service whose database has just been emptied: there is no `admin`, no seeded user, no
+account left behind by another test. Credentials you invent will be refused, and the test
+will fail in setup without ever reaching the behaviour it was written for.
+
+Such a test must therefore, in `setup`:
+
+1. **register the account**, using `{{unique}}` in every value that must not collide;
+2. log in with **exactly the credentials just registered** — the same literal strings, not
+   similar ones;
+3. capture the token from the login response;
+4. send it on every later step as an `Authorization` header.
+
+Find both operations among those supplied, by their summaries: one creates a user, the
+other logs one in.
 
 ```json
 "setup": [
   {
-    "description": "Log in as an officer.",
+    "description": "Register the account this test will act as.",
+    "request": {
+      "method": "POST", "path": "/users",
+      "json_body": {
+        "username": "officer_{{unique}}",
+        "email": "officer_{{unique}}@example.com",
+        "password": "Passw0rd!{{unique}}"
+      }
+    },
+    "expect_status": [200, 201]
+  },
+  {
+    "description": "Log in as the account just registered.",
     "request": {
       "method": "POST", "path": "/auth/users",
-      "json_body": {"username": "admin", "password": "admin"}
+      "json_body": {
+        "username": "officer_{{unique}}",
+        "password": "Passw0rd!{{unique}}"
+      }
     },
     "expect_status": [200],
     "captures": [{"name": "token", "source": "json", "expression": "token"}]
@@ -116,6 +143,15 @@ be rejected and the test will prove nothing**. Such a test must, in `setup`:
   }
 ]
 ```
+
+Note that the same `{{unique}}` value is used in both steps: it is fixed once per test
+invocation, so writing it in the registration and again in the login yields the same
+string, and the credentials match.
+
+If the operation under test requires a role that no registration endpoint can grant — an
+administrator, typically — register and log in anyway, and expect the authorization
+failure the service returns. A test that documents "this account cannot do this" is a
+result; a test that logs in as an account that was never created is not.
 
 The exception is a `negative` test whose subject *is* the missing authorization: there,
 omit the header deliberately and expect 401 or 403.
@@ -169,6 +205,17 @@ to succeed.
 
 When an operation carries no `request_body` block, its schema was not available; send the
 body the endpoint's summary implies, and keep it minimal.
+
+## The service starts empty
+
+Every test runs against a freshly reset database. Nothing exists that this test did not
+create: no users, no reports, no categories, no data from any other test.
+
+So a test that reads something must first create it. Asserting that a collection is
+non-empty, or that a search returns a match, or that an identifier can be fetched, only
+means anything when an earlier step in the same test put it there and captured what came
+back. Otherwise the assertion is checking whether the service invented data on its own,
+and it will fail against a service that is behaving correctly.
 
 ## Rules
 

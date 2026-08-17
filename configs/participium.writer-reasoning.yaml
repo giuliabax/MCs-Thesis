@@ -1,0 +1,122 @@
+project_name: participium-thesis-run
+run_id: null
+
+llm:
+  provider: lmstudio
+  model: ${LMSTUDIO_MODEL}
+  temperature: 0.1
+  # Ceiling on output (reasoning + content), not a target: the model stops on its own.
+  # Two limits bound it, and both apply to the 1.5x retry in LMStudioLLMClient, not just
+  # to this value: the loaded context window minus the prompt, and timeout_seconds times
+  # the measured generation rate.
+  max_tokens: 20000
+  base_url: ${LMSTUDIO_BASE_URL}
+  # timeout_seconds: 1200
+  # This configuration exists to answer one question: does letting the Test Writer
+  # deliberate before it emits a test change the tests it writes? Everything else is
+  # identical to participium.example.yaml, so a run against each is a controlled
+  # comparison and any difference belongs to the writer's reasoning phase.
+  reasoning_agents: [requirement_api_matcher, test_writer]
+  # Plan in batches of requirements. Required at this budget, not optional: measured on
+  # team16, a single call asked to produce 30 strategy items generated ~35k tokens of
+  # JSON without ever closing it, exhausting the token ceiling twice. Batching keeps each
+  # response small, and with each batch receiving its own share of the budget it filled
+  # 30 items covering 29 of 29 requirements in 181s.
+  batch_strategy_planner: true
+  overrides:
+    # The matcher is the reasoning agent, so max_tokens is its deliberation budget and
+    # not just a length cap. Raising it to 20000 made it markedly more literal: on
+    # team16 it stopped granting inferential matches and returned 7 not_assessable
+    # where 9000 returns none, costing recall. Keep it at the value the July baseline
+    # used; the planner keeps the larger budget it needs to emit a whole strategy in
+    # one call.
+    requirement_api_matcher:
+      max_tokens: 9000
+  # An override may also reroute one agent to another provider (needs a paid Groq tier
+  # — the free tier caps at 8000 tokens/minute). Not required: compact payloads keep
+  # every agent within the local context window.
+  #   test_strategy_planner:
+  #     provider: groq
+  #     model: your-groq-model-id
+
+inputs:
+  requirements:
+    description_pdf: data/requirements/participium-description.pdf
+    user_stories_xlsx: data/requirements/participium-userstories.xlsx
+    faq_pdf: data/requirements/participium-faq.pdf
+  # Five projects are read from a document deeper in their repository rather than from
+  # the swagger.yaml at their root. The two describe exactly the same operations -- same
+  # paths, same methods, verified one by one -- but the root file names its request
+  # bodies without defining them, so those bodies reach the pipeline undescribed. The
+  # deeper document is the team's own and carries the definitions, which is why it is
+  # preferred: it is a better copy of the same contract, not a different contract.
+  projects:
+    - name: participium-team01
+      openapi_path: projects/participium-team01/swagger.yaml
+      sut_base_url: http://localhost:8080
+    - name: participium-team02
+      openapi_path: projects/participium-team02/swagger.yaml
+      sut_base_url: http://localhost:8081
+    - name: participium-team03
+      openapi_path: projects/participium-team03/swagger.yaml
+      sut_base_url: http://localhost:8082
+    - name: participium-team04
+      openapi_path: projects/participium-team04/swagger.yaml
+      sut_base_url: http://localhost:8083
+    - name: participium-team05
+      openapi_path: projects/participium-team05/server/docs/swagger.yaml
+      sut_base_url: http://localhost:8084
+    - name: participium-team06
+      openapi_path: projects/participium-team06/swagger.yaml
+      sut_base_url: http://localhost:8085
+    - name: participium-team07
+      openapi_path: projects/participium-team07/server/swagger.json
+      sut_base_url: http://localhost:8086
+    - name: participium-team08
+      openapi_path: projects/participium-team08/swagger.yaml
+      sut_base_url: http://localhost:8087
+    - name: participium-team09
+      openapi_path: projects/participium-team09/swagger.yaml
+      sut_base_url: http://localhost:8088
+    - name: participium-team10
+      openapi_path: projects/participium-team10/swagger.yaml
+      sut_base_url: http://localhost:8089
+    - name: participium-team11
+      openapi_path: projects/participium-team11/swagger.yaml
+      sut_base_url: http://localhost:8090
+    - name: participium-team12
+      openapi_path: projects/participium-team12/swagger.yaml
+      sut_base_url: http://localhost:8091
+    - name: participium-team13
+      openapi_path: projects/participium-team13/docs/swagger.yaml
+      sut_base_url: http://localhost:8092
+    - name: participium-team14
+      openapi_path: projects/participium-team14/doc/OpenAPI_swagger.yml
+      sut_base_url: http://localhost:8093
+    - name: participium-team15
+      openapi_path: projects/participium-team15/swagger.yaml
+      sut_base_url: http://localhost:8094
+    - name: participium-team16
+      openapi_path: projects/participium-team16/api/openapi.yaml
+      sut_base_url: http://localhost:8095
+    - name: participium-team17
+      openapi_path: projects/participium-team17/swagger.yaml
+      sut_base_url: http://localhost:8096
+    - name: participium-team18
+      openapi_path: projects/participium-team18/swagger.yaml
+      sut_base_url: http://localhost:8097
+
+execution:
+  runner: python_requests
+  timeout_seconds: 30
+
+budget:
+  max_iterations: 3
+  # Raised from 10, which was a scarcity setting from the 8 GB era and left two thirds of
+  # each project's implemented requirements with no test at all: 10 items per project
+  # covered 6.8 of 18.6 implemented requirements, 37%.
+  max_tests_per_iteration: 30
+  max_llm_calls: 50
+
+output:
+  runs_dir: data/runs
